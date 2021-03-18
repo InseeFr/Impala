@@ -1,0 +1,9 @@
+PREFIX skos:<http://www.w3.org/2004/02/skos/core#>
+
+SELECT ?concept ?libelle WHERE {
+	?concept skos:inScheme ?conceptScheme .
+	?concept skos:prefLabel ?libelle .
+	FILTER(regex(str(?conceptScheme),'/concepts/definitions/scheme'))
+	FILTER(lang(?libelle) = 'fr')
+}
+ORDER BY ?libelle

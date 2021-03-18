@@ -1,0 +1,11 @@
+# Remplacer 'ingénieur' par le libellé cherché #
+
+PREFIX skos:<http://www.w3.org/2004/02/skos/core#>
+
+SELECT ?poste ?libelle WHERE {
+	?poste skos:inScheme <http://id.insee.fr/codes/pcs2003/pcs> .
+	?poste skos:prefLabel ?libelle .
+	FILTER(lang(?libelle) = 'fr')
+	FILTER(regex(str(?libelle),'ingénieur','i'))
+}
+ORDER BY ?poste

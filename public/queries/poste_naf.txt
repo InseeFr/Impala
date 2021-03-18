@@ -1,0 +1,10 @@
+# Remplacer '27.12' par le code cherché
+
+PREFIX skos:<http://www.w3.org/2004/02/skos/core#>
+
+SELECT  ?poste ?libelle WHERE {
+	?poste skos:inScheme <http://id.insee.fr/codes/nafr2/naf> .
+	?poste skos:notation "27.12" .
+	?poste skos:prefLabel ?libelle .
+	FILTER(lang(?libelle) = 'fr')
+}

@@ -1,0 +1,26 @@
+[
+    {
+        "label": "Région par son nom",
+        "path": "/queries/region_nom.txt"
+    },
+    {
+        "label": "Population d'une commune",
+        "path": "/queries/population_commune.txt"
+    },
+    {
+        "label": "Liste des nomenclatures",
+        "path": "/queries/liste_nomenclatures.txt"
+    },
+    {
+        "label": "Poste de la NAV rév.2 par son code",
+        "path": "/queries/poste_naf.txt"
+    },
+    {
+        "label": "Poste de la PCS 2003 par son libellé",
+        "path": "/queries/poste_pcf.txt"
+    },
+    {
+        "label": "Liste des concepts",
+        "path": "/Users/emmanueldemey/Documents/workspaces/yasgui-react/public/queries/liste_concepts.txt"
+    }
+]
