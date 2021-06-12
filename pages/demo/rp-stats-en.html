@@ -1,0 +1,64 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<meta content="text/html; charset=UTF-8" http-equiv="content-type">
+		<title>Population census statistical results in RDF</title>
+		<link rel="stylesheet" href="http://rdf.insee.fr/common/rdfinsee.css" type="text/css">
+	</head>
+	<body>
+
+		<a href="http://datalift.org/en/event/semstats2013" title="SemStats 2013 homepage"><img src="http://rdf.insee.fr/common/semstats-logo.png" alt="SemStats 2013 logo"/></a>
+		
+		<a href="http://rdf.insee.fr/index.html" title="Insee RDF homepage" id="logo"><img src="http://rdf.insee.fr/common/rdfinsee.png" alt="Logo RDF Insee"/></a>
+
+		<h1>Population census statistical results in RDF</h1>
+
+		<h2>Introduction</h2>
+		<p>In connexion with the <a href="http://datalift.org/en/event/semstats2013/challenge">SemStats 2013 challenge</a>, Insee publishes in RDF a selection of statistical results from the Population Census. These results concern population estimates as of January 1, 2010 by fine-grained geographic areas, age, sex and activity status.</p>
+
+		<h2>Data modelization</h2>
+		<p>Data are structured according to the <a href="http://www.w3.org/TR/vocab-data-cube/">Data Cube</a> vocabulary, which relies on the <a href="http://sdmx.org/">SDMX</a> data model. According to this standard, the data structure is defined by a DSD (Data Structure Definition) which describes in particular the data cube dimensions and the concept measured; various attributes can also be specified (unit of measure, observation status, additional informations, etc.).</p>
+		<p>In the present case, two data cubes are defined. The biggest one provides population estimates by municipality (as of January 1, 2012), sex, five-year age group and activity status. For the second cube, the municipality is replaced by the municipal district, which is only defined in the biggest cities (Paris, Lyon, Marseille). For both cubes, the measure corresponds to the population aged 15 and over as of January 1, 2010. Two attributes have also been added at the observation level, giving the department and region where the municipality or municipal disctrict is located.</p>
+		<p>The code lists used in the different cube dimensions are formalized as <a href="http://www.w3.org/2004/02/skos/">SKOS</a> concept schemes.</p>
+		<p><i><u>Important note</u></i>: the URIs used in the data and metadata are not definitive and should not be publicised outside of the SemStats challenge context. Those URIs are also not dereferenceable.</p>
+
+		<h2>Access to the data</h2>
+		<p>The complete data can be downloaded as a <a href="pop5-2010-ds.ttl.7z">7z archive</a> (28 Mo) containing two <a href="http://www.w3.org/TR/turtle/">Turtle</a> files: one for the data set on municipalities (pop5-2010-com.ttl) and one for the data set on municipal districts (pop5-2010-arm.ttl). A <a href="pop5-2010-dsd.ttl.7z">second archive</a> contains the data structure definition (pop5-dsd-2010.ttl) and the SKOS concept schemes corresponding to the municipalities (cs-com-2012.ttl), municipal districts (cs-arm-2012.ttl), departments (cs-dep-2012.ttl) and regions (cs-reg-2012.ttl), as well as the sex code (cs-sexe.ttl), the five-year age groups (cs-ageq65.ttl) and the activity status (cs-tactr.ttl).</p>
+		<p><i>Note</i>: 7z is an open compression format supported by different archiving software packages, and in particular by the <a href="http://www.7-zip.org/">7-zip</a> open source software.</p>
+
+		<h2>Methodological notes</h2>
+
+		<h3>The French population census</h3>
+		<p>The census is based on a rolling method with a five year period. Every year, the survey constitutes a sample of 14% of the total French population. The census results are published each year, based on the five most recent annual surveys. Thus, the 2010 results use data from the surveys conducted from 2008 to 2012.</p>
+		<p>A general description of the census can be found on <a href="http://www.insee.fr/en/methodes/default.asp?page=sources/ope-rp.htm">http://www.insee.fr/en/methodes/default.asp?page=sources/ope-rp.htm</a>.</p>
+		<p>A more detailed article was published in 2004 in <a href=" http://www.epsilon.insee.fr/jspui/handle/1/14396"> http://www.epsilon.insee.fr/jspui/handle/1/14396</a>.</p>
+
+		<h3>How to use the data?</h3>
+		<p>The data sets are designed to allow users to group variable values according to their needs, or to obtain results on custom groupings of municipalities for the variables defining the non-geographic dimensions.</p>
+		<p>The population estimates are computed with sampling techniques and provided with six decimal places; these must be used for all calculations in order to avoid rounding errors.</p>
+		<p>The estimates greater than to 500 can normally be used with confidence. Figures below 200 must be treated with caution because, due to the imprecision related to the sampling, they may not be significant. Therefore, comparisons between areas of small size should be avoided.</p>
+
+		<h3>Definitions</h3>
+		<h4>Age</h4>
+		<p>Age is the time elapsed since the moment of birth. It can be coded using two definitions:</p>
+		<ul>
+			<li><p>Age by generation (or age reached during the year or age in difference of years) is the difference between the year of information gathering and the year of birth;</p></li>
+			<li><p>Age in completed years is the age reached at last birthday.</p></li>
+		</ul>
+		<p>The results of the population census are now (since 2004) presented using the age in completed years. The results of the previous population censuses (1999 and before) were presented using the age difference in years.</p>
+
+		<h4>Population</h4>
+		<p>The population figures correspond to all persons whose usual residence is in the area under consideration. The population of this area includes:</p>
+		<ul>
+			<li><p>The population of the main residences (or household population);</p></li>
+			<li><p>The population of people living in communities;</p></li>
+			<li><p>The population of mobile homes, the homeless and sailors attached to the area.</p></li>
+		</ul>
+		<p>Pupils and students of age in boarding schools, and military living in barracks while having a personal residence are now counted in the population of the communities of the municipality of their establishment. Before 2004 these people were attached to their family residence and therefore counted in the household population of the municipality of their family home.</p>
+
+		<h4>Activity status</h4>
+		<p>The activity status divides the population between active and inactive. Among the active are those who are employed (including those in traineeship or paid internship) and the unemployed. Among the inactive can be distinguished pupils, students and unpaid interns, retirees or early retirees, housewives or househusbands.</p>
+		<p><i>Note</i></p>
+		<p>The definition of unemployment in the census differs from those of the International Labour Office (ILO). Unemployment in the census is higher than the unemployment according to the ILO because inactive people sometimes tend to declare themselves unemployed when they do not meet all the criteria of the ILO.</p>
+	</body>
+</html>

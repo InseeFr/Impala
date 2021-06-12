@@ -13,8 +13,10 @@
     "web-vitals": "^1.0.1"
   },
   "scripts": {
+    "copy-static": "ncp pages build && ncp temp_dist build/sparql",
+    "build-react": "PUBLIC_URL='/sparql' BUILD_PATH='./temp_dist' react-scripts build",
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "yarn build-react && yarn copy-static",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -35,5 +37,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "ncp": "^2.0.0"
   }
 }

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+		<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+        <title>Consultation - EMB 2019</title>
+        <link href="../commun.css" rel="stylesheet" type="text/css"/>
+		<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+		<script>
+			var endpointURL = "http://rdf.insee.fr/sparql";
+			var racine = "http://id.insee.fr/codes/";
+			var nomenclature="emb2019";
+			var niveau="produits"
+			//var niveau2="nafr2"
+			$(document).ready(function() {
+
+				var query = 'PREFIX skos:<http://www.w3.org/2004/02/skos/core#> ';
+				query += 'SELECT ?code ?label WHERE {GRAPH <http://rdf.insee.fr/graphes/codes/'+nomenclature+'> { ?uri skos:prefLabel ?label ; skos:notation ?code . '
+				query += '<'+racine+nomenclature+'/'+niveau+'> skos:member ?uri .  FILTER langMatches (lang(?label), "fr")} . } ORDER BY ?code';
+				var queryURL = endpointURL + "?query=" + encodeURIComponent(query);
+
+				$.getJSON(queryURL).success(function(data) {
+
+					var innerHTML = '<p class="nom-enfants">Produits</p><ul class="enfants">';
+					for (var index = 0; index < data.results.bindings.length; index++) {
+						var childCode = data.results.bindings[index].code.value;
+						innerHTML += '<li><p><a href="display-item.htm?code=' + childCode + '">' + childCode + ' - ' + data.results.bindings[index].label.value + '</a></p></li>';
+					}
+					innerHTML += '</ul>';
+					$('#sous-items').html(innerHTML);
+				});
+				
+				
+				var query2 = 'PREFIX skos:<http://www.w3.org/2004/02/skos/core#> ';
+				query2 += 'SELECT distinct ?code ?label WHERE {?uri skos:prefLabel ?label ; skos:notation ?code ; skos:relatedMatch ?child . '
+				query2 += '<'+racine+nomenclature+'/'+niveau+'> skos:member ?child .  FILTER langMatches (lang(?label), "fr") } ORDER BY ?code';
+				
+				var queryURL2 = endpointURL + "?query=" + encodeURIComponent(query2);
+					
+					$.getJSON(queryURL2).success(function(data) {
+					var innerHTML = '<p class="nom-enfants"> Activités de la NAF </p><ul class="enfants">';
+					for (var index = 0; index < data.results.bindings.length; index++) {
+						var childCode = data.results.bindings[index].code.value.replace('.','');
+						innerHTML += '<li><p><a href="display-item.htm?code=' + childCode + '">' + childCode + ' - ' + data.results.bindings[index].label.value + '</a></p></li>';
+					}
+					innerHTML += '</ul>';
+					
+					$('#sous-items2').html(innerHTML);
+					});
+			});
+
+		</script>
+	</head>
+	<body>
+		<h1 class="titre-class">Nomenclatures des Enquêtes Mensuelles de Branche (EMB) 2019</h1>
+		<div class="note-generale">
+			<p>Liste des produits des Enquêtes Mensuelles de Branche 2019</p>
+		</div>
+		<div id="sous-items" class="sous-items" style="width: 45%; float: left;"></div>
+		<div id="sous-items2" class="sous-items" style="width: 45%; float: left;"></div>
+	</body>
+</html>

@@ -1,0 +1,24 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<meta content="text/html; charset=UTF-8" http-equiv="content-type">
+		<title>Données géographiques RDF - ressources historiques</title>
+		<link rel="stylesheet" href="../common/rdfinsee.css" type="text/css">
+	</head>
+	<body>
+		<h1>Données géographiques RDF - ressources historiques</h1>
+		<h2>Introduction</h2>
+		<p>L'INSEE a publié des données du Code officiel géographique à partir de 2006 et jusqu'en 2011, mais avec un vocabulaire et des règles de nommage qui ont depuis été notablement modifiés. Les ressources décrites ci-dessous doivent donc désormais être considérées comme obsolètes : on se reportera à <a href="index.html">cette page</a> pour obtenir les données RDF conformes aux nouveaux standards de nommage et de représentation des données du COG.</p>
+
+		<h2>Données publiées</h2>
+		<p>Les données couvrent la période 1999-2011. Elles se conforment à un modèle formellement exprimé sous forme d'une <a href="ontologie-geo-2006.rdf">ontologie OWL</a> (elle aussi obsolète).</p>
+		<p>Pour chaque année <code>aaaa</code>, une archive Zip est fournie, qui contient les fichiers RDF/XML suivants :</p>
+		<ul>
+			<li><p>Un fichier <code>regions-aaaa.rdf</code> comportant la liste des régions ainsi que leur chef-lieu et les départements inclus dans ces régions.</p></li>
+			<li><p>Un fichier <code>departements-aaaa.rdf</code> contient la liste des départements, leurs chef-lieux ainsi que les arrondissements inclus dans ces départements</p></li>
+			<li><p>Pour chaque département <code>dd</code> (<code>ddd</code> pour l'Outre-mer) un fichier <code>arrondissements-dd-aaaa.rdf</code> incluant la liste des communes et cantons par arrondissement du département, et un fichier <code>cantons-dd-aaaa.rdf</code> qui modélise les liens entre communes et cantons ainsi que les relations de voisinage entre communes (y compris les communes limitrophes du département).</p></li>
+		</ul>
+
+		<p>Accès aux données pour les années <a href="1999/archive-1999.zip">1999</a>, <a href="2000/archive-2000.zip">2000</a>, <a href="2001/archive-2001.zip">2001</a>, <a href="2002/archive-2002.zip">2002</a>, <a href="2003/archive-2003.zip">2003</a>, <a href="2004/archive-2004.zip">2004</a>, <a href="2005/archive-2005.zip">2005</a>, <a href="2006/archive-2006.zip">2006</a>, <a href="2007/archive-2007.zip">2007</a>, <a href="2008/archive-2008.zip">2008</a>, <a href="2009/archive-2009.zip">2009</a>, <a href="2010/archive-2010.zip">2010</a>, <a href="2011/archive-2011.zip">2011</a>, <a href="2012/cog-2012.ttl.zip">2012</a>, <a href="2013/cog-2013.ttl.zip">2013</a> , <a href="2014/cog-2014.ttl.zip">2014</a> et <a href="2016/cog-2016.ttl.zip">2016</a> .
+	</body>
+</html>
