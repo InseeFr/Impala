@@ -5,14 +5,9 @@ PREFIX igeo:<http://rdf.insee.fr/def/geo#>
  PREFIX owl:<http://www.w3.org/2002/07/owl#>
 
 SELECT ?commune ?nom ?popTotale ?date WHERE {
-	
 		?commune igeo:codeINSEE "70285".
-	
 		?commune igeo:nom ?nom .
-	
 		?commune owl:sameAs ?communeAlias .
-	
 		?communeAlias idemo:population ?popLeg .
-	
 		?popLeg idemo:populationTotale ?popTotale ; idemo:date ?date .
 }
