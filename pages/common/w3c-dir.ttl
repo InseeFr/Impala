@@ -1,0 +1,45 @@
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> . 
+@prefix foaf: <http://xmlns.com/foaf/0.1/> . 
+@prefix vcard: <http://www.w3.org/2006/vcard/ns#> . 
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> . 
+@prefix dir: <http://dir.w3.org/directory/schema#> . 
+@prefix directory: <http://dir.w3.org/directory/orgtypes/> . 
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> . 
+@prefix gr: <http://purl.org/goodrelations/v1#> . 
+@prefix org: <http://www.w3.org/ns/org#> . 
+
+<> foaf:primaryTopic <#org> . 
+<#org> a org:Organization, dir:Organization, gr:BusinessEntity, vcard:Organization 
+  ; rdfs:label "INSEE" 
+  ; gr:legalName "INSEE" 
+  ; vcard:organization-name "INSEE" 
+  ; skos:prefLabel "INSEE" 
+  ; dir:isOrganizationType directory:federal-central-government 
+  ; vcard:url <http://www.insee.fr> 
+  ; vcard:logo <http://insee.fr/fr/css/images/logo_insee.png> 
+  ; rdfs:comment """The National Institute of Statistics and Economic Studies (INSEE) collects, produces, analyzes, and disseminates information on the French economy and society. INSEE is a Directorate General of the French Ministry of the Economy, Finance and Industry.""" 
+. 
+
+<#org> org:siteAddress <#address-18,boulevardAdolphe-Pinard+ParisCedex14+France> . 
+<#address-18,boulevardAdolphe-Pinard+ParisCedex14+France> a vcard:VCard, vcard:Address 
+  ; vcard:street-address "18, boulevard Adolphe-Pinard" 
+  ; vcard:locality "Paris Cedex 14" 
+  ; vcard:country-name "France" 
+  ; vcard:postal-code "75675" 
+. 
+
+<#org> gr:offers <#services-INSEERDFwebsite> . 
+<#services-INSEERDFwebsite> a dir:Service, gr:Offering 
+  ; rdfs:label "INSEE RDF website" 
+  ; rdfs:comment """Publication of geographic codes, economic classifications and census data as RDF.""" 
+  ; vcard:url "http://rdf.insee.fr" 
+. 
+
+<#org> org:hasMember <#contacts-FranckCotton> . 
+<#contacts-FranckCotton> a foaf:Agent, dir:Person 
+  ; foaf:name "Franck Cotton" 
+  ; vcard:fn "Franck Cotton" 
+  ; org:memberOf <#org> 
+  ; vcard:workEmail "franck.cotton@insee.fr" 
+. 
+

@@ -25,7 +25,11 @@ function App() {
 
   useLayoutEffect(() => {
     // eslint-disable-next-line no-undef
-    setYasgui(new Yasgui(document.getElementById("editor")))
+    setYasgui(new Yasgui(document.getElementById("editor"), {
+      requestConfig: {
+        endpoint: 'http://rdf.insee.fr/sparql'
+      }
+    }))
   }, []);
 
   return (

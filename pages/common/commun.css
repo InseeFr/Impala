@@ -1,0 +1,1009 @@
+/*---- MISE EN PAGE GENERALE ----*/
+
+html, body {margin: 0; padding: 0; border: 0;}
+html {font-size: 100%;}
+body
+	{
+	background: #fff;
+	color: #000;
+	min-width: 954px;
+	font-family: Verdana, "Bitstream Vera Sans", sans-serif;
+	font-size: 0.71em;
+	}
+
+u {text-decoration: none;}
+b {font-weight: normal;}
+i {font-style: normal;}
+
+#conteneur
+	{
+	margin: 0 auto;
+	padding: 0;
+	text-align: left;
+	width: 954px;
+	position: relative;
+	}
+
+#entete {height: 119px;}
+#entete-logorecherche {background: #D9D9D9; height: 46px;}
+.logo img, .logo {float: left; margin: 0; padding: 0;}
+
+	/*---- Traitement des boutons en liste ----*/
+
+ul.boutons-liste {width: 100%; margin: 0; padding: 2px 0 0 0;}
+
+ul.boutons-liste li
+	{
+	list-style: none;
+	float: left;
+	background-image: none;
+	height: 2.5em;
+	padding: 3px 5px 5px 10px;
+	margin: 0 2px 0px 0;
+	line-height: 1.1em;
+	font-size: 1.05em;
+	}
+
+.boutons-liste li a {color: white;}
+.bouton-bases-de-donnees, .bouton-publications {width: 122px;}
+.bouton-regions, .bouton-methodes, .bouton-themes {width: 122px;}
+.bouton-stat-pub {width: 130px;}
+.bouton-publics {width: 97px; margin-right: 0px !important;}
+
+.bouton-themes, 
+.bouton-bases-de-donnees, 
+.bouton-publications, 
+.bouton-regions
+	{background-color: #91002c;}
+
+.bouton-stat-pub, 
+.bouton-methodes, 
+.bouton-publics
+	{background-color: #3b5c7b;}
+
+body.insee-statistique-publique .bouton-stat-pub, 
+body.themes .bouton-themes, 
+body.bases-de-donnees .bouton-bases-de-donnees, 
+body.publications-et-services .bouton-publications, 
+body.regions .bouton-regions, 
+body.methodes .bouton-methodes, 
+body.portails-par-public .bouton-publics
+	{background-color: white !important;}
+
+body.insee-statistique-publique .bouton-stat-pub a, 
+body.methodes .bouton-methodes a, 
+body.portails-par-public .bouton-publics a
+	{color: #395A7B;}
+
+body.themes .bouton-themes a, 
+body.bases-de-donnees .bouton-bases-de-donnees a, 
+body.publications-et-services .bouton-publications a, 
+body.regions .bouton-regions a
+	{color: #93002A;}
+
+	/*---- style pour la recherche ----*/
+
+#itemrecherche {float: right; text-align: right;}
+#itemrecherche *{margin: 0; padding: 0;}
+#itemrecherche input.champtexte {border: 1px solid #413E35; margin: 10px 3px 0 0;}
+#itemrecherche input.lancer {vertical-align: bottom; margin-right: 10px;}
+#itemrecherche .rech-avancee {padding-right: 50px;}
+
+#entete-navigationprincipale {clear: both;}
+
+#navigation-gauche {float: left; width: 212px; padding: 0; margin: 21px 0 0 0;}
+
+/*#navigation-gauche li.parent > a {font-style: italic;}*/
+#navigation-gauche li.parent {background: url(images/puce_lien_parent.gif) 0 0.2em no-repeat;}
+
+/* Fil d'Ariane */
+div#fil-ariane {margin: 0; padding: 0; height: auto;}
+div#fil-ariane ul {margin: 21px 0 10px 10px; height: auto;}
+div#fil-ariane ul li{display: inline; list-style: none; background: url(images/puce_lien_parent.gif) left no-repeat;}
+
+#contenu {margin: 0 0 0 235px; padding: 0; position: relative; max-width: 719px;}
+
+	/*---- Cas des pages avec deux colonnes dans le contenu ----*/
+#col-centre {float: left; width: 484px;}
+
+	/*Pour remettre à la ligne un paragraphe suivant un blocgraphique */
+#col-centre p {clear: left;}
+
+#col-droite {float: left; max-width: 212px; margin-left: 23px;}
+
+#piedepage {clear: both; padding: 5px 0;}
+
+/*---- FIN DE MISE EN PAGE GENERALE ----*/
+
+/*---- STYLES COMMUNS ----------*/
+
+p {margin: 0.5em 0;}
+img {border: 0;}
+h6 {display: none;}
+p.acces-rapide{display: none;}
+.top
+	{
+	background: url(images/puce_hautdepage.gif) bottom right no-repeat;
+	padding: 0 12px 0 0;
+	text-align: right;
+	}
+
+h1, h2, h3
+	{
+	color: #3a3c3b;
+	margin: 1em 0 0.5em 0;
+	padding: 0;
+	}
+
+h1 {font-size: 1.4em;}
+h2 {font-size: 1.3em;}
+
+h2
+	{
+	background: url(images/picto_soustitre_gris.gif) 0.1em 0.7em no-repeat;
+	padding: 5px 0 0 15px;
+	border-top: dotted 1px gray;
+	line-height: 1.2em;
+	}
+
+h3
+	{
+	font-size: 1.1em;
+	margin: 1em 0 1em 0;
+	padding: 0.3em 0 0.3em 1.7em;
+	font-style: italic;
+	}
+
+body.insee-statistique-publique h3, 
+body.methodes h3, 
+body.portails-par-public h3 
+	{background: url(images/h3-bleu.gif) 0.3em 0.6em no-repeat;}
+
+body.themes h3, 
+body.bases-de-donnees h3, 
+body.publications-et-services h3, 
+body.regions h3 
+	{background: url(images/h3-rouge.gif) 0.3em 0.6em no-repeat;}
+
+#navigation-gauche h3 {background: white !important; font-style: normal;}
+
+h4 {margin-top: 10px; text-align: left; font-weight: bold; font-size: 1.05em;}
+
+	/*---- Gestion du picto sur le h1 titres suivant la rubrique ----*/
+
+body.insee-statistique-publique h1, 
+body.methodes h1, 
+body.portails-par-public h1
+	{background: url(images/picto_titre_bleu.gif) 0em 0.2em no-repeat;}
+
+body.themes h1, 
+body.bases-de-donnees h1, 
+body.publications-et-services h1, 
+body.regions h1
+	{background: url(images/picto_titre_rouge.gif) 0em 0.2em no-repeat;}
+
+body.divers h1
+	{background: url(images/picto_titre_gris.gif) 0em 0.2em no-repeat;}
+
+h1, 
+.picto-titre-rouge, 
+.picto-titre-bleu, 
+.picto-titre-gris
+	{
+	padding: 0 0 0 15px;
+	margin-top: 0;
+	font-size: 1.3em;
+	color: #3a3c3b;
+	}
+
+.picto-titre-rouge {background: url(images/picto_titre_rouge.gif) left no-repeat;}
+.picto-titre-bleu {background: url(images/picto_titre_bleu.gif) left no-repeat;}
+.picto-titre-gris {background: url(images/picto_titre_gris.gif) left no-repeat;}
+
+.avertissement {font-size: 85% !important; font-style: italic;}
+
+/*---- STYLES POUR LES LIENS ----*/
+
+a {color: #0257B2; text-decoration: none; font-weight: bold;}
+a:hover {text-decoration: underline;}
+
+	/*---- Liens transversaux haut et bas ----*/
+
+ul#entete-lienhaut {margin: 0; padding: 10px 0 4px 0; text-align: right;}
+
+	/*---- Liens transversaux bas ----*/
+
+ul#lienstransversauxbas
+	{
+	margin: 0;
+	padding: 4px 10px 4px 0;
+	text-align: right;
+	background: #D9D9D9;
+	width: 100%;
+	}
+
+/* Liens hauts et bas, pour compatibilité xml */
+
+
+ul#entete-lienhaut li, ul#lienstransversauxbas li
+	{
+	display: inline;
+	padding: 0px 1px 0px 3px;
+	margin: 0;
+	background: none;
+	border-left: 1px solid black;
+	}
+	
+ul#entete-lienhaut li.premier, ul#lienstransversauxbas li.premier {
+border-left:none;}
+
+
+/*---- MENU GENERAL ----*/
+
+	/*---- Menu général avec des images ----*/
+
+.menugenedivimages .imgmenu {float: left; margin: 0; padding: 0;}
+
+/*---- BLOCS DE CONTENU ----*/
+
+	/*---- Définition des trois grands types de bloc en fonction de leur couleur de fond ----*/
+
+.bloc {margin: 0 0 23px 0; padding: 0 0 5px 0; float: left; width: 100%;}
+.bloc h3 {margin: 0; padding: 0 0 0.1em 0; background-color: white !important;}
+.bloc p, .bloc h2, .bloc h3 {padding: 0 10px 0 10px;}
+.bloc ul {margin: 0 0 0 10px; padding: 10px 15px 0 0;}
+.bloc ul li p { padding-left: 0; }/*modif 24/09/2009*/
+.bloc ul li ul  { margin-left: 1px; }/*modif 24/09/2009*/
+.bloc img {vertical-align: middle;}
+
+	/*---- Les blocs des menus de navigation diffèrent selon la rubrique ----*/
+
+		/*---- Fond couleur blocs rubriques bleues ----*/
+
+body.insee-statistique-publique div.bloc, 
+body.methodes div.bloc, 
+body.portails-par-public div.bloc
+	{background-color: #deebf7;}
+
+		/*---- Fond couleur blocs rubriques rouges ----*/
+
+body.themes div.bloc, 
+body.bases-de-donnees div.bloc, 
+body.publications-et-services div.bloc, 
+body.regions div.bloc
+	{background-color: #f7eff7;}
+
+		/*---- Fond couleur blocs rubriques divers ----*/
+
+body.divers div.bloc {background-color: #EAEAE8;}
+
+	/*---- Titre de blocs soulignés ----*/
+
+body.themes div.bloc h3, 
+body.bases-de-donnees div.bloc h3, 
+body.publications-et-services div.bloc h3, 
+body.regions div.bloc h3
+	{color: #91002c; border-bottom: 2px solid #91002c;}
+
+body.insee-statistique-publique div.bloc h3, 
+body.methodes div.bloc h3, 
+body.portails-par-public div.bloc h3
+	{color: #3c5c7c; border-bottom: 2px solid #3c5c7c;}
+
+body.divers div.bloc h3
+	{color: #6A685B; border-bottom: 2px solid #6A685B;}
+
+	/*---- Texte de présentation début de thème ----*/
+
+.presentation {border: 1px dotted gray; padding: 5px 15px; margin: 5px 0 0 0;}
+
+	/*---- Texte de présentation avec encadré et plusieurs paragraphes sans espace entre eux ----*/
+
+.paragraphes-colles-encadre {border: 1px dotted gray;}
+.paragraphes-colles-encadre p {margin: 0; padding: 0 15px;}
+.paragraphes-colles-encadre p:first-child {margin-top: 8px;}
+.paragraphes-colles-encadre p:last-child {margin-bottom: 8px;}
+.paragraphes-colles-encadre ul {margin: 0; padding: 0 15px;}
+.paragraphes-colles-encadre li {margin: 0; padding: 0 0 0 10px; background: url(images/puce_liste.gif) 0 0.2em no-repeat;}
+.paragraphes-colles-encadre li:last-child {margin-bottom: 8px;}
+
+	/*---- Texte de présentation avec plusieurs paragraphes sans espace entre eux ----*/
+
+.paragraphes-colles {}
+.paragraphes-colles p {margin: 0;}
+.paragraphes-colles p:first-child {margin-top: 8px;}
+.paragraphes-colles p:last-child {margin-bottom: 8px;}
+.paragraphes-colles ul {margin: 0; padding: 0 15px;}
+.paragraphes-colles li {margin: 0; padding: 0 0 0 10px; background: url(images/puce_liste.gif) 0 0.2em no-repeat;}
+.paragraphes-colles li:last-child {margin-bottom: 8px;}
+
+body.themes #contenu form {margin: 15px 0;}
+
+	/*---- Ajout d'un picto dans les titres des blocs situés dans #col-droite ----*/
+
+body.insee-statistique-publique #col-droite div.bloc h3, 
+body.methodes #col-droite div.bloc h3, 
+body.portails-par-public #col-droite div.bloc h3
+	{
+	color: #3c5c7c;
+	border-bottom: 2px solid #3c5c7c;
+	background: url(images/picto_soustitre_bleu.gif) white 0.1em 0.35em no-repeat;
+	padding: 0 0 0 15px;
+	}
+
+body.themes #col-droite div.bloc h3, 
+body.bases-de-donnees #col-droite div.bloc h3, 
+body.publications-et-services #col-droite div.bloc h3, 
+body.regions #col-droite div.bloc h3
+	{
+	color: #91002c;
+	border-bottom: 2px solid #91002c;
+	background: url(images/picto_soustitre_rouge.gif) white 0.1em 0.35em no-repeat;
+	padding: 0 0 0 15px;
+	}
+
+body.divers #col-droite div.bloc h3
+	{
+	color: #6A685B;
+	border-bottom: 2px solid #6A685B;
+	background: url(images/picto_soustitre_gris.gif) white 0.1em 0.35em no-repeat;
+	padding: 0 0 0 15px;
+	}
+
+body.insee-statistique-publique #col-droite div.bloc h3.titrelogo, 
+body.methodes #col-droite div.bloc h3.titrelogo, 
+body.portails-par-public #col-droite div.bloc h3.titrelogo
+	{
+	background: #fff;
+	color: #3c5c7c;
+	border-bottom: 2px solid #3c5c7c;
+	padding: 0;
+	margin: 0;
+	}
+
+body.themes #col-droite div.bloc h3.titrelogo, 
+body.bases-de-donnees #col-droite div.bloc h3.titrelogo, 
+body.publications-et-services #col-droite div.bloc h3.titrelogo, 
+body.regions #col-droite div.bloc h3.titrelogo
+	{
+	background: #fff;
+	color: #91002c;
+	border-bottom: 2px solid #91002c;
+	padding: 0;
+	margin: 0;
+	}
+
+	/*---- Titres de col-droite ----*/
+
+#col-droite h3 {font-style: normal;}
+#col-droite h4 {margin-left: 0.5em; font-size: 1.1em; margin-bottom: 5px; padding-bottom: 5px;}
+#col-droite h5 {margin-left: 0.5em; font-size: 1em; margin-bottom: 0; margin-top: 0; padding-top: 0;}
+
+img.imgaccroche {float: left;}
+
+	/*---- Bloc picto cf. besoin d'aide ou première visite ----*/
+
+.picto img, .picto p {display: inline; vertical-align: middle;}
+.picto img {margin: 5px 1px 5px 8px;}
+
+	/*---- Style par défaut des listes ----*/
+
+ul {margin: 0; padding: 5px 10px 0 0;}
+li {margin: 0 0 10px 0; padding: 0 0 0 15px;}
+ul li {background: url(images/puce_liste.gif) 0 0.05em no-repeat; list-style: none;}
+ul li ul {margin-top:10px;padding-top:0px;}/*modif 24/09/2009*/
+
+	/*---- Liste de liens ----*/
+
+ul.liens li {background: url(images/puce_lien.gif) 0 0.3em no-repeat;}
+
+	/*---- liste de liens à gauche ou à droite, dans les div bloc ----*/
+
+li li,ul.liens li li{background:url(images/puce_niveau3.gif) no-repeat 0 0.2em;}
+
+	/*---- Style par défaut des sous-listes (de liens ou pas) ----*/
+
+li li, ul.liens li li {background: url(images/puce_niveau3.gif) no-repeat 0 0.4em;}
+
+	/*---- Liens vers les graphiques, cartes et tableaux ----*/
+.lien-voiraussi {font-size: 0.8em;}
+
+	/*---- Liste de tableaux par année - Comptes nationaux - Finances publiques ----*/
+.tableaux-par-annee {padding: 0 0 10px 20px !important;}
+.tableaux-par-annee li {display: inline; background: none; padding: 0;}
+
+/*---- STYLES POUR LES TABLEAUX ----*/
+
+table
+	{
+	font-size: 0.9em;
+	margin: 0;
+	margin-top: 8px;
+	margin-bottom: 8px;
+	border-collapse: collapse;
+	}
+
+caption {margin-top: 20px; font-weight: bold; font-size: 110%}
+td, th {padding: 4px 4px 4px 7px; vertical-align: top;}
+td, th.etendue-ligne {border-right: 1px solid Gray; border-left: 1px solid Gray; border-top: 1px solid #BBBBBB; border-bottom: 1px solid #BBBBBB; }
+tr:first-child td, tr:first-child th {border-top: 1px solid Gray;}
+tr:last-child td, tr:last-child th {border-bottom: 1px solid Gray;}
+tr:hover td {background-color: #E0E0E0;}
+th {border: 1px solid Gray;text-align: center; }
+body.insee-statistique-publique th, 
+body.methodes th, 
+body.portails-par-public th
+	{
+		background-color: #deebf7;
+	}
+body.themes th, 
+body.bases-de-donnees th, 
+body.publications-et-services th, 
+body.regions th
+	{
+		background-color: #f7eff7;
+	}
+
+
+th.etendue-colonne {}
+th.etendue-ligne {text-align: left; font-weight: normal;}
+th.ventilation, td.ventilation {padding-left: 13px; font-style: italic}
+th.ventilation2, td.ventilation2 {padding-left: 26px; font-style: italic} /*deuxième niveau de ventilation*/
+.tab-date {text-align: center; white-space: nowrap;}
+.tab-chiffre {text-align: right; white-space: nowrap;}
+.tab-texte {text-align: left; white-space: normal;}
+
+
+	/*pour champs, sources et notes*/
+/*.tab-precision {font-size: 0.8em;}*/
+
+	/*lignes, cellules de totaux ou sous totaux*/
+tr.tab-total, 
+td.tab-total, 
+th.tab-total, 
+tr.tab-region, 
+td.tab-region, 
+th.tab-region, 
+tr.tab-intertitre, 
+th.tab-intertitre,
+td.tab-intertitre
+	{font-weight: bold; color: #3A3C3B;}
+
+table.tabcadrage, table.tabsynthese {}
+
+.note, .champ, .source {text-align: left; border-right: none;}
+.titre-indicatif {text-align:left;font-weight:bold;border-right:none;}
+.unite {text-align: right; font-style: italic;}
+td.source, td.note, td.champ, td.unite, td.titre-indicatif {border: none!important;}
+tr:hover td.source, tr:hover td.note, tr:hover td.champ, tr:hover td.unite, tr:hover td.titre-indicatif {background-color: transparent;}
+
+.source {font-style: italic;}
+.provisoire, .prevision {background-color: #ADD8E6;}
+.superieure {background-color: #f7eff7;}
+.inferieure {background-color: #deebf7;}
+p.prevision {max-width: 10em;}
+.graphique {margin: 0; padding-top: 8px; padding-bottom: 8px;}
+
+.pour-en-savoir-plus {text-align: right; padding: 1em;}
+.pour-en-savoir-plus a {background: url(images/puce_lien.gif) 0 0.3em no-repeat; padding: 0 0 0 15px;}
+sup {vertical-align: top; font-size: 0.8em;line-height:7px;}
+sub {font-size: 0.8em;line-height:7px;}
+
+/*---- TRAITEMENT DES LIENS TRANSVERSAUX ----------*/
+
+.lienstransversaux {text-align: center; font-size: 120%;}
+.lienstransversaux ul, .lienstranversaux ol {list-style: none; padding: 0;}
+.lienstransversaux ul li
+	{
+	display: inline;
+	white-space: nowrap;
+	background: none;
+	line-height: 1.2em;
+	padding: 0 0 0 5px;
+	margin: 0;
+	border-left: 1px solid black;
+	}
+.lienstransversaux li.premier {border-left: none;}
+div.feuilletage {text-align: right; margin-left: 25px;}
+div.feuilletage a.precedent {background: url(images/precedent.gif) left no-repeat; padding-left: 15px; padding-right: 5px;}
+div.feuilletage a.suivant {background: url(images/suivant.gif) right no-repeat; padding-right: 15px;}
+
+/*---- TRAITEMENT DES AFFICHAGES DES LISTES DE PUBLICATIONS ----------*/
+
+p.info {margin-left: 20px;}
+li.etudes_analyses p.info, ul#typologie li.etudes_analyses, .savoirplus li.etudes_analyses
+	{
+	background: url(/fr/img/picto_rubriqueEtude.gif) 0 0.1em no-repeat;
+	padding: 0 0 0 20px;
+	}
+li.comm_presse p.info, ul#typologie li.comm_presse {padding: 0 0 0 20px;}
+li.chiffres_cles p.info, ul#typologie li.chiffres_cles
+	{
+	background: url(/fr/img/picto_rubriqueChiffres.gif) 0 0 no-repeat;
+	padding: 0 0 0 20px;
+	}
+li.donnees_detaillees p.info, ul#typologie li.donnees_detaillees
+	{
+	background: url(/fr/img/picto_rubriqueBanque.gif) no-repeat 0 0;
+	padding: 0 0 0 20px;
+	}
+li.princ-ind p.info, ul#typologie li.princ-ind
+	{
+	background: url(/fr/img/picto_rubriqueIndice.gif) no-repeat 0 0;
+	padding: 0 0 0 20px;
+	}
+	
+li.autre-ind p.info, ul#typologie li.autre-ind
+	{
+	background: url(/fr/img/picto_rubriqueIndiceautre.gif) no-repeat 0 0;
+	padding: 0 0 0 20px;
+	}
+	
+li.salon p.info, ul#typologie li.salon
+	{
+	background: url(/fr/img/salon.gif) no-repeat 0 0;
+	padding: 0 0 0 20px;
+	}
+
+p.auteur, p.maj, tr.maj td, td.maj {font-style: italic;}
+p.soustitre, p.surtitre {font-weight: bold; color: #3a3c3b;}
+p.resume {font-style: italic; text-align: right;}
+ul#publications li {margin-top: 15px;}
+ul#publications li p {margin-top: 5px; margin-bottom: 5px;}
+ul li.maj
+	{
+	background: url(/fr/img/picto_maj.gif) no-repeat -2px;
+	padding: 0 0 0 28px;
+	}
+
+/*---- TRAITEMENT DES AFFICHAGES DES TYPES DE FICHIERS ----------*/
+
+p.xls, ul.liens li.xls, td.xls a {background: url(/fr/img/xlsicon.gif) 0 0 no-repeat; padding: 2px 0 5px 22px;}
+p.dbf, ul.liens li.dbf, td.dbf a {background: url(/fr/img/dbficon.gif) 0 0 no-repeat; padding: 2px 0 5px 22px;}
+p.pdf, ul.liens li.pdf, td.pdf a {background: url(/fr/img/pdficon.gif) 0 0 no-repeat; padding: 2px 0 5px 22px;}
+p.txt, ul.liens li.txt, td.txt a {background: url(/fr/img/txticon.gif) 0 0 no-repeat; padding: 2px 0 5px 22px;}
+p.zip, ul.liens li.zip, td.zip a {background: url(/fr/img/zipicon.gif) 0 0 no-repeat; padding: 2px 0 5px 22px;}
+p.mp3, ul.liens li.mp3, td.mp3 a {background: url(/fr/img/mp3icon.gif) 0 0 no-repeat; padding: 2px 0 5px 22px;}
+
+/*---- STYLES POUR LES COMMUNIQUES ET DOSSIERS DE PRESSE ----------*/
+
+li.comm_presse {background: url(/fr/img/pdficon.gif) 0 0 no-repeat !important; padding: 0 0 0 25px !important;}
+
+/*---- STYLES POUR LES ACTUALITES ----------*/
+
+.rss img {vertical-align: middle !important;}
+
+/*---- STYLES POUR LE CALENDRIER DES CONCOURS ----------*/
+
+div.concours {border: 1px solid #dadada; margin: 0 0 10px 20px; padding: 0 0 5px 0;}
+div.concours h4 {margin: 10px 0 5px 5px; padding: 0;}
+div.concours ul {margin: 0 0 0 7px;}
+div.concours ul li {margin: 0 0 5px 0; padding: 0 0 0 10px;}
+div.concours p {margin: 0 0 2px 10px;}
+
+
+
+/*---- STYLES POUR LE RECENSEMENT ----------*/
+
+	/*---- Table des résultats communaux ----*/
+
+table.rescom {text-align: center; margin: 0.1em; border-collapse: collapse;}
+table.rescom th {padding: 0.2em !important;}
+table.rescom td {text-align: right; padding-right: 1em !important;}
+table.rescom td.c {text-align: center !important; padding-right: 0 !important;}
+table.rescom td.g {text-align: left !important; padding-right: 1em !important; padding-bottom: 0 !important;}
+table.rescom td.gpad {text-align: left !important; padding: 0.2em !important;}
+.rescom td {border-bottom: 1px solid black;}
+.rescom tr th, .rescom tr td {border-left: none; border-right: none;}
+.rescom {width: 95%; border: none;}
+.sig1 {margin: 10px 0px 10px 0px;}
+.sig {margin: 5px 100px 5px 10px;}
+.rp0 {background-color: silver;}
+.rp1 {background-color: #ffe4e1;}
+.rp2 {background-color: #e0ffff;}
+.rp3 {background-color: #e6f8b6;}
+.rp4 {background-color: #fff0bd;}
+.rp5 {background-color: #f9ddc7;}
+.mel {font-size: 85% !important; color: gray;}
+.avert {border-top: dashed 1px #000; padding: 5px !important;}
+#bloclegende1 {float: left; width: 54%; margin-bottom: 15px;}
+#bloclegende2 {float: left; width: 45%; margin-bottom: 15px;}
+.legenderp img {margin: 5px; width: 180px;}
+.sourcerp, .listelettres {font-size: 0.8em;}
+.sourcerp img {vertical-align: middle;}
+
+/*---- STYLES POUR LES FORMULAIRES ----------*/
+
+#formulaire {width: 99%;}
+#chiffres {padding-top: 20px;}
+#formulaire .cadrechiffres {display: block !important;}
+#formulaire .paravalide {float: left; margin: 5px 0; padding: 0;}
+#formulaire legend {color: #000;}
+#formulaire fieldset {border: 1px solid gray; padding: 0 15px 15px 15px;}
+#cap {color: blue; text-align: left; margin-bottom: 10px;}
+#Password {display: none;}
+#formulaire .boutonsradios label
+	{
+	display: block;
+	float: left;
+	width: 200px;
+	clear: left;
+	}
+#formulaire .boutonsradios {margin-top: 5px; clear: both;}
+#formulaire .boutonsradios input {float: left; margin: 0; margin-bottom: 4px;}
+#formulaire .caseacocher label {display: block; float: left; width: 400px; clear: left;}
+#formulaire .caseacocher {margin-top: 5px; clear: both; margin-bottom: 50px;}
+#formulaire .caseacocher input {float: left; margin: 0; margin-bottom: 4px;}
+#formulaire .caseacocher label.bouton {width: auto; padding-right: 3px; clear: both;}
+#formulaire .caseacocher .formattxt {float: left; clear: left;}
+#formulaire .caseacocher .formattxt label {width: 50px;}
+#formulaire .caseacocher .formathtml {float: left; margin-bottom: 20px;}
+#formulaire .caseacocher .formathtml label {width: 50px; margin-left: 5px;}
+#formulaire .caseacocher .formathtml input {}
+
+/* Pour les boites de filtres de la rubrique "themes"*/
+form.filtre {padding: 0 0 3em 0 ;}
+div.filtre_champ {float:left;	margin:0 5px 0 0 ;padding:0;}
+div.filtre_champ label{margin:0;padding:0;font-weight:bold;color: #3a3c3b;display:block;}
+div.filtre_champ select {margin:0.2em 0 0 0;padding:0;}
+form.filtre input.boutonok {float:left;margin:1.1em 0 0 0;}	
+
+/*Modification du curseur sur les boutons*/
+input.boutonok, button {cursor:pointer;}	
+
+/*---- STYLES POUR LES AGENDAS ----------*/
+
+#hautagenda {width: 688px; float: left; margin-top: 10px; padding: 5px; border: 1px dotted gray;}
+#hautagenda form {float: left; margin: 15px 0 0 5px; padding: 0;}
+#hautagenda ul {font-size: 8pt; float: right; margin: 0; padding-top: 5px;}
+#hautagenda ul li {line-height: 8px;}
+#hautagenda ul li a {font-weight: normal;}
+#hautagenda .nopuce {background-image: none;}
+#hautagenda .margeplus {margin-left: 15px;}
+#basagenda {float: left;}
+#basagenda table {width: 700px;}
+
+/*---- STYLES POUR LE PLAN ----------*/
+
+ul.plan {margin: 0; padding: 0 10px 0 0;}
+ul.plan li {background: url(/fr/css/images/puce_niveau3.gif) no-repeat 0 0.2em; margin: 0 0 5px 0; padding: 0 0 0 15px;}
+ul.plan li a {font-weight: normal;}
+
+/*---- STYLES POUR LES BLOCS DE GRAPHIQUES ----------*/
+
+div.blocgraphique {margin-top: 15px;}
+div.blocgraphique .graphique {float: left; padding: 0; margin: 0 10px 0 0;}
+div.blocgraphique .commentaire {}
+#col-centre div.blocgraphique p {clear: none;}
+div.blocgraphique p.titre-graph {margin-top: 20px;}
+.titre-graph {font-size: 1em; font-weight: bold;}
+
+/*---- STYLES POUR LES ENCADRES ----------*/
+
+div.encadre
+	{
+	border: dotted 1px gray;
+	padding: 0px 10px 5px 10px;
+	margin-bottom: 10px;
+	}
+
+h3.encadre
+	{
+	margin-top: 0px;
+	margin-bottom: 0px;
+	background-image: none !important;
+	}
+
+/*---- DEFINITIONS ----------*/
+
+dt {font-weight: bold; padding-top: 5px; padding-bottom: 5px}
+
+
+/*---- LISTES ORDONNEES ----------*/
+/*
+ Espacement vertical doit être identique à celui des listes non-ordonnées.
+*/
+ol {
+	margin: 0 0 0 35px ;
+	padding: 5px 0 0 0 ;
+	list-style-position: inside;
+	}
+ol li 
+	{
+	margin-left: -25px; margin-right: 0px ;
+	padding-left:15px; padding-right:10px ;
+	list-style-type: decimal;
+	text-indent: -25px;
+	}
+ol li p 
+	{
+	margin-right: 0 ;
+	text-indent: 0;
+	}
+ol li ol li, ul li ol li, ul.liens li ol li 
+	{
+	margin-left: -25px; margin-right: 0px ;
+	padding-left:15px; padding-right:0 ; 
+	background: none;
+	list-style-position: inside;
+	}
+ol li ul li 
+	{ 
+	margin-left: -5px; margin-right:0; 
+	padding-left:40px; padding-right:0 ; 
+	background: url(images/puce_niveau3.gif) no-repeat left 0.4em ;
+	list-style-type: none ;
+	list-style-position: outside ;
+	}
+li li ol , li li ul 
+	{ 
+	margin-left: 0 ; margin-right: 0 ;
+	padding-left:0 ; padding-right:10px;
+	}
+ol li li li, li ol li li, li li ol li 
+	{ 
+	margin-left: 0 !important; margin-right:0;
+	padding-left: 15px !important; padding-right:0 ;
+	background: url(images/puce_niveau3.gif) no-repeat left 0.4em !important;
+	list-style-type: none !important;
+	text-indent: 0 !important;
+	list-style-position: outside !important;
+}
+/* QUESTIONS/RÉPONSES ORDONNÉES */
+ol.questions , ol.reponses
+	{
+	margin-left:60px; margin-right:0; 
+	}
+
+ol.questions li, ol.reponses li
+	{
+	padding-left:0; padding-right:0;
+	list-style-position: outside;
+	text-indent: 0;
+	}
+
+ol.reponses
+	{
+	padding-top:2em;
+	font-weight: bold;
+	}
+
+ol.reponses p, ol.reponses ul
+	{
+	font-weight: normal;
+	}
+
+ol.reponses ul
+	{
+	margin-left:10px !important; margin-right: 0 !important;
+	}
+
+ol.reponses ul li
+	{
+	padding-left:15px !important; padding-right: 0 !important;
+	} 
+
+	
+/* VISUELS POUR IAM */
+
+.iam {height: 160px;}
+		 
+.visuel_centre
+	{
+	float: left;
+	margin: 0em 2em 0 1.2em;
+	border: solid 1px gray;
+	width: 105px;
+	height: 140px;
+	}
+
+.visuel_droit {float: left; margin: 0.5em 0.5em 0 0; border: solid 1px gray;}
+
+.itw {width: 695px;}
+
+/* Visuels, image à droite ou à gauche d'un paragraphe */
+
+.texte-plus-visuel {display: inline-block;}
+.texte-plus-visuel img {margin: 0; padding: 0;}
+.texte-plus-visuel p {margin: 0; padding: 0;}
+.image-droite {float: right;}
+.image-gauche {float: left;}
+.texte-gauche, .texte-droite {overflow: hidden;}
+.texte-gauche {padding-right: 10px;}
+.texte-droite {padding-left: 10px; width: 79%;}
+
+/* INFOBULLES */
+
+abbr, .infobulle {cursor: help; border-bottom: 1px dashed black;}
+
+body.insee-statistique-publique .infobulle,
+body.methodes .infobulle,
+body.portails-par-public .infobulle
+	{color: #395A7B;}
+
+body.themes .infobulle,
+body.bases-de-donnees .infobulle,
+body.publications-et-services .infobulle,
+body.regions .infobulle
+	{color: #93002A;}
+	
+	/*--- Les nouveautés sur insee.fr ---*/
+.nouveaute {border: 1px dotted gray; padding: 5px 15px; margin: 0 0 10px;}
+	/* pour le moment, comme les textes de presentation */
+	
+		/*---- Ajout d'un picto dans les titres des blocs situés dans #col-droite ----*/
+
+/* styles pour pages d'aide */
+/* reproduction des styles de la colonne droite, en colonne centre */
+/* à utiliser exclusivement pour les pages d'aide */
+
+div.bloc.rub-bleue h3
+	{
+	color: #3c5c7c;
+	border-bottom: 2px solid #3c5c7c;
+	background: url(images/picto_soustitre_bleu.gif) white 0.1em 0.35em no-repeat;
+	padding: 0 0 0 15px;
+	}
+
+div.bloc.rub-rouge h3
+	{
+	color: #91002c;
+	border-bottom: 2px solid #91002c;
+	background: url(images/picto_soustitre_rouge.gif) white 0.1em 0.35em no-repeat;
+	padding: 0 0 0 15px;
+	}
+
+div.bloc.rub-divers h3
+	{
+	color: #6A685B;
+	border-bottom: 2px solid #6A685B;
+	background: url(images/picto_soustitre_gris.gif) white 0.1em 0.35em no-repeat;
+	padding: 0 0 0 15px;
+	}
+
+div.bloc.rub-bleue, div.bloc.rub-rouge, div.bloc.rub-divers {
+	width:212px;
+	float:none;
+}
+/*Quiz*/
+div.question ul.reponses li
+{
+	list-style:none;
+	background-image: none;
+}
+
+/* --- FC - Ajouts --- */
+
+h1.titre-class  {
+    font-size: 3em;
+    margin-top: 1.5em;
+    margin-bottom: 2em;
+}
+
+h1.item  {
+    font-size: 2em;
+    margin-top: 1.6em;
+    margin-bottom: 2em;
+}
+
+div.note-generale {
+    border-top: 1px solid #0033FF;
+    border-bottom: 1px solid #0033FF;
+    padding:    1em;
+    margin-top: 1em;
+    margin-left: 1em;
+    margin-right: 1em;
+}
+
+div.note-generale::before {
+    content:    "Notes";
+    display:    block;
+    width:      150px;
+    background: #0033FF;
+    color:  #fff;
+    font-family:    initial;
+    padding:    3px;
+    font-weight:    bold;
+    margin: -1em 0 1em -1em;
+}
+
+div.contenu-central {
+    border-top: 1px solid #413E35;
+    border-bottom: 1px solid #413E35;
+    padding:    1em;
+    margin-top: 1em;
+    margin-left: 1em;
+    margin-right: 1em;
+}
+
+div.contenu-central::before {
+    content:    "Comprend";
+    display:    block;
+    width:      150px;
+    background: #413E35;
+    color:  #fff;
+    font-family:    initial;
+    padding:    3px;
+    font-weight:    bold;
+    margin: -1em 0 1em -1em;
+}
+
+div.contenu-limite {
+    border-top: 1px solid #00CC66;
+    border-bottom: 1px solid #00CC66;
+    padding:    1em;
+    margin-top: 1em;
+    margin-left: 1em;
+    margin-right: 1em;
+}
+
+div.contenu-limite::before {
+    content:    "Comprend aussi";
+    display:    block;
+    width:      150px;
+    background: #00CC66;
+    color:  #fff;
+    font-family:    initial;
+    padding:    3px;
+    font-weight:    bold;
+    margin: -1em 0 1em -1em;
+}
+
+div.exclusions {
+    border-top: 1px solid #CC3333;
+    border-bottom: 1px solid #CC3333;
+    padding:    1em;
+    margin-top: 1em;
+    margin-left: 1em;
+    margin-right: 1em;
+}
+
+div.exclusions::before {
+    content:    "Ne comprend pas";
+    display:    block;
+    width:      150px;
+    background: #CC3333;
+    color:  #fff;
+    font-family:    initial;
+    padding:    3px;
+    font-weight:    bold;
+    margin: -1em 0 1em -1em;
+}
+
+div.remarques {
+    border-top: 1px solid #00FFFF;
+    border-bottom: 1px solid #00FFFF;
+    padding:    1em;
+    margin-top: 1em;
+    margin-left: 1em;
+    margin-right: 1em;
+}
+
+div.remarques::before {
+    content:    "Remarques";
+    display:    block;
+    width:      150px;
+    background: #00FFFF;
+    color:  #fff;
+    font-family:    initial;
+    padding:    3px;
+    font-weight:    bold;
+    margin: -1em 0 1em -1em;
+}
+
+div.sous-items {
+    background: #FFFF99;
+    padding:    1em;
+    margin-top: 2em;
+    margin-left: 1em;
+    margin-right: 1em;
+}
+
+p.nom-enfants {
+    font-family:    arial;
+    font-size: 1.8em;
+}
+
+div#lang-panel {margin: 0; padding: 0; height: auto; float:right;}
+div#lang-panel ul {margin: 0px 10px 5px 5px; height: auto;}
+div#lang-panel ul li {display: inline; list-style-type: none; background-image: none;}

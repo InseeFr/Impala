@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+		<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+        <title>NAF 2008 - consultation</title>
+        <link href="../commun.css" rel="stylesheet" type="text/css"/>
+		<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+		<script>
+			var endpointURL = "http://rdf.insee.fr/sparql";
+
+			$(document).ready(function() {
+
+				var query = 'PREFIX skos:<http://www.w3.org/2004/02/skos/core#> ';
+				query += 'SELECT ?code ?label WHERE {GRAPH <http://rdf.insee.fr/graphes/codes/nafr2> { ?uri skos:prefLabel ?label ; skos:notation ?code . '
+				query += '<http://id.insee.fr/codes/nafr2/sections> skos:member ?uri .  FILTER langMatches (lang(?label), "fr")} . } ORDER BY ?code';
+				var queryURL = endpointURL + "?query=" + encodeURIComponent(query);
+
+				$.getJSON(queryURL).success(function(data) {
+
+					var innerHTML = '<p class="nom-enfants">Sections</p><ul class="enfants">';
+					for (var index = 0; index < data.results.bindings.length; index++) {
+						var childCode = data.results.bindings[index].code.value;
+						innerHTML += '<li><p><a href="display-item.htm?code=' + childCode + '">' + childCode + ' - ' + data.results.bindings[index].label.value + '</a></p></li>';
+					}
+					innerHTML += '</ul>';
+					$('#sous-items').html(innerHTML);
+				});
+			});
+
+		</script>
+	</head>
+	<body>
+		<h1 class="titre-class">Nomenclature d'activités française - NAF rév. 2, 2008</h1>
+		<div class="note-generale">
+			<p>La nomenclature d'activités française révision 2 (NAF rév. 2, 2008) est la nomenclature statistique nationale d'activités qui s'est substituée depuis le 1er janvier 2008 à la NAF rév. 1 datant de 2003.</p>
+		</div>
+		<div id="sous-items" class="sous-items"></div>
+	</body>
+</html>

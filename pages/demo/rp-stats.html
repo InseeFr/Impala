@@ -1,0 +1,28 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<meta content="text/html; charset=UTF-8" http-equiv="content-type">
+		<title>Résultats statistiques du recencement de la population en RDF</title>
+		<link rel="stylesheet" href="http://rdf.insee.fr/common/rdfinsee.css" type="text/css">
+	</head>
+	<body>
+		<a href="http://rdf.insee.fr/index.html" title="Page d'accueil du site RDF Insee" id="logo"><img src="http://rdf.insee.fr/common/rdfinsee.png" alt="Logo RDF Insee"/></a>
+
+		<h1>Résultats statistiques du recencement de la population en RDF</h1>
+
+		<h2>Introduction</h2>
+		<p>L'Insee publie en RDF une sélection de résultats statistiques 2010 du recencement de la population : les estimations de population ventilées par commune (ou arrondissement municipal), age, sexe et type d'activité. Ces données correspondent au tableau détaillé "POP5", disponible aussi dans d'autres formats sur le site web principal de l'Insee (voir <a href="http://www.insee.fr/fr/themes/detail.asp?reg_id=99&ref_id=td-population-10">cette page</a>, qui renvoie également sur la documentation détaillée associée aux données).</p>
+
+		<h2>Modélisation des données</h2>
+		<p>Les données sont structurées conformément au vocabulaire <a href="http://www.w3.org/TR/vocab-data-cube/">Data Cube</a>, qui s'appuie sur le standard de diffusion de données statistiques <a href="http://sdmx.org/">SDMX</a>. Conformément à ce standard, la structure des données est définie par une DSD (Data Structure Definition) qui décrit en particulier les dimensions du cube de données, le concept mesuré ainsi que divers attributs (unité de mesure, statut de l'observation, informations additionnelles, etc.).</p>
+		<p>Dans le cas présent, deux cubes de données sont définis. Le principal correspond au croisement entre commmune (référence au 1er janvier 2012), sexe, tranche d'âge et type d'activité. Pour le second cube, une dimension "arrondissement municipal" est substituée à la dimension "commune". Dans les deux cas, la mesure correspond à la population de 15 ans ou plus estimée au 1er janvier 2010.</p>
+		<p>Les listes de codes correspondant aux différents critères de répartition des observations sont exprimées sous la forme de structures de concepts <a href="http://www.w3.org/2004/02/skos/">SKOS</a>.</p>
+
+		<h2>Accès aux données</h2>
+		<p>L'ensemble des données peut être téléchargé sous forme d'un <a href="pop5-2010-ds.ttl.7z">fichier 7z</a> (28 Mo) contenant deux fichiers au format Turtle : un pour le jeu de données sur les communes (pop5-2010-com.ttl) et un pour le jeu de données sur les arrondissements municipaux (pop5-2010-arm.ttl). Un <a href="pop5-2010-dsd.ttl.7z">second fichier</a> contient la définition de la structure des données (pop5-dsd-2010.ttl) et les structures de concepts SKOS correspondant aux listes de codes pour les communes (cs-com-2012.ttl), les arrondissements municipaux (cs-arm-2012.ttl), le sexe (cs-sexe.ttl), les tranches d'âge (cs-ageq65.ttl) et le type d'activité (cs-tactr.ttl).</p>
+		<p><i>Nota bene</i> : le format 7z est un format de compression ouvert supporté par de nombreux logiciels d'archivage, et en particulier par le logiciel open source <a href="http://www.7-zip.org/">7-zip</a>.</p>
+
+		<h2>Précisions méthodologiques</h2>
+		<p></p>
+	</body>
+</html>

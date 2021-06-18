@@ -13,10 +13,13 @@
     "web-vitals": "^1.0.1"
   },
   "scripts": {
+    "copy-static": "ncp pages build && ncp temp_dist build/sparql",
+    "build-react": "PUBLIC_URL='/sparql' BUILD_PATH='./temp_dist' react-scripts build",
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "yarn build-react && yarn copy-static && npm run create-zip",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "create-zip": "cd build && bestzip build.zip *"
   },
   "eslintConfig": {
     "extends": [
@@ -35,5 +38,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "bestzip": "^2.2.0",
+    "ncp": "^2.0.0"
   }
 }

@@ -1,0 +1,26 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<meta content="text/html; charset=UTF-8" http-equiv="content-type">
+		<title>Vocabulaires RDF et politique de nommage de l'Insee</title>
+		<link rel="stylesheet" href="../common/rdfinsee.css" type="text/css">
+	</head>
+	<body>
+		<a href="http://rdf.insee.fr/index.html" title="Page d'accueil du site RDF Insee" id="logo"><img src="/common/rdfinsee.png" alt="Logo RDF Insee"/></a>
+
+		<h1>Vocabulaires RDF et politique de nommage de l'Insee</h1>
+		<h2>Vocabulaires RDF</h2>
+		<p>L'Insee a défini quelques vocabulaires RDF pour décrire ses données. C'est le cas par exemple des ontologies relatives au Code officiel géographique ou aux populations légales du Recensement de la population. L'Institut a également collaboré au développement de certains vocabulaires spécialisés, par exemple XKOS.</p>
+		<p>L'Insee utilise ausssi des vocabulaires RDF définis par ailleurs, par exemple le vocabulaire <a href="http://www.w3.org/TR/vocab-data-cube/">Data Cube</a> qui permet de décrire des données statistiques dimensionnelles (tableaux, cubes, hypercubes) selon un modèle de données inspiré du standard <a href="http://sdmx.org/">SDMX</a>.</p>
+		<p>On décrit dans les paragraphes ci-dessous les vocabulaires RDF (appelés également ontologies OWL) définis par l'Insee.</p>
+
+		<h3 id="onto-geo">Données géographiques</h3>
+		<p>L'ontologie géographique de l'Insee couvre un champ plus grand que celui des données du COG actuellement publiées.</p>
+
+		<h3 id="onto-demo">Données démographiques</h3>
+		<p>Pour le moment, les données démographiques publiées se cantonnent aux populations légales issues du Recensement de la population ; aussi l'ontologie qui modélise ces données est-elle très simple. Le concept central est celui de "population légale", qui est rattaché à un territoire par une propriété "population" et qui porte via des propriétés dédiées les chiffres correspondant aux populations municipale, comptée à part et totale, ainsi que la date de référence de ces différents chiffres.</p>
+		<p><img src="demo/ontodemo.png" title="Ontotogie démographique Insee"/></p>
+		<p>L'espace de noms dans lequel sont définies la classe <code>PopulationLegale</code> et les différentes propriétés décrites ci-dessus est <code>http://rdf.insee.fr/def/demo#</code> (NB : <code>TerritoireFrancais</code> est défini dans l'ontologie géographique).</p>
+		<p>L'ontologie démographique est accessible au format Turtle <a href="demo/insee-demo-onto.ttl">ici</a>. Elle est également référencée sur le site <a href="http://lov.okfn.org/">Linked Open Vocabularies</a> (voir <a href="http://lov.okfn.org/dataset/lov/details/vocabulary_igeo.html">cette page</a>).</p>
+	</body>
+</html>

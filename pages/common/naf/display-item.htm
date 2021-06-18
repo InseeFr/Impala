@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+        <title>NAF 2008 - consulation</title>
+        <link href="../commun.css" rel="stylesheet" type="text/css"/>
+		<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+		<script>
+
+			var endpointURL = "http://rdf.insee.fr/sparql";
+			var regex = new RegExp('http://id.insee.fr/codes/nafr2/[a-zC]+/', "g");
+			var replacement = 'display-item.htm?code=';
+			var itemTypes = ['', 'Section', 'Division', '', 'Groupe', 'Classe', 'Sous-classe'];
+			var parentLength = [0, 0, 1, 0, 2, 4, 5];
+			var sections = "ABCDEFGHIJKLMNOPQRSTU";
+			var sectionBounds = [1, 5, 10, 35, 36, 41, 45, 49, 55, 58, 64, 68, 69, 77, 84, 85, 86, 90, 94, 97, 99];
+
+			$(document).ready(function() {
+				var code = getURLParameter('code');
+				// TODO Add parameter control
+				$('#fil-ariane').html('<ul>' + breadcrumbs(code, false) + '</ul>');
+				getLabel(code);
+			});
+
+			function getLabel(code) {
+				var query = "PREFIX skos:<http://www.w3.org/2004/02/skos/core#> ";
+				query += "SELECT ?uri ?label WHERE {GRAPH <http://rdf.insee.fr/graphes/codes/nafr2> { ?uri skos:prefLabel ?label ; skos:notation '"
+				query += code + "'. FILTER langMatches (lang(?label), 'fr')} . }";
+				var queryURL = endpointURL + "?query=" + encodeURIComponent(query);
+
+				$.getJSON(queryURL).success(function(data) {
+					var itemURI = data.results.bindings[0].uri.value;
+					$('#label').html(code + " - " + data.results.bindings[0].label.value);
+					getDescription(itemURI);
+					var childTypeIndex = (code.length == 2 ? 4 : code.length + 1);
+					getChildren(itemURI, itemTypes[childTypeIndex]);
+				})
+			}
+
+			function getDescription(itemURI) {
+
+				var query = "PREFIX skos:<http://www.w3.org/2004/02/skos/core#> DESCRIBE <" + itemURI + ">";
+				var queryURL = endpointURL + "?query=" + encodeURIComponent(query);
+
+				$.getJSON(queryURL).success(function(data) {
+					for (var index = 0; index < data.results.bindings.length; index++) {
+						var bindingObject = data.results.bindings[index];
+						if (bindingObject.predicate.value === "http://www.w3.org/2004/02/skos/core#scopeNote") getNote(bindingObject.object.value, "note-generale"); // Note générale
+						else if (bindingObject.predicate.value === "http://rdf-vocabulary.ddialliance.org/xkos#coreContentNote") getNote(bindingObject.object.value, "contenu-central"); // Contenu central
+						else if (bindingObject.predicate.value === "http://rdf-vocabulary.ddialliance.org/xkos#additionalContentNote") getNote(bindingObject.object.value, "contenu-limite"); // Contenu central
+						else if (bindingObject.predicate.value === "http://rdf-vocabulary.ddialliance.org/xkos#exclusionNote") getNote(bindingObject.object.value, "exclusions"); // Exclusions
+						else if (bindingObject.predicate.value === "http://www.w3.org/2004/02/skos/core#note") getNote(bindingObject.object.value, "remarques"); // Remarque
+					}
+				})
+			}
+
+			function getChildren(itemURI, childType) {
+
+				var query = "PREFIX skos:<http://www.w3.org/2004/02/skos/core#> SELECT ?code ?label WHERE { <" + itemURI + ">  skos:narrower ?child . ";
+				query += "?child skos:notation ?code ; skos:prefLabel ?label . FILTER langMatches (lang(?label), 'fr') } ORDER BY ?code"
+				var queryURL = endpointURL + "?query=" + encodeURIComponent(query);
+
+				$.getJSON(queryURL).success(function(data) {
+					if (data.results.bindings.length > 0) {
+						var innerHTML = '<p class="nom-enfants">' + childType + (data.results.bindings.length > 1 ? 's' : '') + '</p><ul class="enfants">';
+						for (var index = 0; index < data.results.bindings.length; index++) {
+							var childCode = data.results.bindings[index].code.value;
+							innerHTML += '<li><p><a href="display-item.htm?code=' + childCode + '">' + childCode + ' - ' + data.results.bindings[index].label.value + '</a></p></li>';
+						}
+						innerHTML += '</ul>';
+						$('#sous-items').html(innerHTML);
+						$('#sous-items').addClass("sous-items");
+					}
+				})
+			}
+
+			function getURLParameter(name) {
+    			return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20'))||null;
+			}
+
+			function getNote(uri, tag) {
+				
+				var query = 'SELECT ?text WHERE { <' + uri + '> <http://eurovoc.europa.eu/schema#noteLiteral> ?text }'
+				var queryURL = endpointURL + "?query=" + encodeURIComponent(query);
+
+				$.getJSON(queryURL).success(function(data) {
+					var noteText = data.results.bindings[0].text.value.replace(regex, replacement);
+					$('#' + tag).append(noteText);
+					$('#' + tag).addClass(tag);
+				})
+			}
+
+			function breadcrumbs(code, finalLink) {
+
+				var name = itemTypes[code.length] + ' ' + code;
+				var html;
+
+				if (code.length == 1) html = '<li><a href="naf.htm" title="Accueil">NAF</a></li>&nbsp;' +  (finalLink ? ('<li><a href="display-item.htm?code=' + code +'" title="' + name + '">' + name + '</a></li>') : ('<li>' + name + '</li>'));
+				else html = breadcrumbs(getParentCode(code), true) + '&nbsp;' + (finalLink ? ('<li><a href="display-item.htm?code=' + code +'" title="' + name + '">' + name + '</a></li>') : ('<li>' + name + '</li>'));
+				return html;
+			}
+
+			function getParentCode(code) {
+
+				if (code.length > 3) return code.substr(0, parentLength[code.length]);
+				if (code.length = 2) {
+					var codeNum = parseFloat(code);
+					for (var index = 0; index < sectionBounds.length; index++) {
+						if (codeNum < sectionBounds[index]) return sections.substr(index - 1, 1);
+					}
+					return sections.substr(sectionBounds.length - 1, 1);
+				}
+				return null;
+			}
+
+		</script>
+	</head>
+	<body>
+		<div id="fil-ariane"></div>
+		<h1 id="label" class="item"></h1>
+		<br/>
+		<div id="notes">
+			<div id="note-generale"></div>
+			<div id="contenu-central"></div>
+			<div id="contenu-limite"></div>
+			<div id="exclusions"></div>
+			<div id="remarques"></div>
+		</div>
+		<div id="sous-items"></div>
+	</body>
+</html>

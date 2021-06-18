@@ -1,0 +1,122 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+
+  <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+  <title>Note technique sur les URI</title>
+
+
+  <link rel="stylesheet" href="rdfinsee.css" type="text/css">
+
+</head>
+
+
+<body>
+
+<h1>Note technique sur les URI d&eacute;finies dans l'espace
+de noms http://rdf.insee.fr/geo/</h1>
+
+<p>Deux types d'URI (Uniform Resource Identifier) sont
+d&eacute;finies dans cet espace de noms.</p>
+
+<ul>
+
+  <li>Des URI de type "URL" permettant d'acc&eacute;der
+&agrave; des
+"ressources physiques", par exemple :</li>
+
+</ul>
+
+<p style="margin-left: 40px;">- La pr&eacute;sente
+page HTML :&nbsp;&nbsp; &nbsp;
+&nbsp;&nbsp;http://rdf.insee.fr/geo/note-uri.html</p>
+
+<p style="margin-left: 40px;">- Le fichier RDF
+"Ontologie":&nbsp;&nbsp;&nbsp;
+http://rdf.insee.fr/geo/ontologie-geo-2006.rdf</p>
+
+<p style="margin-left: 40px;">- Le fichier RDF
+"R&eacute;gions":&nbsp;&nbsp;&nbsp; &nbsp;
+http://rdf.insee.fr/geo/regions-2003.rdf</p>
+
+<br>
+
+<ul>
+
+  <li>Des URI identifiant des "objets abstraits" de l'ontologie :</li>
+
+</ul>
+
+<p style="margin-left: 40px;">- Des classes, comme par exemple :
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp;http://rdf.insee.fr/geo/Commune</p>
+
+<p style="margin-left: 40px;">- Des propri&eacute;t&eacute;s, comme par
+exemple :&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;
+&nbsp;http://rdf.insee.fr/geo/chef-lieu</p>
+
+<p style="margin-left: 40px;">- Des instances (individus), comme par exemple : &nbsp; &nbsp;http://rdf.insee.fr/geo/DEP_05</p>
+
+<br>
+
+<p>Aucune "ressource physique" ne correspond a priori
+&agrave; ce
+deuxi&egrave;me type
+d'URI. Une pratique propos&eacute;e par une r&eacute;cente note
+du W3C [1] est que dans ce cas, une telle URI&nbsp; permette
+d'acc&eacute;der n&eacute;anmoins &agrave; une ressource
+physique, de nature d&eacute;finie par le dialogue client-serveur,
+&agrave; savoir :</p>
+
+<ul>
+
+  <li>Une description formelle
+(c'est-&agrave;-dire un fichier RDF) pour une requ&ecirc;te de
+type "HTTP GET - Accept application/rdf+xml".</li>
+
+  <li>Une description informelle
+(c'est-&agrave;-dire un fichier HTML) pour une requ&ecirc;te de
+type "HTTP GET - Accept text/html".</li>
+
+</ul>
+
+<p>
+Dans le cas pr&eacute;sent, cette pratique a
+&eacute;t&eacute; jug&eacute;e trop lourde &agrave;
+mettre en oeuvre &agrave; un niveau suffisant de d&eacute;tail,
+au moins pour les instances. Par exemple les
+&eacute;l&eacute;ments de description de l'entit&eacute;
+identifi&eacute;e par l'URI http://rdf.insee.fr/geo/DEP_05 sont
+distribu&eacute;s dans quatre fichiers diff&eacute;rents : le
+fichier des r&eacute;gions, le fichier des d&eacute;partements,
+et les deux fichiers arrondissements-05 et cantons-05. Pour que l'URI
+en question permette d'acc&eacute;der &agrave; une description
+compl&egrave;te de l'entit&eacute;, il faudrait par exemple
+qu'elle d&eacute;clenche une requ&ecirc;te sur une base de
+donn&eacute;es RDF, qui ram&egrave;nerait un fichier contenant
+tous les triplets o&ugrave; cette entit&eacute; est
+pr&eacute;sente. Une autre solution serait que tous ces fichiers
+soient pr&eacute;-publi&eacute;s, ce qui voudrait dire un
+fichier de description RDF s&eacute;par&eacute; pour chaque
+URI. Par ailleurs &agrave; chacune de ces URI devrait aussi
+correspondre une page de description HTML "&agrave; usage humain"
+pour les requ&ecirc;tes de type HTTP GET Accept text/html.</p>
+
+<p>Ces choix techniques sont envisageables &agrave; terme
+mais ne sont
+pas mis en oeuvre pour le moment par l'INSEE. Pour &eacute;viter
+les erreurs 404 li&eacute;es &agrave; l'utilisation
+&eacute;ventuelle de telles URI dans le protocole HTTP, elles sont
+toutes redirig&eacute;es vers une page qui conduit &agrave; la
+pr&eacute;sente page
+informative http://rdf.insee.fr/geo/note-uri.html.</p>
+
+<hr>
+<p>[1] Best Practice Recipes for Publishing RDF Vocabularies
+<a href="http://www.w3.org/TR/swbp-vocab-pub/">http://www.w3.org/TR/swbp-vocab-pub/</a>
+</p>
+
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<meta content="text/html; charset=UTF-8" http-equiv="content-type">
+		<title>Codes et nomenclatures de l'Insee</title>
+		<link rel="stylesheet" href="../common/rdfinsee.css" type="text/css">
+	</head>
+	<body>
+		<a href="http://rdf.insee.fr/index.html" title="Page d'accueil du site RDF Insee" id="logo"><img src="/common/rdfinsee.png" alt="Logo RDF Insee"/></a>
+
+		<h1>Codes et nomenclatures de l'Insee publiés en RDF</h1>
+		<h2>Introduction</h2>
+		<p>Les codes et nomenclatures suivants sont publiés en RDF :</p>
+		<ul>
+			<li>La nomenclature d'activités française (NAF)</li>
+			<li>La nomenclature des professions et catégories socioprofessionnelles</li>
+			<li>La nomenclature des catégories juridiques</li>
+		</ul>
+		<p>Pour plus d'information, on se reportera à la section "<a href="http://www.insee.fr/fr/information/2016815">Définitions et méthodes</a>" du site web de l'Insee.</p>
+		<h2>Vocabulaires utilisés</h2>
+		<p>Le vocabulaire standard <a href="http://www.w3.org/2004/02/skos/">SKOS</a> (Simple Knowledge Organization System) est utilisé comme base pour la publication des codes et nomenclatures.</p>
+		<p>Pour décrire correctement les nomenclatures statistiques, le vocabulaire SKOS doit être complété sous divers aspects (représentation des niveaux, des tables de correspondances, etc.) : c'est l'objet du vocabulaire <a href="http://purl.org/linked-data/xkos">XKOS</a>, qui est une extension de SKOS. La NAF et la nomenclature des catégories juridiques sont publiées selon ce vocabulaire.</p>
+
+		<h2>Données publiées</h2>
+		<h3>Nomenclature d'activités française (NAF)</h3>
+		<p>La nomenclature d'activités française révision 2 (NAF rév. 2, 2008) est la nomenclature statistique nationale d'activités qui s'est substituée depuis le 1<sup>er</sup> janvier 2008 à la NAF rév. 1 datant de 2003. La nomenclature est également accessible sur une <a href="http://www.insee.fr/fr/metadonnees/nafr2">page dédiée</a> du site web de l'Insee.</p>
+		<p>La nomenclature est ici publiée avec ses notes explicatives, ainsi qu'avec des intitulés en anglais et des intitulés de longueur contrôlée qui peuvent être utiles dans certaines utilisations.</p>
+		<p>La NAF complète au format RDF peut être téléchargée sous forme de <a href="nafr2.ttl.zip">fichier Turtle zippé</a>.</p>
+		<p>Elle est également accessible par le <a href="http://rdf.insee.fr/sparql">point d'entrée SPARQL</a>. Un des exemples prédéfinis de requêtes indique comment accéder à un poste de la NAF par son code.</p>
+
+		<h3>Nomenclature des Professions et Catégories Socioprofessionnelles (PCS)</h3>
+		<p>Cette nomenclature décrit les professions et catégories socioprofessionnelles (PCS) et sert notamment à la codification du recensement et des enquêtes que l'Insee réalise auprès des ménages. Elle est également accessible sur une <a href="href="http://www.insee.fr/fr/metadonnees/pcs2003">page dédiée</a> du site web de l'Insee.</p>
+		<p>La nomenclature des PCS complète au format RDF peut être téléchargée sous forme de <a href="pcs2003.ttl.zip">fichier Turtle zippé</a>.</p>
+		<p>Elle est également accessible par le <a href="http://rdf.insee.fr/sparql">point d'entrée SPARQL</a>. On trouvera ci-dessous un exemple de requête permettant d'obtenir l'URI d'un poste de la nomenclature connu par son code (ici "421b"). Cette exemple peut être collé dans l'éditeur de requêtes SPARQL.</p>
+		<pre class="query">
+PREFIX skos: &lt;http://www.w3.org/2004/02/skos/core#&gt;
+SELECT ?poste
+FROM &lt;http://rdf.insee.fr/graphes/codes/pcs2003&gt;
+WHERE {?poste skos:notation "421b"}</pre>
+
+		<h3>Nomenclature des catégories juridiques (CJ)</h3>
+		<p>La nomenclature des catégories juridiques est utilisée dans la gestion du répertoire SIRENE et du registre du commerce et des sociétés. Elle sert de référence aux centres de formalités des entreprises (CFE) pour recueillir les déclarations des entreprises.</p>
+		<p>La nomenclature des catégories juridiques complète peut être téléchargée sous forme de <a href="cj.ttl.zip">fichier Turtle zippé</a>.</p>
+		<p>Elle est également accessible par le <a href="http://rdf.insee.fr/sparql">point d'entrée SPARQL</a>. On trouvera ci-dessous un exemple de requête permettant d'obtenir l'URI d'un poste de la nomenclature connu par son code (ici "11"). Cet exemple peut être collé dans l'éditeur de requêtes SPARQL.</p>
+		<pre class="query">
+PREFIX skos: &lt;http://www.w3.org/2004/02/skos/core#&gt;
+SELECT ?poste
+FROM &lt;http://rdf.insee.fr/graphes/codes/cj&gt;
+WHERE {?poste skos:notation "11"}</pre>
+		<p><i>Nota bene</i> : à partir du 14 septembre 2017, les nomenclatures sont publiées dans un format légèrement modifié, notamment pour un meilleur respect du vocabulaire XKOS. Les anciens formats restent accessibles pour la <a href="nafr2-old.ttl.zip">NAF</a>, la <a href="pcs2003-old.ttl.zip">PCS</a> et la <a href="cj-old.ttl.zip">CJ</a>.</p>
+	</body>
+</html>

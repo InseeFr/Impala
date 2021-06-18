@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+        <title>EMB - consultation</title>
+        <link href="../commun.css" rel="stylesheet" type="text/css"/>
+		<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+		<script>
+			/*
+			var niveau="produits"*/
+			var endpointURL = "http://rdf.insee.fr/sparql";
+			var racine = "http://id.insee.fr/codes/";
+			var nomenclature="emb2021";
+			var regex = new RegExp(racine +nomenclature +"/[A-Z0-9]+/", "g");
+			var replacement = 'display-item.htm?code=';
+			var itemTypes = ['Activité de la NAF', 'Produit'];//Nom "propre" des différents niveaux 
+			var parentLength = [0,5];//Taille des codes parents (0 si n'existe pas)
+
+			$(document).ready(function() {
+				var codeAAffiche = getURLParameter('code');
+				var code;
+				if (codeAAffiche.length<6){
+					code = codeAAffiche.substring(0, 2) + "." + codeAAffiche.substring(2);
+				}else{ code = codeAAffiche;}
+				$('#fil-ariane').html('<ul>' + breadcrumbs(code, false) + '</ul>');
+				getLabel(code);
+			});
+
+			function getLabel(code) {
+				var query = "PREFIX skos:<http://www.w3.org/2004/02/skos/core#> ";
+				query += "SELECT ?uri ?label WHERE {";
+				//query += "GRAPH <http://rdf.insee.fr/graphes/codes/"+nomenclature+"> {";
+				query += "?uri skos:prefLabel ?label ; skos:notation '"+ code;
+				query += "'. FILTER langMatches (lang(?label), 'fr')}";
+			  //query += " . }";
+				var queryURL = endpointURL + "?query=" + encodeURIComponent(query);
+				var codeAAffiche = code.replace(".","") ;
+				$.getJSON(queryURL).success(function(data) {
+					var itemURI = data.results.bindings[0].uri.value;
+					$('#label').html(codeAAffiche + " - " + data.results.bindings[0].label.value);
+					if (code.length>6){
+							getDescription(itemURI);
+					}else{
+						var childTypeIndex = (code.length == 6 ? 1 : 0);
+						getChildren(itemURI, itemTypes[childTypeIndex]);
+					}
+
+				})
+			}
+
+			function getDescription(itemURI) {
+				var query = "PREFIX skos:<http://www.w3.org/2004/02/skos/core#> DESCRIBE <" + itemURI + ">";
+				var queryURL = endpointURL + "?query=" + encodeURIComponent(query);
+						"OK"
+				$.getJSON(queryURL).success(function(data) {
+					for (var index = 0; index < data.results.bindings.length; index++) {
+						var bindingObject = data.results.bindings[index];
+						if (bindingObject.predicate.value === "http://www.w3.org/2004/02/skos/core#definition") getNote(bindingObject.object.value, "note-generale"); // Note générale
+
+						if (bindingObject.predicate.value === "http://www.w3.org/2004/02/skos/core#scopeNote") getNote(bindingObject.object.value, "note-generale"); // Note générale
+						else if (bindingObject.predicate.value === "http://rdf-vocabulary.ddialliance.org/xkos#coreContentNote") getNote(bindingObject.object.value, "contenu-central"); // Contenu central
+						else if (bindingObject.predicate.value === "http://rdf-vocabulary.ddialliance.org/xkos#additionalContentNote") getNote(bindingObject.object.value, "contenu-limite"); // Contenu central
+						else if (bindingObject.predicate.value === "http://rdf-vocabulary.ddialliance.org/xkos#exclusionNote") getNote(bindingObject.object.value, "exclusions"); // Exclusions
+						else if (bindingObject.predicate.value === "http://www.w3.org/2004/02/skos/core#note") getNote(bindingObject.object.value, "remarques"); // Remarque
+					}
+				})
+			}
+
+			function getChildren(itemURI, childType) {
+
+				var query = "PREFIX skos:<http://www.w3.org/2004/02/skos/core#> SELECT ?code ?label WHERE { <" + itemURI + ">  skos:relatedMatch ?child . ";
+				query += "?child skos:notation ?code ; skos:prefLabel ?label . FILTER langMatches (lang(?label), 'fr') } ORDER BY ?code"
+				var queryURL = endpointURL + "?query=" + encodeURIComponent(query);
+
+				$.getJSON(queryURL).success(function(data) {
+					if (data.results.bindings.length > 0) {
+						var innerHTML = '<p class="nom-enfants">' + childType + (data.results.bindings.length > 1 ? 's' : '') + '</p><ul class="enfants">';
+						for (var index = 0; index < data.results.bindings.length; index++) {
+							var childCode = data.results.bindings[index].code.value;
+							innerHTML += '<li><p><a href="'+replacement + childCode + '">' + childCode + ' - ' + data.results.bindings[index].label.value + '</a></p></li>';
+						}
+						innerHTML += '</ul>';
+						$('#sous-items').html(innerHTML);
+						$('#sous-items').addClass("sous-items");
+					}
+				})
+			}
+
+			function getURLParameter(name) {
+    			return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20'))||null;
+			}
+
+			function getNote(uri, tag) {
+
+				var query = 'SELECT ?text WHERE { <' + uri + '> <http://eurovoc.europa.eu/schema#noteLiteral> ?text }'
+				var queryURL = endpointURL + "?query=" + encodeURIComponent(query);
+
+				$.getJSON(queryURL).success(function(data) {
+					var noteText = data.results.bindings[0].text.value.replace(regex, replacement);
+					$('#' + tag).append(noteText.replace(/\\\$/g, "<br />"));
+					$('#' + tag).addClass(tag);
+				})
+			}
+
+			function breadcrumbs(code, finalLink) {
+				var codeAAffiche ;
+				if (code && code.length > 6) {
+					niveau='Produit ';
+					codeAAffiche = code;
+				}else {
+					niveau = 'Activité ';
+					codeAAffiche = code.replace(".","") ;
+				}
+				var name = niveau+codeAAffiche;
+				//itemTypes[code.length] + ' ' + code;
+				var html;
+				var fin = (finalLink ?
+						('<li><a href="'+ replacement + codeAAffiche +'" title="' + name + '">' + name + '</a></li>')
+						: ('<li>' + name + '</li>')
+					);
+
+				if (code && code.length == 6) {
+					html = '<li><a href="emb.htm" title="Accueil">'+nomenclature.toUpperCase()+'</a></li>&nbsp;'	+  fin;
+					}
+				else if (code){
+					html =
+					 breadcrumbs(getParentCode(code), true) + '&nbsp;' 	+
+					fin;
+					}
+				return html;
+			}
+
+			/**
+			à partir du code enfant return le code parent
+			**/
+			function getParentCode(code) {
+				//TODO à réécrire pour chaque nomenclature
+				var codeParent;
+				if (code && code.length > 6) {
+					var  codeParentSansPoint = code.substr(0, parentLength[1]);
+					codeParent = codeParentSansPoint.substring(0, 2) + "." + codeParentSansPoint.substring(2);
+					return codeParent;
+				}
+				return null;
+			}
+
+
+
+		</script>
+	</head>
+	<body>
+		<div id="fil-ariane"></div>
+		<h1 id="label" class="item"></h1>
+		<br/>
+		<div id="notes">
+			<div id="note-generale"></div>
+			<div id="contenu-central"></div>
+			<div id="contenu-limite"></div>
+			<div id="exclusions"></div>
+			<div id="remarques"></div>
+		</div>
+		<div id="sous-items"></div>
+	</body>
+</html>
