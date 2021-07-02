@@ -1,10 +1,24 @@
 import './App.css';
-import { useEffect, useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 
 function App() {
-  const [queries, setQueries] = useState([])
+  const [queries, setQueries] = useState([ { label: "label"}])
+  const ref = useRef(null);
   const [yasgui, setYasgui] = useState()
+  const [counter, setCounter] = useState(0)
+  const [inserted, setInserted] = useState(false)
+
+  useLayoutEffect(() => {
+    if(counter > 100 || inserted){
+      return;
+    }
+    if(document.querySelector(".yasqe")){
+      document.querySelector(".yasqe").appendChild(ref.current)
+      setInserted(true)
+    }
+    setCounter(counter + 1)
+  }, [counter, inserted])
 
   const click = (query) => {
     fetch(query.path)
@@ -34,7 +48,7 @@ function App() {
 
   return (
     <div className="App">
-      <div className="queries-block">
+      <div className="queries-block" ref={ref}>
         {
           queries.map((query, i) => <button key={i} onClick={() => click(query)}> {query.label}  </button>)
         }
