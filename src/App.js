@@ -3,7 +3,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 
 function App() {
-  const [queries, setQueries] = useState()
+  const [queries, setQueries] = useState([])
   const ref = useRef(null);
   const [yasgui, setYasgui] = useState()
   const [counter, setCounter] = useState(0)
