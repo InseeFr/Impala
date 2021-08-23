@@ -4,13 +4,12 @@
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.11.4",
-    "@testing-library/react": "^11.1.0",
-    "@testing-library/user-event": "^12.1.10",
-    "@triply/yasgui": "^4.2.8",
+    "@testing-library/react": "12.0.0",
+    "@testing-library/user-event": "13.2.1",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-scripts": "4.0.3",
-    "web-vitals": "^1.0.1"
+    "web-vitals": "2.1.0"
   },
   "scripts": {
     "copy-static": "ncp pages build && ncp temp_dist build/sparql",
