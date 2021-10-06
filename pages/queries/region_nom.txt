@@ -1,9 +1,7 @@
-PREFIX skos:<http://www.w3.org/2004/02/skos/core#>
+PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX igeo:<http://rdf.insee.fr/def/geo#>
 
-SELECT ?concept ?libelle WHERE {
-	?concept skos:inScheme ?conceptScheme .
-	?concept skos:prefLabel ?libelle .
-	FILTER(regex(str(?conceptScheme),'/concepts/definitions/scheme'))
-	FILTER(lang(?libelle) = 'fr')
+SELECT ?region WHERE {
+    ?region rdf:type igeo:Region .
+    ?region igeo:nom "Bourgogne-Franche-Comté" .
 }
-ORDER BY ?libelle
