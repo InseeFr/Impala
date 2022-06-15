@@ -1,57 +1,78 @@
-import './App.css';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import "./App.css";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
+const apiURL = `${window.location.origin}/configuration.json`;
 
 function App() {
-  const [queries, setQueries] = useState([])
+  const [queries, setQueries] = useState([]);
   const ref = useRef(null);
-  const [yasgui, setYasgui] = useState()
-  const [counter, setCounter] = useState(0)
-  const [inserted, setInserted] = useState(false)
+  const [yasgui, setYasgui] = useState();
+  const [counter, setCounter] = useState(0);
+  const [inserted, setInserted] = useState(false);
+  const [sparqlEndpoint, setSparqlEndpoint] = useState(null);
 
   useLayoutEffect(() => {
-    if(counter > 100 || inserted){
-      return;
+    if (sparqlEndpoint) {
+      if (counter > 100 || inserted) {
+        return;
+      }
+      if (document.querySelector(".yasqe")) {
+        document.querySelector(".yasqe").appendChild(ref.current);
+        setInserted(true);
+      }
+      setCounter(counter + 1);
     }
-    if(document.querySelector(".yasqe")){
-      document.querySelector(".yasqe").appendChild(ref.current)
-      setInserted(true)
-    }
-    setCounter(counter + 1)
-  }, [counter, inserted])
+  }, [sparqlEndpoint, counter, inserted]);
 
   const click = (query) => {
     fetch(query.path)
-      .then(response => response.text())
-      .then(body => {
+      .then((response) => response.text())
+      .then((body) => {
         const tab = yasgui.getTab();
         tab.setQuery(body);
-      })  
-  }
+      });
+  };
+
+  useEffect(() => {
+    fetch(apiURL)
+      .then((response) => response.json())
+      .then((config) => {
+        setSparqlEndpoint("'" + config.sparql_endpoint + "'");
+        console.log("get", config.sparql_endpoint);
+      });
+  }, []);
 
   useEffect(() => {
     fetch("/queries/queries.json")
-      .then(response => response.json())
-      .then(body => {
-        setQueries(body)
-      })
+      .then((response) => response.json())
+      .then((body) => {
+        setQueries(body);
+        console.log("queries", body);
+      });
   }, []);
 
   useLayoutEffect(() => {
-    // eslint-disable-next-line no-undef
-    setYasgui(new Yasgui(document.getElementById("editor"), {
-      requestConfig: {
-        endpoint: 'http://rdf.insee.fr/sparql'
-      }
-    }))
-  }, []);
+    sparqlEndpoint &&
+      setYasgui(
+        // eslint-disable-next-line no-undef
+        new Yasgui(document.getElementById("editor"), {
+          requestConfig: {
+            endpoint: sparqlEndpoint,
+          },
+        })
+      );
+  }, [sparqlEndpoint]);
+
+  if (!sparqlEndpoint) return <div>Loading</div>;
 
   return (
     <div className="App">
       <div className="queries-block" ref={ref}>
-        {
-          queries.map((query, i) => <button key={i} onClick={() => click(query)}> {query.label}  </button>)
-        }
+        {queries.map((query, i) => (
+          <button key={i} onClick={() => click(query)}>
+            {query.label}
+          </button>
+        ))}
       </div>
       <div id="editor"></div>
     </div>
