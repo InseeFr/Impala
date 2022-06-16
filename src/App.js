@@ -37,8 +37,7 @@ function App() {
     fetch(apiURL)
       .then((response) => response.json())
       .then((config) => {
-        setSparqlEndpoint("'" + config.sparql_endpoint + "'");
-        console.log("get", config.sparql_endpoint);
+        setSparqlEndpoint(config.sparql_endpoint);
       });
   }, []);
 
@@ -47,7 +46,6 @@ function App() {
       .then((response) => response.json())
       .then((body) => {
         setQueries(body);
-        console.log("queries", body);
       });
   }, []);
 
