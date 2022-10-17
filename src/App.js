@@ -1,12 +1,13 @@
 import './App.css';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
+const defaultEndpoint = 'http://rdf.insee.fr/sparql';
 
-function App() {
-  const [queries, setQueries] = useState([])
-  const ref = useRef(null);
+function Editor({ endpoint, queries }) {
   const [yasgui, setYasgui] = useState()
   const [counter, setCounter] = useState(0)
+  const ref = useRef(null);
+
   const [inserted, setInserted] = useState(false)
 
   useLayoutEffect(() => {
@@ -29,6 +30,32 @@ function App() {
       })  
   }
 
+  useLayoutEffect(() => {
+    localStorage.removeItem('yagui__config');
+    // eslint-disable-next-line no-undef
+    setYasgui(new Yasgui(document.getElementById("editor"), {
+      requestConfig: {
+        endpoint
+      }
+    }))
+  }, [endpoint]);
+
+  return (
+    <>
+      <div className="queries-block" ref={ref}>
+        {
+          queries.map((query, i) => <button key={i} onClick={() => click(query)}> {query.label}  </button>)
+        }
+      </div>
+      <div id="editor"></div>
+    </>
+  );
+}
+
+function App() {
+  const [queries, setQueries] = useState([]);
+  const [endpoint, setEndpoint] = useState();
+  
   useEffect(() => {
     fetch("/queries/queries.json")
       .then(response => response.json())
@@ -37,23 +64,21 @@ function App() {
       })
   }, []);
 
-  useLayoutEffect(() => {
-    // eslint-disable-next-line no-undef
-    setYasgui(new Yasgui(document.getElementById("editor"), {
-      requestConfig: {
-        endpoint: 'http://rdf.insee.fr/sparql'
-      }
-    }))
+  //
+  useEffect(() => {
+    fetch('/configuration.json')
+      .then(response => response.json())
+      .then(configuration => {
+        setEndpoint(configuration.sparql_endpoint ?? defaultEndpoint)
+      })
+      .catch(() => {
+        setEndpoint(defaultEndpoint)
+      })
   }, []);
 
   return (
     <div className="App">
-      <div className="queries-block" ref={ref}>
-        {
-          queries.map((query, i) => <button key={i} onClick={() => click(query)}> {query.label}  </button>)
-        }
-      </div>
-      <div id="editor"></div>
+      {endpoint && <Editor endpoint={endpoint} queries={queries}/> }
     </div>
   );
 }
