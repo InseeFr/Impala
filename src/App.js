@@ -1,7 +1,7 @@
 import './App.css';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-const defaultEndpoint = 'http://rdf.insee.fr/sparql';
+const defaultEndpoint = 'https://dbpedia.org/sparql';
 
 function Editor({ endpoint, queries }) {
   const [yasgui, setYasgui] = useState()
@@ -47,7 +47,12 @@ function Editor({ endpoint, queries }) {
           queries.map((query, i) => <button key={i} onClick={() => click(query)}> {query.label}  </button>)
         }
       </div>
-      <div id="editor"></div>
+      <div id="editor" onClick={e => {
+        const prefix = "https://rdf.insee.fr/sparql/describe?uri=";
+        if(e.target.href && e.target.href.indexOf('http://id.insee.fr/') === 0 && e.target.href.indexOf(prefix) !== 0){
+          e.target.href = prefix + encodeURIComponent(e.target.href);
+        }
+      }}></div>
     </>
   );
 }
