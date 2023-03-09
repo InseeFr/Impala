@@ -1,7 +1,7 @@
 import './App.css';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-const defaultEndpoint = 'https://dbpedia.org/sparql';
+const defaultEndpoint = 'http://rdf.insee.fr/sparql';
 
 function Editor({ endpoint, queries }) {
   const [yasgui, setYasgui] = useState()
