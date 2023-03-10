@@ -2,8 +2,9 @@ import './App.css';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 const defaultEndpoint = 'http://rdf.insee.fr/sparql';
+const defaultPrefix = 'https://rdf.insee.fr/sparql/describe?uri=';
 
-function Editor({ endpoint, queries }) {
+function Editor({ endpoint, queries, prefix }) {
   const [yasgui, setYasgui] = useState()
   const [counter, setCounter] = useState(0)
   const ref = useRef(null);
@@ -47,13 +48,18 @@ function Editor({ endpoint, queries }) {
           queries.map((query, i) => <button key={i} onClick={() => click(query)}> {query.label}  </button>)
         }
       </div>
-      <div id="editor"></div>
+      <div id="editor" onClick={e => {
+        if(e.target.href && e.target.href.indexOf('http://id.insee.fr/') === 0 && e.target.href.indexOf(prefix) !== 0){
+          e.target.href = prefix + encodeURIComponent(e.target.href);
+        }
+      }}></div>
     </>
   );
 }
 
 function App() {
   const [queries, setQueries] = useState([]);
+  const [prefix, setPrefix] = useState();
   const [endpoint, setEndpoint] = useState();
   
   useEffect(() => {
@@ -70,15 +76,17 @@ function App() {
       .then(response => response.json())
       .then(configuration => {
         setEndpoint(configuration.sparql_endpoint ?? defaultEndpoint)
+        setPrefix(configuration.prefix ?? defaultPrefix)
       })
       .catch(() => {
         setEndpoint(defaultEndpoint)
+        setPrefix(defaultPrefix)
       })
   }, []);
 
   return (
     <div className="App">
-      {endpoint && <Editor endpoint={endpoint} queries={queries}/> }
+      {endpoint && <Editor endpoint={endpoint} queries={queries} prefix={prefix} /> }
     </div>
   );
 }
