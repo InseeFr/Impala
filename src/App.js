@@ -1,7 +1,7 @@
-import './App.css';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import "./App.css";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
-const defaultEndpoint = 'http://rdf.insee.fr/sparql';
+const defaultEndpoint = "http://rdf.insee.fr/sparql";
 
 function Editor({ endpoint, queries }) {
   const [yasgui, setYasgui] = useState()
@@ -31,7 +31,7 @@ function Editor({ endpoint, queries }) {
   }
 
   useLayoutEffect(() => {
-    localStorage.removeItem('yagui__config');
+    localStorage.removeItem("yagui__config");
     // eslint-disable-next-line no-undef
     setYasgui(new Yasgui(document.getElementById("editor"), {
       requestConfig: {
@@ -66,7 +66,7 @@ function App() {
 
   //
   useEffect(() => {
-    fetch('/configuration.json')
+    fetch("/configuration.json")
       .then(response => response.json())
       .then(configuration => {
         setEndpoint(configuration.sparql_endpoint ?? defaultEndpoint)
