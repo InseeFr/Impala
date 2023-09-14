@@ -26,7 +26,7 @@
                 var mimeType = getMimeType(document.getElementById("results-format-query").value);
                 var query = encodeURIComponent(document.getElementById("query").value);
 				document.getElementById("query").value = query;
-				var uri = "http://rdf.insee.fr/sparql?query=" + query;
+				var uri = "https://rdf.insee.fr/sparql?query=" + query;
                 var request;
                 try {
                 	request = createHttpObject();
@@ -174,6 +174,6 @@ WHERE {
 }</pre>
 
 	<h5>Autres exemples pour les populations légales 2010</h5>
-	<p>Voir <a href="http://rdf.insee.fr/demo/index.html">http://rdf.insee.fr/demo/index.html</a>.</p>
+	<p>Voir <a href="https://rdf.insee.fr/demo/index.html">https://rdf.insee.fr/demo/index.html</a>.</p>
 	</body>
 </html>
