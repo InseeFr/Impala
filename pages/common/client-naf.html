@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
 		<script>
 			$(document).ready(function() {
 				$('#chercher').bind('click', function() {
@@ -11,7 +11,7 @@
 					else {
 						var query = "prefix skos: <http://www.w3.org/2004/02/skos/core#> select ?libelle from <http://rdf.insee.fr/graphes/codes/nafr2> ";
 						query += "where {?s skos:notation \"" + code + "\" . ?s skos:prefLabel ?libelle filter(lang(?libelle) = 'fr')}";
-						var url = "http://rdf.insee.fr/sparql?query=" + encodeURIComponent(query);
+						var url = "https://rdf.insee.fr/sparql?query=" + encodeURIComponent(query);
 						$.getJSON(url).success(function(data) {
 							$('#resultat').html("<p>" + code + " - " + data.results.bindings[0].libelle.value + "</p>");
 						})
