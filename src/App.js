@@ -2,7 +2,7 @@ import "./App.css";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 const defaultEndpoint = "http://rdf.insee.fr/sparql";
-const defaultPrefix = "https://rdf.insee.fr/sparql/describe?uri=";
+const defaultPrefix = "https://rdf.insee.fr/sparql?query=DESCRIBE";
 
 function Editor({ endpoint, queries, prefix }) {
   const [yasgui, setYasgui] = useState();
@@ -62,7 +62,7 @@ function Editor({ endpoint, queries, prefix }) {
             e.target.href.indexOf("http://id.insee.fr/") === 0 &&
             e.target.href.indexOf(prefix) !== 0
           ) {
-            e.target.href = prefix + encodeURIComponent(e.target.href);
+            e.target.href = prefix + encodeURIComponent(`<${e.target.href}>`);
           }
         }}
       ></div>
@@ -89,7 +89,7 @@ function App() {
       .then((response) => response.json())
       .then((configuration) => {
         setEndpoint(configuration.sparql_endpoint ?? defaultEndpoint);
-        setPrefix(configuration.prefix ?? defaultPrefix)
+        setPrefix(configuration.prefix ?? defaultPrefix);
       })
       .catch(() => {
         setEndpoint(defaultEndpoint);
