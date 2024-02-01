@@ -1,32 +1,38 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-	<head>
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-		<script>
-			$(document).ready(function() {
-				$('#chercher').bind('click', function() {
-					$('#resultat').html("<p>Code non trouvé</p>");
-					var code = document.getElementById('code').value.trim().toUpperCase();
-					if (code.length == 0) $('#resultat').html("<p><b>Veuillez entrer un code</b></p>");
-					else {
-						var query = "prefix skos: <http://www.w3.org/2004/02/skos/core#> select ?libelle from <http://rdf.insee.fr/graphes/codes/nafr2> ";
-						query += "where {?s skos:notation \"" + code + "\" . ?s skos:prefLabel ?libelle filter(lang(?libelle) = 'fr')}";
-						var url = "https://rdf.insee.fr/sparql?query=" + encodeURIComponent(query);
-						$.getJSON(url).success(function(data) {
-							$('#resultat').html("<p>" + code + " - " + data.results.bindings[0].libelle.value + "</p>");
-						})
-					}
-				});
-			});
-		</script>
-	</head>
-	<body>
-		<h1>Recherche dans la NAF</h1>
-		<div>
-			<label>Code : </label>
-			<input id="code" type="text" autofocus="autofocus"/>
-			<button id="chercher" required>Chercher</button><br/>
-		</div>
-		<div id="resultat"/>
-	</body>
+    <head>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+        <script>
+            $(document).ready(function () {
+                $("#chercher").bind("click", function () {
+                    $("#resultat").html("<p>Code non trouvï¿½</p>");
+                    var code = document.getElementById("code").value.trim().toUpperCase();
+                    if (code.length == 0) $("#resultat").html("<p><b>Veuillez entrer un code</b></p>");
+                    else {
+                        var query =
+                            "prefix skos: <http://www.w3.org/2004/02/skos/core#> select ?libelle from <http://rdf.insee.fr/graphes/codes/nafr2> ";
+                        query +=
+                            'where {?s skos:notation "' +
+                            code +
+                            "\" . ?s skos:prefLabel ?libelle filter(lang(?libelle) = 'fr')}";
+                        var url = "https://rdf.insee.fr/sparql?query=" + encodeURIComponent(query);
+                        $.getJSON(url).success(function (data) {
+                            $("#resultat").html(
+                                "<p>" + code + " - " + data.results.bindings[0].libelle.value + "</p>"
+                            );
+                        });
+                    }
+                });
+            });
+        </script>
+    </head>
+    <body>
+        <h1>Recherche dans la NAF</h1>
+        <div>
+            <label>Code : </label>
+            <input id="code" type="text" autofocus="autofocus" />
+            <button id="chercher" required>Chercher</button><br />
+        </div>
+        <div id="resultat" />
+    </body>
 </html>
