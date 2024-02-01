@@ -1,5 +1,5 @@
-import "./App.css";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import "./App.css";
 
 const defaultEndpoint = "http://rdf.insee.fr/sparql";
 const defaultPrefix = "https://rdf.insee.fr/sparql?query=DESCRIBE";
