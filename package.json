@@ -1,50 +1,52 @@
 {
-  "name": "yasgui-react",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1",
-    "web-vitals": "3.5.0"
-  },
-  "devDependencies": {
-    "@testing-library/jest-dom": "^6.1.3",
-    "@testing-library/react": "14.0.0",
-    "@testing-library/user-event": "14.5.1",
-    "bestzip": "^2.2.1",
-    "ncp": "^2.0.0"
-  },
-  "scripts": {
-    "copy-static": "ncp pages build && ncp temp_dist build/sparql",
-    "build-react": "PUBLIC_URL='/sparql' BUILD_PATH='./temp_dist' react-scripts build",
-    "start": "react-scripts start",
-    "build": "yarn build-react && yarn copy-static && npm run create-zip",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "create-zip": "cd build && bestzip build.zip *",
-    "lint": "eslint src/**/*.js"
-  },
-  "eslintConfig": {
-    "extends": [
-      "eslint:recommended",
-      "react-app",
-      "react-app/jest"
-    ],
-    "rules": {
-      "quotes" : "error"
+    "name": "yasgui-react",
+    "version": "0.1.0",
+    "dependencies": {
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "react-scripts": "5.0.1",
+        "web-vitals": "3.5.2"
+    },
+    "devDependencies": {
+        "@testing-library/jest-dom": "^6.4.1",
+        "@testing-library/react": "14.2.0",
+        "@testing-library/user-event": "14.5.2",
+        "bestzip": "^2.2.1",
+        "ncp": "^2.0.0",
+        "prettier": "^3.2.4"
+    },
+    "scripts": {
+        "copy-static": "ncp pages build && ncp temp_dist build/sparql",
+        "build-react": "PUBLIC_URL='/sparql' BUILD_PATH='./temp_dist' react-scripts build",
+        "start": "react-scripts start",
+        "build": "yarn build-react && yarn copy-static && npm run create-zip",
+        "test": "react-scripts test",
+        "eject": "react-scripts eject",
+        "create-zip": "cd build && bestzip build.zip *",
+        "lint": "eslint src/**/*.js",
+        "_format": "prettier \"**/*.{js,jsx,css,html}\"",
+        "format": "npm run _format -- --write"
+    },
+    "eslintConfig": {
+        "extends": [
+            "eslint:recommended",
+            "react-app",
+            "react-app/jest"
+        ],
+        "rules": {
+            "quotes": "error"
+        }
+    },
+    "browserslist": {
+        "production": [
+            ">0.2%",
+            "not dead",
+            "not op_mini all"
+        ],
+        "development": [
+            "last 1 chrome version",
+            "last 1 firefox version",
+            "last 1 safari version"
+        ]
     }
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  }
 }

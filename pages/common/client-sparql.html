@@ -1,20 +1,21 @@
 ﻿<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
-	<head>
-		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-		<title>Client Datalift de démonstration</title>
-		<link rel="stylesheet" type="text/css" href="rdfinsee.css">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>Client Datalift de démonstration</title>
+        <link rel="stylesheet" type="text/css" href="rdfinsee.css" />
         <script type="text/javascript">
             function getURI() {
                 var mimeType = getMimeType(document.getElementById("results-format-uri").value);
                 var uri = document.getElementById("uri").value;
                 var request;
                 try {
-                	request = createHttpObject();
-                } catch(e) {
-                	document.getElementById("resultat").innerHTML = "Erreur lors de la création de la requête HTTP - Navigateur non supporté";
-                	return;
+                    request = createHttpObject();
+                } catch (e) {
+                    document.getElementById("resultat").innerHTML =
+                        "Erreur lors de la création de la requête HTTP - Navigateur non supporté";
+                    return;
                 }
                 request.onreadystatechange = handleResponse;
                 request.open("GET", uri, true);
@@ -25,14 +26,15 @@
             function getSPARQL() {
                 var mimeType = getMimeType(document.getElementById("results-format-query").value);
                 var query = encodeURIComponent(document.getElementById("query").value);
-				document.getElementById("query").value = query;
-				var uri = "https://rdf.insee.fr/sparql?query=" + query;
+                document.getElementById("query").value = query;
+                var uri = "https://rdf.insee.fr/sparql?query=" + query;
                 var request;
                 try {
-                	request = createHttpObject();
-                } catch(e) {
-                	document.getElementById("resultat").innerHTML = "Erreur lors de la création de la requête HTTP - Navigateur non supporté";
-                	return;
+                    request = createHttpObject();
+                } catch (e) {
+                    document.getElementById("resultat").innerHTML =
+                        "Erreur lors de la création de la requête HTTP - Navigateur non supporté";
+                    return;
                 }
                 request.onreadystatechange = handleResponse;
                 request.open("GET", uri, true);
@@ -47,24 +49,28 @@
                         if (contentType == "application/json") {
                             var jsonResponse = this.responseText;
                             displayJSON(jsonResponse);
-                        } else if ((contentType == "application/xml") || (contentType == "application/sparql-results+xml")) {
+                        } else if (
+                            contentType == "application/xml" ||
+                            contentType == "application/sparql-results+xml"
+                        ) {
                             var xmlResponse = this.responseXML;
                             displayXML(xmlResponse);
                         } else {
-							document.getElementById("resultat").value = this.responseText;
-						}
+                            document.getElementById("resultat").value = this.responseText;
+                        }
                     } else {
-                    	document.getElementById("resultat").value = "Le serveur a renvoyé un code statut HTTP " + this.status;
+                        document.getElementById("resultat").value =
+                            "Le serveur a renvoyé un code statut HTTP " + this.status;
                     }
                 }
             }
 
             function displayJSON(jsonText) {
-            	document.getElementById("resultat").value = jsonText;
+                document.getElementById("resultat").value = jsonText;
             }
 
             function displayXML(xmlDocument) {
-            	document.getElementById("resultat").value = xmlContent(xmlDocument);
+                document.getElementById("resultat").value = xmlContent(xmlDocument);
             }
 
             function getMimeType(mimeType) {
@@ -72,63 +78,78 @@
                 if (mimeType == "xqr") return "application/sparql-results+xml";
                 if (mimeType == "json") return "application/json";
                 if (mimeType == "csv") return "text/csv";
-				if (mimeType == "ttl") return "text/turtle";
+                if (mimeType == "ttl") return "text/turtle";
                 return "";
             }
 
             function xmlContent(xmlNode) {
-				if (window.XMLSerializer) return new XMLSerializer().serializeToString(xmlNode); // Firefox
+                if (window.XMLSerializer) return new XMLSerializer().serializeToString(xmlNode); // Firefox
                 return xmlNode.xml; // IE
             }
- 
+
             function createHttpObject() {
-            	try {return new XMLHttpRequest();} catch (ignored) {}
-            	try {return new ActiveXObject("Msxml2.XMLHTTP");} catch (ignored) {}
-            	try {return new ActiveXObject("Microsoft.XMLHTTP");} catch (ignored) {}
-            	throw new Error("Impossible de créer l'objet HTTP");
+                try {
+                    return new XMLHttpRequest();
+                } catch (ignored) {}
+                try {
+                    return new ActiveXObject("Msxml2.XMLHTTP");
+                } catch (ignored) {}
+                try {
+                    return new ActiveXObject("Microsoft.XMLHTTP");
+                } catch (ignored) {}
+                throw new Error("Impossible de créer l'objet HTTP");
             }
-		</script>
-	</head>
-	<body>
-		<h1>Exemples d'utilisation du SPARQL endpoint</h1>
-		<hr/>
-		<fieldset>
-			<legend>Déréférencement direct :</legend>
-			<div>URI : <input id="uri" type="text" style="width:300px;" spellcheck="false"/>
-				<span style="padding-left: 10px; padding-right: 10px">Format :
-					<select id="results-format-uri">
-						<option value="xml">XML</option>
-						<option value="json">JSON</option>
-						<option value="ttl">Turtle</option>
-					</select>
-				</span>
-				<input type="submit" onclick="getURI()"/>
-			</div>
-		</fieldset>
-		<hr/>
-		<fieldset>
-			<legend>Requêtes SPARQL :</legend>
-			<div>
-				<p>Entrez la requête :</p>
-				<textarea id="query" type="text" style="width:700px;height:100px;" spellcheck="false">&nbsp;</textarea>
-				<span style="padding-left: 10px; padding-right: 10px">Format :
-					<select id="results-format-query">
-						<option value="xqr">RDF/XML</option>
-						<option value="json">JSON</option>
-						<option value="csv">CSV</option>
-					</select>
-				</span>
-				<input type="submit" onclick="getSPARQL()"/>
-			</div>
-		</fieldset>
-		<fieldset>
-			<legend>Résultat :</legend>
-			<div><textarea id="resultat" rows="15" style="width: 100%;" spellcheck="false">&nbsp;</textarea></div>
-		</fieldset>
-		<hr/>
-		<h3>Exemples de requêtes SPARQL</h3>
-		<h5>Régions dont le nom commence par A</h5>
-		<pre class="query">
+        </script>
+    </head>
+    <body>
+        <h1>Exemples d'utilisation du SPARQL endpoint</h1>
+        <hr />
+        <fieldset>
+            <legend>Déréférencement direct :</legend>
+            <div>
+                URI : <input id="uri" type="text" style="width: 300px" spellcheck="false" />
+                <span style="padding-left: 10px; padding-right: 10px"
+                    >Format :
+                    <select id="results-format-uri">
+                        <option value="xml">XML</option>
+                        <option value="json">JSON</option>
+                        <option value="ttl">Turtle</option>
+                    </select>
+                </span>
+                <input type="submit" onclick="getURI()" />
+            </div>
+        </fieldset>
+        <hr />
+        <fieldset>
+            <legend>Requêtes SPARQL :</legend>
+            <div>
+                <p>Entrez la requête :</p>
+                <textarea id="query" type="text" style="width: 700px; height: 100px" spellcheck="false">
+&nbsp;</textarea
+                >
+                <span style="padding-left: 10px; padding-right: 10px"
+                    >Format :
+                    <select id="results-format-query">
+                        <option value="xqr">RDF/XML</option>
+                        <option value="json">JSON</option>
+                        <option value="csv">CSV</option>
+                    </select>
+                </span>
+                <input type="submit" onclick="getSPARQL()" />
+            </div>
+        </fieldset>
+        <fieldset>
+            <legend>Résultat :</legend>
+            <div>
+                <textarea id="resultat" rows="15" style="width: 100%" spellcheck="false">
+&nbsp;</textarea
+                >
+            </div>
+        </fieldset>
+        <hr />
+        <h3>Exemples de requêtes SPARQL</h3>
+        <h5>Régions dont le nom commence par A</h5>
+        <pre class="query">
 PREFIX rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt;
 PREFIX igeo: &lt;http://rdf.insee.fr/def/geo#&gt;
 
@@ -136,19 +157,21 @@ SELECT ?region ?nom WHERE {
 	?region rdf:type igeo:Region .
 	?region igeo:nom ?nom .
 	FILTER (strStarts(?nom, "A")).
-}</pre>
-		<h5>Postes de la NAF dont l'intitulé contient "automobiles"</h5>
-		<pre class="query">
+}</pre
+        >
+        <h5>Postes de la NAF dont l'intitulé contient "automobiles"</h5>
+        <pre class="query">
 PREFIX skos: &lt;http://www.w3.org/2004/02/skos/core#&gt;
 
 SELECT ?poste ?intitule WHERE {
 	?poste skos:inScheme &lt;http://id.insee.fr/codes/nafr2/naf&gt; .
 	?poste skos:prefLabel ?intitule .
 	FILTER(CONTAINS(?intitule, "automobiles")).
-}</pre>
+}</pre
+        >
 
-	<h5>Les dix communes les plus peuplées de la Nièvre en 2010</h5>
-	<pre class="query">
+        <h5>Les dix communes les plus peuplées de la Nièvre en 2010</h5>
+        <pre class="query">
 PREFIX idemo: &lt;http://rdf.insee.fr/def/demo#&gt;
 PREFIX igeo: &lt;http://rdf.insee.fr/def/geo#&gt;
 
@@ -162,18 +185,22 @@ WHERE {
 	FILTER (strStarts(?code, "58")).
 }
 ORDER BY DESC(?popTotale)
-LIMIT 10</pre>
-	<h5>Contour d'une commune (requête IGN)</h5>
-	<pre class="query">
+LIMIT 10</pre
+        >
+        <h5>Contour d'une commune (requête IGN)</h5>
+        <pre class="query">
 PREFIX geofla: &lt;http://data.ign.fr/id/geofla/&gt;
 
 SELECT ?zone ?contour
 WHERE {
 	?zone geofla:insee-com "60683" .
 	?zone geofla:st-astext ?contour .
-}</pre>
+}</pre
+        >
 
-	<h5>Autres exemples pour les populations légales 2010</h5>
-	<p>Voir <a href="https://rdf.insee.fr/demo/index.html">https://rdf.insee.fr/demo/index.html</a>.</p>
-	</body>
+        <h5>Autres exemples pour les populations légales 2010</h5>
+        <p>
+            Voir <a href="https://rdf.insee.fr/demo/index.html">https://rdf.insee.fr/demo/index.html</a>.
+        </p>
+    </body>
 </html>
