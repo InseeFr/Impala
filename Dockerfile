@@ -20,7 +20,7 @@ RUN rm -rf /usr/share/nginx/html/*
 COPY --from=builder /usr/src/app/build /usr/share/nginx/html
 
 # Copy a custom Nginx configuration file (if needed)
-COPY nginx.conf /etc/nginx/nginx.conf
+COPY config/nginx.conf /etc/nginx/nginx.conf
 
 # Expose port 80
 EXPOSE 80
