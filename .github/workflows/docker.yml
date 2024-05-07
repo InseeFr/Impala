@@ -24,7 +24,7 @@ jobs:
           node-version: ${{ matrix.node }}
 
       - run: yarn install --frozen-lockfile
-      - run: yarn build-insee
+      - run: yarn build
 
       - name: Upload Deploy Artifact
         uses: actions/upload-artifact@v2
