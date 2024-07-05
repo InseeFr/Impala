@@ -10,20 +10,23 @@ COPY . .
 # Install dependencies and build the static files
 RUN yarn install --frozen-lockfile && yarn build
 
-# Stage 2: Serve the static files with Nginx
-FROM nginx:alpine
+# Étape d'exécution
+FROM nginxinc/nginx-unprivileged:1.25-alpine
 
-# Remove the default Nginx website configuration
-RUN rm -rf /usr/share/nginx/html/*
+# Non root user
+ENV NGINX_USER_ID=101
+ENV NGINX_GROUP_ID=101
+ENV NGINX_USER=nginx
+ENV NGINX_GROUP=nginx
 
-# Copy built files from the builder stage
-COPY --from=builder /usr/src/app/build /usr/share/nginx/html
+USER $NGINX_USER_ID
 
-# Copy a custom Nginx configuration file (if needed)
-COPY config/nginx.conf /etc/nginx/nginx.conf
+# Ajout du build au dossier root de nginx
+COPY --from=builder --chown=$NGINX_USER:$NGINX_GROUP /usr/src/app/build /usr/share/nginx/html
 
-# Expose port 80
-EXPOSE 80
+# Copie de la configuration nginx
+RUN rm /etc/nginx/conf.d/default.conf
+COPY --from=builder --chown=$NGINX_USER:$NGINX_GROUP config/nginx.conf /etc/nginx/conf.d/nginx.conf
 
 # Start Nginx
 CMD ["nginx", "-g", "daemon off;"]
