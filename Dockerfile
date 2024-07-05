@@ -26,7 +26,7 @@ COPY --from=builder --chown=$NGINX_USER:$NGINX_GROUP /usr/src/app/build /usr/sha
 
 # Copie de la configuration nginx
 RUN rm /etc/nginx/conf.d/default.conf
-COPY --from=builder --chown=$NGINX_USER:$NGINX_GROUP config/nginx.conf /etc/nginx/conf.d/nginx.conf
+COPY --chown=$NGINX_USER:$NGINX_GROUP config/nginx.conf /etc/nginx/conf.d/nginx.conf
 
 # Start Nginx
 CMD ["nginx", "-g", "daemon off;"]
