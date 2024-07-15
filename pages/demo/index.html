@@ -1,25 +1,56 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-	<head>
-		<meta content="text/html; charset=UTF-8" http-equiv="content-type">
-		<title>Données démographiques RDF de l'Insee</title>
-		<link rel="stylesheet" href="../common/rdfinsee.css" type="text/css">
-	</head>
-	<body>
-		<a href="https://rdf.insee.fr/index.html" title="Page d'accueil du site RDF Insee" id="logo"><img src="../common/rdfinsee.png" alt="Logo RDF Insee"/></a>
+    <head>
+        <meta content="text/html; charset=UTF-8" http-equiv="content-type" />
+        <title>Données démographiques RDF de l'Insee</title>
+        <link rel="stylesheet" href="../common/rdfinsee.css" type="text/css" />
+    </head>
+    <body>
+        <a href="https://rdf.insee.fr/index.html" title="Page d'accueil du site RDF Insee" id="logo"
+            ><img src="../common/rdfinsee.png" alt="Logo RDF Insee"
+        /></a>
 
-		<h1>Publication de données démographiques au format RDF</h1>
+        <h1>Publication de données démographiques au format RDF</h1>
 
-		<h2>Introduction</h2>
-		<p>L'Insee publie en RDF les données de populations légales pour les années 2010 à 2014 issues du recensement de la population. Ces données sont également accessibles sur le site web principal de l'Insee (voir <a href="https://www.insee.fr/fr/statistiques/2525768">cette page</a> pour 2014). Pour les différents territoires, les populations légales, comptées à part et totales sont fournies. On se reportera à <a href="https://www.insee.fr/fr/metadonnees/definition/c1999">cette page</a> pour la définition de ces différents concepts.</p>
+        <h2>Introduction</h2>
+        <p>
+            L'Insee publie en RDF les données de populations légales pour les années 2010 à 2014 issues
+            du recensement de la population. Ces données sont également accessibles sur le site web
+            principal de l'Insee (voir
+            <a href="https://www.insee.fr/fr/statistiques/2525768">cette page</a> pour 2014). Pour les
+            différents territoires, les populations légales, comptées à part et totales sont fournies. On
+            se reportera à
+            <a href="https://www.insee.fr/fr/metadonnees/definition/c1999">cette page</a> pour la
+            définition de ces différents concepts.
+        </p>
 
-		<h2>Modélisation des données</h2>
-		<p>Un vocabulaire OWL ad hoc a été défini pour modéliser les données des populations légales. Ce vocabulaire est présenté plus en détail <a href="../def/index.html#onto-demo">ici</a>.</p>
-		<h2>Accès aux données</h2>
-		<p>L'ensemble des données peut être téléchargé sous forme de fichiers Turtle zippés (<a href="popleg-2010.ttl.zip">2010</a>, <a href="popleg-2011.ttl.zip">2011</a>, <a href="popleg-2012.ttl.zip">2012</a>, <a href="popleg-2013-sc.ttl.zip">2013</a>, <a href="popleg-2014-sc.ttl.zip">2014</a>, <a href="popleg-2015-sc.ttl.zip">2015</a>, <a href="popleg-2016-sc.ttl.zip">2016</a>).</p>
-		<p>Les populations légales sont également accessibles via le <a href="https://rdf.insee.fr/sparql">point d'entrée SPARQL</a>. Un des exemples prédéfinis de requêtes indique comment obtenir la population totale d'une commune à partir du code Insee de la commune (pour rechercher un code de commune, voir <a href="https://www.insee.fr/fr/information/2016807">cette page</a>). On donne ci-dessous d'autres exemples de requêtes SPARQL.</p>
-		<h5>Populations totales 2013 des départements d'une région donnée (ici la Bretagne, code de région 53) :</h5>
-		<pre class="query">
+        <h2>Modélisation des données</h2>
+        <p>
+            Un vocabulaire OWL ad hoc a été défini pour modéliser les données des populations légales. Ce
+            vocabulaire est présenté plus en détail <a href="../def/index.html#onto-demo">ici</a>.
+        </p>
+        <h2>Accès aux données</h2>
+        <p>
+            L'ensemble des données peut être téléchargé sous forme de fichiers Turtle zippés (<a
+                href="popleg-2010.ttl.zip"
+                >2010</a
+            >, <a href="popleg-2011.ttl.zip">2011</a>, <a href="popleg-2012.ttl.zip">2012</a>,
+            <a href="popleg-2013-sc.ttl.zip">2013</a>, <a href="popleg-2014-sc.ttl.zip">2014</a>,
+            <a href="popleg-2015-sc.ttl.zip">2015</a>, <a href="popleg-2016-sc.ttl.zip">2016</a>).
+        </p>
+        <p>
+            Les populations légales sont également accessibles via le
+            <a href="https://rdf.insee.fr/sparql">point d'entrée SPARQL</a>. Un des exemples prédéfinis
+            de requêtes indique comment obtenir la population totale d'une commune à partir du code Insee
+            de la commune (pour rechercher un code de commune, voir
+            <a href="https://www.insee.fr/fr/information/2016807">cette page</a>). On donne ci-dessous
+            d'autres exemples de requêtes SPARQL.
+        </p>
+        <h5>
+            Populations totales 2013 des départements d'une région donnée (ici la Bretagne, code de
+            région 53) :
+        </h5>
+        <pre class="query">
 # Remplacer '53' par le code de la région cherchée
 PREFIX idemo:&lt;http://rdf.insee.fr/def/demo#&gt;
 PREFIX igeo:&lt;http://rdf.insee.fr/def/geo#&gt;
@@ -32,9 +63,13 @@ SELECT ?departement ?nom ?popLeg WHERE {
 	?departement idemo:population ?popLeg .
 	?popLeg idemo:populationTotale ?popTotale .
 	?popLeg idemo:date "2013-01-01"^^xsd:date 
-} ORDER BY ?nom</pre>
-		<h5>Populations municipales, comptées à part et totales d'une commune donnée (ici Bordeaux, code de commune 33063) depuis 2010 :</h5>
-<pre class="query">
+} ORDER BY ?nom</pre
+        >
+        <h5>
+            Populations municipales, comptées à part et totales d'une commune donnée (ici Bordeaux, code
+            de commune 33063) depuis 2010 :
+        </h5>
+        <pre class="query">
 # Remplacer '33063' par le code de la commune cherchée
 PREFIX idemo:&lt;http://rdf.insee.fr/def/demo#&gt;
 PREFIX igeo:&lt;http://rdf.insee.fr/def/geo#&gt;
@@ -44,7 +79,7 @@ SELECT ?commune ?nom (year(?date) as ?annee) ?popMunicipale ?popCompteeAPart ?po
 	?commune igeo:nom ?nom .
 	?commune idemo:population ?popLeg .
 	?popLeg idemo:date ?date ; idemo:populationMunicipale ?popMunicipale ; idemo:populationCompteeAPart ?popCompteeAPart ; idemo:populationTotale ?popTotale .
-}</pre>
-
-	</body>
+}</pre
+        >
+    </body>
 </html>

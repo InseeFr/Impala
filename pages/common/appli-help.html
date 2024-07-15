@@ -1,51 +1,100 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-	<head>
-		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<title>Aide sur l'utilisation applicative des données - Espace RDF de l'Insee</title>
-		<link rel="stylesheet" type="text/css" href="rdfinsee.css">
-	</head>
-	<body>
-		<a href="http://rdf.insee.fr/index.html" title="Page d'accueil du site RDF Insee" id="logo"><img src="rdfinsee.png" alt="Logo RDF Insee"/></a>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>Aide sur l'utilisation applicative des données - Espace RDF de l'Insee</title>
+        <link rel="stylesheet" type="text/css" href="rdfinsee.css" />
+    </head>
+    <body>
+        <a href="http://rdf.insee.fr/index.html" title="Page d'accueil du site RDF Insee" id="logo"
+            ><img src="rdfinsee.png" alt="Logo RDF Insee"
+        /></a>
 
-		<h1>Aide sur l'utilisation applicative des données</h1>
+        <h1>Aide sur l'utilisation applicative des données</h1>
 
-		<h2>Introduction</h2>
-		<p>Les données RDF de l'Insee peuvent être utilisées dans le cadre d'applications extérieures. Pour une utilisation intensive, il est recommandé de télécharger les exports RDF/Turtle qui sont mis à disposition sur les différentes pages thématiques de ce site, et de les charger dans une base RDF locale comme <a href="http://www.openrdf.org/">OpenRDF Sesame</a> ou <a href="http://jena.apache.org/documentation/tdb/index.html">Apache Jena TDB</a>.</p>
-		<p>Pour une utilisation plus ponctuelle, il est possible d'utiliser directement les données mises en ligne par l'INSEE, au travers de requêtes HTTP. La plate-forme Datalift de publication des données prend en charge les mécanismes standard de négociation de contenu afin de servir les données au format attendu par le client HTTP. Outre les formats HTML requis par les navigateurs, de nombreux formats d'utilisation applicative plus aisée sont supportés, suivant les types de requêtes, notamment (entre parenthèses, des valeurs correspondantes de l'en-tête HTTP <code>'Accept'</code>) :</p>
-		<ul>
-			<li>RDF/XML (<code>application/rdf+xml</code>, <code>application/xml</code>, <code>text/xml</code>),</li>
-			<li>JSON (<code>application/json</code>, <code>application/sparql-results+json</code>),</li>
-			<li>Turtle (<code>text/turtle</code>, <code>application/x-turtle</code>),</li>
-			<li>Notation3 (<code>text/n3</code>, <code>text/rdf+n3</code>, <code>application/n3</code>),</li>
-			<li>CSV (<code>text/csv</code>, <code>application/csv</code>).</li>
-		</ul>
-		<p>Si aucune négociation de contenu n'est effectuée (en-tête <code>'Accept'</code> absent de la requête HTTP), le format RDF/XML est renvoyé par défaut.</p>
+        <h2>Introduction</h2>
+        <p>
+            Les données RDF de l'Insee peuvent être utilisées dans le cadre d'applications extérieures.
+            Pour une utilisation intensive, il est recommandé de télécharger les exports RDF/Turtle qui
+            sont mis à disposition sur les différentes pages thématiques de ce site, et de les charger
+            dans une base RDF locale comme <a href="http://www.openrdf.org/">OpenRDF Sesame</a> ou
+            <a href="http://jena.apache.org/documentation/tdb/index.html">Apache Jena TDB</a>.
+        </p>
+        <p>
+            Pour une utilisation plus ponctuelle, il est possible d'utiliser directement les données
+            mises en ligne par l'INSEE, au travers de requêtes HTTP. La plate-forme Datalift de
+            publication des données prend en charge les mécanismes standard de négociation de contenu
+            afin de servir les données au format attendu par le client HTTP. Outre les formats HTML
+            requis par les navigateurs, de nombreux formats d'utilisation applicative plus aisée sont
+            supportés, suivant les types de requêtes, notamment (entre parenthèses, des valeurs
+            correspondantes de l'en-tête HTTP <code>'Accept'</code>) :
+        </p>
+        <ul>
+            <li>
+                RDF/XML (<code>application/rdf+xml</code>, <code>application/xml</code>,
+                <code>text/xml</code>),
+            </li>
+            <li>JSON (<code>application/json</code>, <code>application/sparql-results+json</code>),</li>
+            <li>Turtle (<code>text/turtle</code>, <code>application/x-turtle</code>),</li>
+            <li>
+                Notation3 (<code>text/n3</code>, <code>text/rdf+n3</code>, <code>application/n3</code>),
+            </li>
+            <li>CSV (<code>text/csv</code>, <code>application/csv</code>).</li>
+        </ul>
+        <p>
+            Si aucune négociation de contenu n'est effectuée (en-tête <code>'Accept'</code> absent de la
+            requête HTTP), le format RDF/XML est renvoyé par défaut.
+        </p>
 
-		<h2>Types de requêtes HTTP</h2>
-		<p>On peut mentionner deux types de requêtes HTTP, la seconde étant en fait une forme simplifiée de la première :</p>
-		<ul>
-			<li>Passage d'une requête SPARQL</li>
-			<li>Déréférencement d'URI</li>
-		</ul>
-		<p>Dans le premier cas, une requête SPARQL est passée comme valeur du paramètre '<code>query</code>' dans une requête <code>GET</code> sur le point d'entrée SPARQL. La façon habituelle d'opérer est d'inclure le paramètre dans l'URI sur laquelle se fait la requête HTTP. Cet URI a donc pour forme :</p>
-		<pre class="query">
-http://rdf.insee.fr/sparql?query=[requête SPARQL URL-encodée]</pre>
-		<p>Par exemple pour la requête SPARQL <code>SELECT * WHERE { ?s ?p "42" }</code> :</p>
-		<pre class="query">
-http://rdf.insee.fr/sparql?query=SELECT%20*%20WHERE%20%7B%20?s%20?p%20%2242%22%20%7D</pre>
-		<p>Les résultats de la requête SPARQL sont retournés dans le contenu de la réponse HTTP.</p>
-		<p>Il est à noter que le point d'accès SPARQL supporte la syntaxe SPARQL 1.1, mais seulement en lecture : toute requête de mise à jour des données sera donc rejetée.</p>
+        <h2>Types de requêtes HTTP</h2>
+        <p>
+            On peut mentionner deux types de requêtes HTTP, la seconde étant en fait une forme simplifiée
+            de la première :
+        </p>
+        <ul>
+            <li>Passage d'une requête SPARQL</li>
+            <li>Déréférencement d'URI</li>
+        </ul>
+        <p>
+            Dans le premier cas, une requête SPARQL est passée comme valeur du paramètre
+            '<code>query</code>' dans une requête <code>GET</code> sur le point d'entrée SPARQL. La façon
+            habituelle d'opérer est d'inclure le paramètre dans l'URI sur laquelle se fait la requête
+            HTTP. Cet URI a donc pour forme :
+        </p>
+        <pre class="query">http://rdf.insee.fr/sparql?query=[requête SPARQL URL-encodée]</pre>
+        <p>Par exemple pour la requête SPARQL <code>SELECT * WHERE { ?s ?p "42" }</code> :</p>
+        <pre class="query">
+http://rdf.insee.fr/sparql?query=SELECT%20*%20WHERE%20%7B%20?s%20?p%20%2242%22%20%7D</pre
+        >
+        <p>Les résultats de la requête SPARQL sont retournés dans le contenu de la réponse HTTP.</p>
+        <p>
+            Il est à noter que le point d'accès SPARQL supporte la syntaxe SPARQL 1.1, mais seulement en
+            lecture : toute requête de mise à jour des données sera donc rejetée.
+        </p>
 
-		<p>Dans le cas du déréférencement d'URI, la requête HTTP est faite directement sur l'URI de la ressource cherchée, par exemple :</p>
-		<pre class="query">
-http://id.insee.fr/geo/departement/42</pre>
-		<p>La plate-forme Datalift renvoie dans ce cas une description générique de la ressource, c'est-à-dire la liste des triplets RDF dans lesquels elle intervient comme sujet ou objet : l'opération est en fait équivalente à la soumission d'une requête SPARQL de type <code>DESCRIBE</code> sur l'URI de la ressource. Là encore, la négociation de contenu peut être utilisée pour obtenir les triplets au format souhaité.</p>
+        <p>
+            Dans le cas du déréférencement d'URI, la requête HTTP est faite directement sur l'URI de la
+            ressource cherchée, par exemple :
+        </p>
+        <pre class="query">http://id.insee.fr/geo/departement/42</pre>
+        <p>
+            La plate-forme Datalift renvoie dans ce cas une description générique de la ressource,
+            c'est-à-dire la liste des triplets RDF dans lesquels elle intervient comme sujet ou objet :
+            l'opération est en fait équivalente à la soumission d'une requête SPARQL de type
+            <code>DESCRIBE</code> sur l'URI de la ressource. Là encore, la négociation de contenu peut
+            être utilisée pour obtenir les triplets au format souhaité.
+        </p>
 
-		<h2>Exemples</h2>
-		<h3>Javascript</h3>
-		<p>On trouvera <a href="client-naf.html">ici</a> un exemple très simple de page web permettant de rechercher un code dans la Nomenclature d'activités française (NAF) et d'obtenir le libellé correspondant. Le langage utilisé est dans ce cas Javascript, et le format de réponse demandé est donc JSON. Ce dernier permet une programmation extrêmement compacte ; les instructions essentielles sont :</p>
-		<pre class="query">
+        <h2>Exemples</h2>
+        <h3>Javascript</h3>
+        <p>
+            On trouvera <a href="client-naf.html">ici</a> un exemple très simple de page web permettant
+            de rechercher un code dans la Nomenclature d'activités française (NAF) et d'obtenir le
+            libellé correspondant. Le langage utilisé est dans ce cas Javascript, et le format de réponse
+            demandé est donc JSON. Ce dernier permet une programmation extrêmement compacte ; les
+            instructions essentielles sont :
+        </p>
+        <pre class="query">
 var code = document.getElementById('code').value.trim().toUpperCase();
 var query = "prefix skos: &lt;http://www.w3.org/2004/02/skos/core#&gt; select ?libelle from &lt;http://rdf.insee.fr/graphes/codes/nafr2&gt; ";
 query += "where {?s skos:notation \"" + code + "\" . ?s skos:prefLabel ?libelle filter(lang(?libelle) = 'fr')}";
@@ -53,14 +102,28 @@ query += "where {?s skos:notation \"" + code + "\" . ?s skos:prefLabel ?libelle 
 var url = "http://rdf.insee.fr/sparql?query=" + encodeURIComponent(query);
 $.getJSON(url).success(function(data) {
    $('#resultat').html("&lt;p&gt;" + code + " - " + data.results.bindings[0].libelle.value + "&lt;/p&gt;");
-})</pre>
+})</pre
+        >
 
-		<p>La structure JSON des résultats de requêtes SPARQL est spécifiée dans cette <a href="http://www.w3.org/TR/rdf-sparql-json-res/">note du W3C</a>.</p>
+        <p>
+            La structure JSON des résultats de requêtes SPARQL est spécifiée dans cette
+            <a href="http://www.w3.org/TR/rdf-sparql-json-res/">note du W3C</a>.
+        </p>
 
-		<h3>Python</h3>
-		<p>Ce script Python montre comment exécuter une requête SPARQL, en l'occurrence pour obtenir la liste des trois départements les moins peuplés en 2010. Là aussi, c'est le format JSON qui est utilisé pour la réponse. Ce script est disponible pour la <a href="sparql-query-27.py">version 2.7</a> et pour la <a href="sparql-query-33.py">version 3.3</a> de Python.</p>
+        <h3>Python</h3>
+        <p>
+            Ce script Python montre comment exécuter une requête SPARQL, en l'occurrence pour obtenir la
+            liste des trois départements les moins peuplés en 2010. Là aussi, c'est le format JSON qui
+            est utilisé pour la réponse. Ce script est disponible pour la
+            <a href="sparql-query-27.py">version 2.7</a> et pour la
+            <a href="sparql-query-33.py">version 3.3</a> de Python.
+        </p>
 
-		<h3>Vos contributions</h3>
-		<p>Pour signaler vos applications utilisant les données RDF de l'Insee et contribuer à cette page d'exemples, envoyez un message à <a href="mailto:publication-rdf@insee.fr">publication-rdf@insee.fr</a>.</p>
-	</body>
+        <h3>Vos contributions</h3>
+        <p>
+            Pour signaler vos applications utilisant les données RDF de l'Insee et contribuer à cette
+            page d'exemples, envoyez un message à
+            <a href="mailto:publication-rdf@insee.fr">publication-rdf@insee.fr</a>.
+        </p>
+    </body>
 </html>

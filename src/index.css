@@ -1,27 +1,26 @@
 body {
-  width: 70%;
-  margin: auto;
+    width: 70%;
+    margin: auto;
 }
 
 .controlbar {
-  visibility: hidden;
+    visibility: hidden;
 }
 
 table tbody td {
-  border-bottom: thin solid #d1d1d1;
+    border-bottom: thin solid #d1d1d1;
 }
 table tbody tr:nth-child(1) td {
-  border-top: thin solid #d1d1d1;
+    border-top: thin solid #d1d1d1;
 }
 table tbody td:nth-child(1) {
-  border-left: thin solid #d1d1d1;
+    border-left: thin solid #d1d1d1;
 }
 
-
 table td {
-   border-right: thin solid #d1d1d1;
+    border-right: thin solid #d1d1d1;
 }
 
 .queries-block {
-  padding: 1em 0;
+    padding: 1em 0;
 }
