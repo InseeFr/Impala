@@ -2,18 +2,18 @@
     "name": "yasgui-react",
     "version": "0.1.0",
     "dependencies": {
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0",
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1",
         "react-scripts": "5.0.1",
-        "web-vitals": "3.5.2"
+        "web-vitals": "4.2.2"
     },
     "devDependencies": {
-        "@testing-library/jest-dom": "^6.4.1",
-        "@testing-library/react": "14.2.0",
+        "@testing-library/jest-dom": "^6.4.8",
+        "@testing-library/react": "16.0.0",
         "@testing-library/user-event": "14.5.2",
         "bestzip": "^2.2.1",
         "ncp": "^2.0.0",
-        "prettier": "^3.2.4"
+        "prettier": "^3.3.3"
     },
     "scripts": {
         "copy-static": "ncp pages build && ncp temp_dist build/sparql",
