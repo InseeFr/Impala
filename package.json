@@ -4,21 +4,22 @@
     "dependencies": {
         "react": "^18.3.1",
         "react-dom": "^18.3.1",
-        "react-scripts": "5.0.1",
         "web-vitals": "4.2.2"
     },
     "devDependencies": {
         "@testing-library/jest-dom": "^6.4.8",
         "@testing-library/react": "16.0.0",
         "@testing-library/user-event": "14.5.2",
+        "@vitejs/plugin-react-swc": "^3.7.0",
         "bestzip": "^2.2.1",
         "ncp": "^2.0.0",
-        "prettier": "^3.3.3"
+        "prettier": "^3.3.3",
+        "vite": "^5.3.4"
     },
     "scripts": {
         "copy-static": "ncp pages build && ncp temp_dist build/sparql",
-        "build-react": "PUBLIC_URL='/sparql' BUILD_PATH='./temp_dist' react-scripts build",
-        "start": "react-scripts start",
+        "build-react": "vite build --base=/sparql",
+        "start": "vite",
         "build": "yarn build-react && yarn copy-static && npm run create-zip",
         "test": "react-scripts test",
         "eject": "react-scripts eject",
