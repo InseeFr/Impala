@@ -16,10 +16,11 @@
         "prettier": "^3.3.3"
     },
     "scripts": {
+        "pre-script": "REACT_APP_VERSION=$(node ./scripts/getVersion.js)",
         "copy-static": "ncp pages build && ncp temp_dist build/sparql",
         "build-react": "PUBLIC_URL='/sparql' BUILD_PATH='./temp_dist' react-scripts build",
-        "start": "react-scripts start",
-        "build": "yarn build-react && yarn copy-static && npm run create-zip",
+        "start": "yarn pre-script && react-scripts start",
+        "build": "yarn pre-script && yarn build-react && yarn copy-static && npm run create-zip",
         "test": "react-scripts test",
         "eject": "react-scripts eject",
         "create-zip": "cd build && bestzip build.zip *",
