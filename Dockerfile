@@ -1,7 +1,7 @@
 # Étape de construction
 FROM node:latest as builder
 
-WORKDIR /bauhaus
+WORKDIR /impala
 
 COPY ./ ./
 
@@ -21,11 +21,11 @@ ENV NGINX_GROUP=nginx
 USER $NGINX_USER_ID
 
 # Ajout du build au dossier root de nginx
-COPY --from=builder --chown=$NGINX_USER:$NGINX_GROUP /bauhaus/build /usr/share/nginx/html
+COPY --from=builder --chown=$NGINX_USER:$NGINX_GROUP /impala/build /usr/share/nginx/html
 
 # Copie de la configuration nginx
 RUN rm /etc/nginx/conf.d/default.conf
-COPY --from=builder --chown=$NGINX_USER:$NGINX_GROUP /bauhaus/config/nginx.conf /etc/nginx/conf.d/nginx.conf
+COPY --from=builder --chown=$NGINX_USER:$NGINX_GROUP /impala/config/nginx.conf /etc/nginx/conf.d/nginx.conf
 
 
 CMD ["nginx", "-g", "daemon off;"]
