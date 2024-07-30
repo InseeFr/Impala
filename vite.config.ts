@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
+import { configDefaults } from "vitest/config";
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -7,7 +8,8 @@ export default defineConfig({
     plugins: [react()],
     test: {
         environment: "jsdom",
-        dangerouslyIgnoreUnhandledErrors: true
+        dangerouslyIgnoreUnhandledErrors: true,
+        exclude: [...configDefaults.exclude, "tests/*"]
     },
     build: {
         outDir: "temp_dist"
