@@ -11,5 +11,8 @@ export default defineConfig({
     },
     build: {
         outDir: "temp_dist"
+    },
+    server: {
+        port: 3000
     }
 });
