@@ -3,8 +3,6 @@ name: Docker
 on:
   release:
     types: [created]
-   branches:
-     - main
 
 jobs:
   build:
