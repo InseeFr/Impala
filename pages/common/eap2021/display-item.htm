@@ -18,7 +18,7 @@
 
         $(document).ready(function() {
             var code = getURLParameter('code');
-            $('#fil-ariane').html('<ul>' + breadcrumbs(code, false) + '</ul>');
+            $('#fil-ariane').html(breadcrumbs(code, false));
             getLabel(code);
         });
 
@@ -33,12 +33,6 @@
             return text.replace(/[&<>"']/g, function(m) { return map[m]; });
         }
 
-        function decodeHtml(html) {
-            var txt = document.createElement("textarea");
-            txt.innerHTML = html;
-            return txt.value;
-        }
-
         function getLabel(code) {
             var query = "PREFIX skos:<http://www.w3.org/2004/02/skos/core#> ";
             query += "SELECT ?uri ?label WHERE {";
@@ -51,7 +45,7 @@
             $.getJSON(queryURL).done(function(data) {
                 if (data.results.bindings.length > 0) {
                     var itemURI = data.results.bindings[0].uri.value;
-                    $('#label').text(escapeHtml(code) + " - " + decodeHtml(escapeHtml(data.results.bindings[0].label.value)));
+                    $('#label').text(code + " - " + data.results.bindings[0].label.value);
                     if (code.length > 6) {
                         getDescription(itemURI);
                     }
@@ -91,14 +85,15 @@
 
             $.getJSON(queryURL).done(function(data) {
                 if (data.results.bindings.length > 0) {
-                    var innerHTML = '<p class="nom-enfants">Liste des produits détaillés</p><ul class="enfants">';
+                    var list = $('<ul>').addClass('enfants');
                     for (var index = 0; index < data.results.bindings.length; index++) {
                         var childCode = data.results.bindings[index].code.value;
-                        innerHTML += '<li><p><a href="'+ replacement + escapeHtml(childCode) + '">' + escapeHtml(childCode) + ' - ' + decodeHtml(escapeHtml(data.results.bindings[index].label.value)) + '</a></p></li>';
+                        var listItem = $('<li>');
+                        var link = $('<a>').attr('href', replacement + escapeHtml(childCode)).text(childCode + ' - ' + data.results.bindings[index].label.value);
+                        listItem.append(link);
+                        list.append(listItem);
                     }
-                    innerHTML += '</ul>';
-                    $('#sous-items').html(innerHTML);
-                    $('#sous-items').addClass("sous-items");
+                    $('#sous-items').empty().append($('<p>').addClass('nom-enfants').text('Liste des produits détaillés')).append(list).addClass("sous-items");
                 }
             }).fail(function() {
                 // Handle error silently
@@ -115,9 +110,8 @@
 
             $.getJSON(queryURL).done(function(data) {
                 if (data.results.bindings.length > 0) {
-                    var noteText = decodeHtml(escapeHtml(data.results.bindings[0].text.value.replace(regex, replacement)));
-                    $('#' + tag).append('<div>' + noteText.replace(/\\\$/g, "<br />") + '</div>');
-                    $('#' + tag).addClass(tag);
+                    var noteText = data.results.bindings[0].text.value.replace(regex, replacement);
+                    $('#' + tag).append($('<div>').text(noteText.replace(/\\\$/g, "\n"))).addClass(tag);
                 }
             }).fail(function() {
                 // Handle error silently
@@ -132,16 +126,15 @@
                 niveau = 'Produit agrégé ';
             }
             var name = escapeHtml(niveau + code);
-            var html;
-            var fin = (finalLink ?
-                ('<li><a href="'+ replacement + escapeHtml(code) +'" title="' + name + '">' + name + '</a></li>')
-                : ('<li>' + name + '</li>')
-            );
+            var fin = finalLink
+                ? $('<li>').append($('<a>').attr('href', replacement + escapeHtml(code)).attr('title', name).text(name))
+                : $('<li>').text(name);
 
+            var html;
             if (code && code.length <= 6) {
-                html = '<li><a href="eap.htm" title="Accueil">'+ escapeHtml(nomenclature.toUpperCase()) +'</a></li>&nbsp;' + fin;
+                html = $('<ul>').append($('<li>').append($('<a>').attr('href', 'eap.htm').attr('title', 'Accueil').text(nomenclature.toUpperCase()))).append(fin);
             } else if (code) {
-                html = breadcrumbs(getParentCode(code), true) + '&nbsp;' + fin;
+                html = breadcrumbs(getParentCode(code), true).append(fin);
             }
             return html;
         }
