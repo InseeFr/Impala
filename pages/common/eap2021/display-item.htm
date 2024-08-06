@@ -17,7 +17,11 @@
         var parentLength = [0, 4];
 
         $(document).ready(function() {
-            var code = getURLParameter('code');
+            var code = sanitizeInput(getURLParameter('code'));
+            if (!code) {
+                $('#label').text("Code non trouvé");
+                return;
+            }
             $('#fil-ariane').html(breadcrumbs(code, false));
             getLabel(code);
         });
@@ -31,6 +35,10 @@
                 "'": '&#039;'
             };
             return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+
+        function sanitizeInput(input) {
+            return input.replace(/[^a-zA-Z0-9]/g, '');
         }
 
         function getLabel(code) {
@@ -66,12 +74,17 @@
             $.getJSON(queryURL).done(function(data) {
                 for (var index = 0; index < data.results.bindings.length; index++) {
                     var bindingObject = data.results.bindings[index];
-                    if (bindingObject.predicate.value === "http://www.w3.org/2004/02/skos/core#definition") getNote(bindingObject.object.value, "note-generale");
-                    if (bindingObject.predicate.value === "http://www.w3.org/2004/02/skos/core#scopeNote") getNote(bindingObject.object.value, "note-generale");
-                    else if (bindingObject.predicate.value === "http://rdf-vocabulary.ddialliance.org/xkos#coreContentNote") getNote(bindingObject.object.value, "contenu-central");
-                    else if (bindingObject.predicate.value === "http://rdf-vocabulary.ddialliance.org/xkos#additionalContentNote") getNote(bindingObject.object.value, "contenu-limite");
-                    else if (bindingObject.predicate.value === "http://rdf-vocabulary.ddialliance.org/xkos#exclusionNote") getNote(bindingObject.object.value, "exclusions");
-                    else if (bindingObject.predicate.value === "http://www.w3.org/2004/02/skos/core#note") getNote(bindingObject.object.value, "remarques");
+                    var predicate = bindingObject.predicate.value;
+                    var objectValue = bindingObject.object.value;
+
+                    if (predicate === "http://www.w3.org/2004/02/skos/core#definition" ||
+                        predicate === "http://www.w3.org/2004/02/skos/core#scopeNote" ||
+                        predicate === "http://rdf-vocabulary.ddialliance.org/xkos#coreContentNote" ||
+                        predicate === "http://rdf-vocabulary.ddialliance.org/xkos#additionalContentNote" ||
+                        predicate === "http://rdf-vocabulary.ddialliance.org/xkos#exclusionNote" ||
+                        predicate === "http://www.w3.org/2004/02/skos/core#note") {
+                        getNote(objectValue, "note-generale");
+                    }
                 }
             }).fail(function() {
                 // Handle error silently
@@ -87,9 +100,10 @@
                 if (data.results.bindings.length > 0) {
                     var list = $('<ul>').addClass('enfants');
                     for (var index = 0; index < data.results.bindings.length; index++) {
-                        var childCode = data.results.bindings[index].code.value;
+                        var childCode = escapeHtml(data.results.bindings[index].code.value);
+                        var label = data.results.bindings[index].label.value;
                         var listItem = $('<li>');
-                        var link = $('<a>').attr('href', replacement + escapeHtml(childCode)).text(childCode + ' - ' + data.results.bindings[index].label.value);
+                        var link = $('<a>').attr('href', replacement + childCode).text(childCode + ' - ' + label);
                         listItem.append(link);
                         list.append(listItem);
                     }
@@ -101,7 +115,7 @@
         }
 
         function getURLParameter(name) {
-            return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20')) || null;
+            return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search) || ["", ""])[1].replace(/\+/g, '%20')) || null;
         }
 
         function getNote(uri, tag) {
@@ -111,7 +125,7 @@
             $.getJSON(queryURL).done(function(data) {
                 if (data.results.bindings.length > 0) {
                     var noteText = data.results.bindings[0].text.value.replace(regex, replacement);
-                    $('#' + tag).append($('<div>').text(noteText.replace(/\\\$/g, "\n"))).addClass(tag);
+                    $('#' + tag).append($('<div>').html(noteText.replace(/\\\$/g, "<br />"))).addClass(tag);
                 }
             }).fail(function() {
                 // Handle error silently
@@ -132,7 +146,7 @@
 
             var html;
             if (code && code.length <= 6) {
-                html = $('<ul>').append($('<li>').append($('<a>').attr('href', 'eap.htm').attr('title', 'Accueil').text(nomenclature.toUpperCase()))).append(fin);
+                html = $('<ul>').append($('<li>').append($('<a>').attr('href', 'eap.htm').attr('title', 'Accueil').text(escapeHtml(nomenclature.toUpperCase())))).append(fin);
             } else if (code) {
                 html = breadcrumbs(getParentCode(code), true).append(fin);
             }
