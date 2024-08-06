@@ -33,6 +33,12 @@
             return text.replace(/[&<>"']/g, function(m) { return map[m]; });
         }
 
+        function decodeHtml(html) {
+            var txt = document.createElement("textarea");
+            txt.innerHTML = html;
+            return txt.value;
+        }
+
         function getLabel(code) {
             var query = "PREFIX skos:<http://www.w3.org/2004/02/skos/core#> ";
             query += "SELECT ?uri ?label WHERE {";
@@ -45,17 +51,17 @@
             $.getJSON(queryURL).done(function(data) {
                 if (data.results.bindings.length > 0) {
                     var itemURI = data.results.bindings[0].uri.value;
-                    $('#label').html(escapeHtml(code) + " - " + escapeHtml(data.results.bindings[0].label.value));
+                    $('#label').text(escapeHtml(code) + " - " + decodeHtml(escapeHtml(data.results.bindings[0].label.value)));
                     if (code.length > 6) {
                         getDescription(itemURI);
                     }
                     var childTypeIndex = (code.length == 6 ? 1 : 0);
                     getChildren(itemURI, itemTypes[childTypeIndex]);
                 } else {
-                    $('#label').html("<p>Code non trouvé</p>");
+                    $('#label').text("Code non trouvé");
                 }
             }).fail(function() {
-                $('#label').html("<p>Erreur lors de la récupération des données</p>");
+                $('#label').text("Erreur lors de la récupération des données");
             });
         }
 
@@ -88,7 +94,7 @@
                     var innerHTML = '<p class="nom-enfants">Liste des produits détaillés</p><ul class="enfants">';
                     for (var index = 0; index < data.results.bindings.length; index++) {
                         var childCode = data.results.bindings[index].code.value;
-                        innerHTML += '<li><p><a href="'+ replacement + escapeHtml(childCode) + '">' + escapeHtml(childCode) + ' - ' + escapeHtml(data.results.bindings[index].label.value) + '</a></p></li>';
+                        innerHTML += '<li><p><a href="'+ replacement + escapeHtml(childCode) + '">' + escapeHtml(childCode) + ' - ' + decodeHtml(escapeHtml(data.results.bindings[index].label.value)) + '</a></p></li>';
                     }
                     innerHTML += '</ul>';
                     $('#sous-items').html(innerHTML);
@@ -109,8 +115,8 @@
 
             $.getJSON(queryURL).done(function(data) {
                 if (data.results.bindings.length > 0) {
-                    var noteText = escapeHtml(data.results.bindings[0].text.value.replace(regex, replacement));
-                    $('#' + tag).append(noteText.replace(/\\\$/g, "<br />"));
+                    var noteText = decodeHtml(escapeHtml(data.results.bindings[0].text.value.replace(regex, replacement)));
+                    $('#' + tag).append('<div>' + noteText.replace(/\\\$/g, "<br />") + '</div>');
                     $('#' + tag).addClass(tag);
                 }
             }).fail(function() {
