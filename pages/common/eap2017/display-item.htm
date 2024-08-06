@@ -1,20 +1,20 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 	<head>
-		<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
-        <title>EAP - consultation</title>
-        <link href="../commun.css" rel="stylesheet" type="text/css"/>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="description" content="EAP - consultation">
+		<title>EAP - consultation</title>
+		<link href="../commun.css" rel="stylesheet" type="text/css"/>
 		<script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
 		<script>
-			/*
-			var niveau="produits"*/
-			var endpointURL = "http://rdf.insee.fr/sparql";
+			var endpointURL = "https://rdf.insee.fr/sparql";
 			var racine = "http://id.insee.fr/codes/";
-			var nomenclature="eap2017";
-			var regex = new RegExp(racine +nomenclature +"/[A-Z0-9]+/", "g");
+			var nomenclature = "eap2017";
+			var regex = new RegExp(racine + nomenclature + "/[A-Z0-9]+/", "g");
 			var replacement = 'display-item.htm?code=';
-			var itemTypes = ['Produit', 'produit'];//Nom "propre" des différents niveaux 
-			var parentLength = [0,4];//Taille des codes parents (0 si n'existe pas)
+			var itemTypes = ['Produit', 'produit'];
+			var parentLength = [0, 4];
 
 			$(document).ready(function() {
 				var code = getURLParameter('code');
@@ -22,123 +22,135 @@
 				getLabel(code);
 			});
 
+			function escapeHtml(text) {
+				var map = {
+					'&': '&amp;',
+					'<': '&lt;',
+					'>': '&gt;',
+					'"': '&quot;',
+					"'": '&#039;'
+				};
+				return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+			}
+
 			function getLabel(code) {
 				var query = "PREFIX skos:<http://www.w3.org/2004/02/skos/core#> ";
 				query += "SELECT ?uri ?label WHERE {";
-				query += "GRAPH <http://rdf.insee.fr/graphes/codes/"+nomenclature+"> {";
-				query += "?uri skos:prefLabel ?label ; skos:notation '"+ code;
+				query += "GRAPH <http://rdf.insee.fr/graphes/codes/" + nomenclature + "> {";
+				query += "?uri skos:prefLabel ?label ; skos:notation '" + escapeHtml(code);
 				query += "'. FILTER langMatches (lang(?label), 'fr')}";
-			  query += " . }";
+				query += " . }";
 				var queryURL = endpointURL + "?query=" + encodeURIComponent(query);
 
-				$.getJSON(queryURL).success(function(data) {
-					var itemURI = data.results.bindings[0].uri.value;
-					$('#label').html(code + " - " + data.results.bindings[0].label.value);
-					if (code.length>6){
+				$.getJSON(queryURL).done(function(data) {
+					if (data.results.bindings.length > 0) {
+						var itemURI = data.results.bindings[0].uri.value;
+						$('#label').html(escapeHtml(code) + " - " + escapeHtml(data.results.bindings[0].label.value));
+						if (code.length > 6) {
 							getDescription(itemURI);
+						}
+						var childTypeIndex = (code.length == 6 ? 1 : 0);
+						getChildren(itemURI, itemTypes[childTypeIndex]);
+					} else {
+						$('#label').html("<p>Code non trouvé</p>");
 					}
-					var childTypeIndex = (code.length == 6 ? 1 : 0);
-					getChildren(itemURI, itemTypes[childTypeIndex]);
-
-				})
+				}).fail(function() {
+					$('#label').html("<p>Erreur lors de la récupération des données</p>");
+				});
 			}
 
 			function getDescription(itemURI) {
-				var query = "PREFIX skos:<http://www.w3.org/2004/02/skos/core#> DESCRIBE <" + itemURI + ">";
+				var query = "PREFIX skos:<http://www.w3.org/2004/02/skos/core#> DESCRIBE <" + escapeHtml(itemURI) + ">";
 				var queryURL = endpointURL + "?query=" + encodeURIComponent(query);
-						"OK"
-				$.getJSON(queryURL).success(function(data) {
+
+				$.getJSON(queryURL).done(function(data) {
 					for (var index = 0; index < data.results.bindings.length; index++) {
 						var bindingObject = data.results.bindings[index];
-						if (bindingObject.predicate.value === "http://www.w3.org/2004/02/skos/core#definition") getNote(bindingObject.object.value, "note-generale"); // Note générale
-
-						if (bindingObject.predicate.value === "http://www.w3.org/2004/02/skos/core#scopeNote") getNote(bindingObject.object.value, "note-generale"); // Note générale
-						else if (bindingObject.predicate.value === "http://rdf-vocabulary.ddialliance.org/xkos#coreContentNote") getNote(bindingObject.object.value, "contenu-central"); // Contenu central
-						else if (bindingObject.predicate.value === "http://rdf-vocabulary.ddialliance.org/xkos#additionalContentNote") getNote(bindingObject.object.value, "contenu-limite"); // Contenu central
-						else if (bindingObject.predicate.value === "http://rdf-vocabulary.ddialliance.org/xkos#exclusionNote") getNote(bindingObject.object.value, "exclusions"); // Exclusions
-						else if (bindingObject.predicate.value === "http://www.w3.org/2004/02/skos/core#note") getNote(bindingObject.object.value, "remarques"); // Remarque
+						if (bindingObject.predicate.value === "http://www.w3.org/2004/02/skos/core#definition") getNote(bindingObject.object.value, "note-generale");
+						if (bindingObject.predicate.value === "http://www.w3.org/2004/02/skos/core#scopeNote") getNote(bindingObject.object.value, "note-generale");
+						else if (bindingObject.predicate.value === "http://rdf-vocabulary.ddialliance.org/xkos#coreContentNote") getNote(bindingObject.object.value, "contenu-central");
+						else if (bindingObject.predicate.value === "http://rdf-vocabulary.ddialliance.org/xkos#additionalContentNote") getNote(bindingObject.object.value, "contenu-limite");
+						else if (bindingObject.predicate.value === "http://rdf-vocabulary.ddialliance.org/xkos#exclusionNote") getNote(bindingObject.object.value, "exclusions");
+						else if (bindingObject.predicate.value === "http://www.w3.org/2004/02/skos/core#note") getNote(bindingObject.object.value, "remarques");
 					}
-				})
+				}).fail(function() {
+					// Handle error silently
+				});
 			}
 
 			function getChildren(itemURI, childType) {
-
-				var query = "PREFIX skos:<http://www.w3.org/2004/02/skos/core#> SELECT ?code ?label WHERE { <" + itemURI + ">  skos:narrower ?child . ";
-				query += "?child skos:notation ?code ; skos:prefLabel ?label . FILTER langMatches (lang(?label), 'fr') } ORDER BY ?code"
+				var query = "PREFIX skos:<http://www.w3.org/2004/02/skos/core#> SELECT ?code ?label WHERE { <" + escapeHtml(itemURI) + "> skos:narrower ?child . ";
+				query += "?child skos:notation ?code ; skos:prefLabel ?label . FILTER langMatches (lang(?label), 'fr') } ORDER BY ?code";
 				var queryURL = endpointURL + "?query=" + encodeURIComponent(query);
 
-				$.getJSON(queryURL).success(function(data) {
+				$.getJSON(queryURL).done(function(data) {
 					if (data.results.bindings.length > 0) {
 						var innerHTML = '<p class="nom-enfants">Liste des produits détaillés</p><ul class="enfants">';
 						for (var index = 0; index < data.results.bindings.length; index++) {
 							var childCode = data.results.bindings[index].code.value;
-							innerHTML += '<li><p><a href="'+replacement + childCode + '">' + childCode + ' - ' + data.results.bindings[index].label.value + '</a></p></li>';
+							innerHTML += '<li><p><a href="'+ replacement + escapeHtml(childCode) + '">' + escapeHtml(childCode) + ' - ' + escapeHtml(data.results.bindings[index].label.value) + '</a></p></li>';
 						}
 						innerHTML += '</ul>';
 						$('#sous-items').html(innerHTML);
 						$('#sous-items').addClass("sous-items");
 					}
-				})
+				}).fail(function() {
+					// Handle error silently
+				});
 			}
 
 			function getURLParameter(name) {
-    			return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20'))||null;
+    			return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20')) || null;
 			}
 
 			function getNote(uri, tag) {
-
-				var query = 'SELECT ?text WHERE { <' + uri + '> <http://eurovoc.europa.eu/schema#noteLiteral> ?text }'
+				var query = 'SELECT ?text WHERE { <' + escapeHtml(uri) + '> <http://eurovoc.europa.eu/schema#noteLiteral> ?text }';
 				var queryURL = endpointURL + "?query=" + encodeURIComponent(query);
 
-				$.getJSON(queryURL).success(function(data) {
-					var noteText = data.results.bindings[0].text.value.replace(regex, replacement);
-					$('#' + tag).append(noteText.replace(/\\\$/g, "<br />"));
-					$('#' + tag).addClass(tag);
-				})
+				$.getJSON(queryURL).done(function(data) {
+					if (data.results.bindings.length > 0) {
+						var noteText = data.results.bindings[0].text.value.replace(regex, replacement);
+						$('#' + tag).append(escapeHtml(noteText).replace(/\\\$/g, "<br />"));
+						$('#' + tag).addClass(tag);
+					}
+				}).fail(function() {
+					// Handle error silently
+				});
 			}
 
 			function breadcrumbs(code, finalLink) {
+				var niveau;
 				if (code && code.length > 6) {
-					niveau='Produit détaillé ';
-				}else niveau = 'Produit agrégé ';
-				var name = niveau+code;
-				//itemTypes[code.length] + ' ' + code;
+					niveau = 'Produit détaillé ';
+				} else {
+					niveau = 'Produit agrégé ';
+				}
+				var name = escapeHtml(niveau + code);
 				var html;
 				var fin = (finalLink ?
-						('<li><a href="'+ replacement + code +'" title="' + name + '">' + name + '</a></li>')
-						: ('<li>' + name + '</li>')
-					);
+					('<li><a href="'+ replacement + escapeHtml(code) +'" title="' + name + '">' + name + '</a></li>')
+					: ('<li>' + name + '</li>')
+				);
 
 				if (code && code.length <= 6) {
-					html = '<li><a href="eap.htm" title="Accueil">'+nomenclature.toUpperCase()+'</a></li>&nbsp;'	+  fin;
-
-					}
-				else if (code){
-					html =
-					 breadcrumbs(getParentCode(code), true) + '&nbsp;' 	+
-					fin;
-					}
+					html = '<li><a href="eap.htm" title="Accueil">'+ escapeHtml(nomenclature.toUpperCase()) +'</a></li>&nbsp;' + fin;
+				} else if (code) {
+					html = breadcrumbs(getParentCode(code), true) + '&nbsp;' + fin;
+				}
 				return html;
 			}
 
-			/**
-			à partir du code enfant return le code parent
-			**/
 			function getParentCode(code) {
-				//TODO à réécrire pour chaque nomenclature
 				var codeParent;
 				if (code && code.length > 6) {
 					codeParent = code.substr(0, parentLength[1]);
-					if (code.slice(-1).match(/[A-Z]/)){//le dernier élément du code est une lettre
-						codeParent+=code.slice(-1).toLowerCase();
+					if (code.slice(-1).match(/[A-Z]/)) {
+						codeParent += code.slice(-1).toLowerCase();
 					}
 					return codeParent;
 				}
 				return null;
 			}
-
-
-
 		</script>
 	</head>
 	<body>

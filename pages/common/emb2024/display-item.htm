@@ -1,151 +1,163 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 	<head>
-		<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
-        <title>EMB - consultation</title>
-        <link href="../commun.css" rel="stylesheet" type="text/css"/>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="description" content="EMB - consultation">
+		<title>EMB - consultation</title>
+		<link href="../commun.css" rel="stylesheet" type="text/css"/>
 		<script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
 		<script>
-			/*
-			var niveau="produits"*/
 			var endpointURL = "https://rdf.insee.fr/sparql";
 			var racine = "http://id.insee.fr/codes/";
-			var nomenclature="emb2024";
-			var regex = new RegExp(racine +nomenclature +"/[A-Z0-9]+/", "g");
+			var nomenclature = "emb2024";
+			var regex = new RegExp(racine + nomenclature + "/[A-Z0-9]+/", "g");
 			var replacement = 'display-item.htm?code=';
-			var itemTypes = ['Activité de la NAF', 'Produit'];//Nom "propre" des différents niveaux 
-			var parentLength = [0,5];//Taille des codes parents (0 si n'existe pas)
+			var itemTypes = ['Activité de la NAF', 'Produit'];
+			var parentLength = [0, 5];
 
 			$(document).ready(function() {
 				var codeAAffiche = getURLParameter('code');
 				var code;
-				if (codeAAffiche.length<6){
+				if (codeAAffiche.length < 6) {
 					code = codeAAffiche.substring(0, 2) + "." + codeAAffiche.substring(2);
-				}else{ code = codeAAffiche;}
+				} else {
+					code = codeAAffiche;
+				}
 				$('#fil-ariane').html('<ul>' + breadcrumbs(code, false) + '</ul>');
 				getLabel(code);
 			});
 
+			function escapeHtml(text) {
+				var map = {
+					'&': '&amp;',
+					'<': '&lt;',
+					'>': '&gt;',
+					'"': '&quot;',
+					"'": '&#039;'
+				};
+				return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+			}
+
 			function getLabel(code) {
 				var query = "PREFIX skos:<http://www.w3.org/2004/02/skos/core#> ";
 				query += "SELECT ?uri ?label WHERE {";
-				//query += "GRAPH <http://rdf.insee.fr/graphes/codes/"+nomenclature+"> {";
-				query += "?uri skos:prefLabel ?label ; skos:notation '"+ code;
+				query += "?uri skos:prefLabel ?label ; skos:notation '" + escapeHtml(code);
 				query += "'. FILTER langMatches (lang(?label), 'fr')}";
-			  //query += " . }";
 				var queryURL = endpointURL + "?query=" + encodeURIComponent(query);
-				var codeAAffiche = code.replace(".","") ;
-				$.getJSON(queryURL).success(function(data) {
-					var itemURI = data.results.bindings[0].uri.value;
-					$('#label').html(codeAAffiche + " - " + data.results.bindings[0].label.value);
-					if (code.length>6){
-							getDescription(itemURI);
-					}else{
-						var childTypeIndex = (code.length == 6 ? 1 : 0);
-						getChildren(itemURI, itemTypes[childTypeIndex]);
-					}
+				var codeAAffiche = code.replace(".", "");
 
-				})
+				$.getJSON(queryURL).done(function(data) {
+					if (data.results.bindings.length > 0) {
+						var itemURI = data.results.bindings[0].uri.value;
+						$('#label').html(escapeHtml(codeAAffiche) + " - " + escapeHtml(data.results.bindings[0].label.value));
+						if (code.length > 6) {
+							getDescription(itemURI);
+						} else {
+							var childTypeIndex = (code.length == 6 ? 1 : 0);
+							getChildren(itemURI, itemTypes[childTypeIndex]);
+						}
+					} else {
+						$('#label').html("<p>Code non trouvé</p>");
+					}
+				}).fail(function() {
+					$('#label').html("<p>Erreur lors de la récupération des données</p>");
+				});
 			}
 
 			function getDescription(itemURI) {
 				var query = "PREFIX skos:<http://www.w3.org/2004/02/skos/core#> DESCRIBE <" + itemURI + ">";
 				var queryURL = endpointURL + "?query=" + encodeURIComponent(query);
-						"OK"
-				$.getJSON(queryURL).success(function(data) {
+
+				$.getJSON(queryURL).done(function(data) {
 					for (var index = 0; index < data.results.bindings.length; index++) {
 						var bindingObject = data.results.bindings[index];
-						if (bindingObject.predicate.value === "http://www.w3.org/2004/02/skos/core#definition") getNote(bindingObject.object.value, "note-generale"); // Note générale
-
-						if (bindingObject.predicate.value === "http://www.w3.org/2004/02/skos/core#scopeNote") getNote(bindingObject.object.value, "note-generale"); // Note générale
-						else if (bindingObject.predicate.value === "http://rdf-vocabulary.ddialliance.org/xkos#coreContentNote") getNote(bindingObject.object.value, "contenu-central"); // Contenu central
-						else if (bindingObject.predicate.value === "http://rdf-vocabulary.ddialliance.org/xkos#additionalContentNote") getNote(bindingObject.object.value, "contenu-limite"); // Contenu central
-						else if (bindingObject.predicate.value === "http://rdf-vocabulary.ddialliance.org/xkos#exclusionNote") getNote(bindingObject.object.value, "exclusions"); // Exclusions
-						else if (bindingObject.predicate.value === "http://www.w3.org/2004/02/skos/core#note") getNote(bindingObject.object.value, "remarques"); // Remarque
+						if (bindingObject.predicate.value === "http://www.w3.org/2004/02/skos/core#definition") getNote(bindingObject.object.value, "note-generale");
+						if (bindingObject.predicate.value === "http://www.w3.org/2004/02/skos/core#scopeNote") getNote(bindingObject.object.value, "note-generale");
+						else if (bindingObject.predicate.value === "http://rdf-vocabulary.ddialliance.org/xkos#coreContentNote") getNote(bindingObject.object.value, "contenu-central");
+						else if (bindingObject.predicate.value === "http://rdf-vocabulary.ddialliance.org/xkos#additionalContentNote") getNote(bindingObject.object.value, "contenu-limite");
+						else if (bindingObject.predicate.value === "http://rdf-vocabulary.ddialliance.org/xkos#exclusionNote") getNote(bindingObject.object.value, "exclusions");
+						else if (bindingObject.predicate.value === "http://www.w3.org/2004/02/skos/core#note") getNote(bindingObject.object.value, "remarques");
 					}
-				})
+				}).fail(function() {
+					// Handle error silently
+				});
 			}
 
 			function getChildren(itemURI, childType) {
-
-				var query = "PREFIX skos:<http://www.w3.org/2004/02/skos/core#> SELECT ?code ?label WHERE { <" + itemURI + ">  skos:relatedMatch ?child . ";
-				query += "?child skos:notation ?code ; skos:prefLabel ?label . FILTER langMatches (lang(?label), 'fr') } ORDER BY ?code"
+				var query = "PREFIX skos:<http://www.w3.org/2004/02/skos/core#> SELECT ?code ?label WHERE { <" + escapeHtml(itemURI) + "> skos:relatedMatch ?child . ";
+				query += "?child skos:notation ?code ; skos:prefLabel ?label . FILTER langMatches (lang(?label), 'fr') } ORDER BY ?code";
 				var queryURL = endpointURL + "?query=" + encodeURIComponent(query);
 
-				$.getJSON(queryURL).success(function(data) {
+				$.getJSON(queryURL).done(function(data) {
 					if (data.results.bindings.length > 0) {
-						var innerHTML = '<p class="nom-enfants">' + childType + (data.results.bindings.length > 1 ? 's' : '') + '</p><ul class="enfants">';
+						var innerHTML = '<p class="nom-enfants">' + escapeHtml(childType) + (data.results.bindings.length > 1 ? 's' : '') + '</p><ul class="enfants">';
 						for (var index = 0; index < data.results.bindings.length; index++) {
 							var childCode = data.results.bindings[index].code.value;
-							innerHTML += '<li><p><a href="'+replacement + childCode + '">' + childCode + ' - ' + data.results.bindings[index].label.value + '</a></p></li>';
+							innerHTML += '<li><p><a href="' + replacement + escapeHtml(childCode) + '">' + escapeHtml(childCode) + ' - ' + escapeHtml(data.results.bindings[index].label.value) + '</a></p></li>';
 						}
 						innerHTML += '</ul>';
 						$('#sous-items').html(innerHTML);
 						$('#sous-items').addClass("sous-items");
 					}
-				})
+				}).fail(function() {
+					// Handle error silently
+				});
 			}
 
 			function getURLParameter(name) {
-    			return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20'))||null;
+    			return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20')) || null;
 			}
 
 			function getNote(uri, tag) {
-
-				var query = 'SELECT ?text WHERE { <' + uri + '> <http://eurovoc.europa.eu/schema#noteLiteral> ?text }'
+				var query = 'SELECT ?text WHERE { <' + escapeHtml(uri) + '> <http://eurovoc.europa.eu/schema#noteLiteral> ?text }';
 				var queryURL = endpointURL + "?query=" + encodeURIComponent(query);
 
-				$.getJSON(queryURL).success(function(data) {
-					var noteText = data.results.bindings[0].text.value.replace(regex, replacement);
-					$('#' + tag).append(noteText.replace(/\\\$/g, "<br />"));
-					$('#' + tag).addClass(tag);
-				})
+				$.getJSON(queryURL).done(function(data) {
+					if (data.results.bindings.length > 0) {
+						var noteText = data.results.bindings[0].text.value.replace(regex, replacement);
+						$('#' + tag).append(escapeHtml(noteText).replace(/\\\$/g, "<br />"));
+						$('#' + tag).addClass(tag);
+					}
+				}).fail(function() {
+					// Handle error silently
+				});
 			}
 
 			function breadcrumbs(code, finalLink) {
-				var codeAAffiche ;
+				var codeAAffiche;
+				var niveau;
 				if (code && code.length > 6) {
-					niveau='Produit ';
+					niveau = 'Produit ';
 					codeAAffiche = code;
-				}else {
+				} else {
 					niveau = 'Activité ';
-					codeAAffiche = code.replace(".","") ;
+					codeAAffiche = code.replace(".", "");
 				}
-				var name = niveau+codeAAffiche;
-				//itemTypes[code.length] + ' ' + code;
+				var name = escapeHtml(niveau + codeAAffiche);
 				var html;
 				var fin = (finalLink ?
-						('<li><a href="'+ replacement + codeAAffiche +'" title="' + name + '">' + name + '</a></li>')
-						: ('<li>' + name + '</li>')
-					);
+					('<li><a href="' + replacement + escapeHtml(codeAAffiche) + '" title="' + name + '">' + name + '</a></li>')
+					: ('<li>' + name + '</li>')
+				);
 
 				if (code && code.length == 6) {
-					html = '<li><a href="emb.htm" title="Accueil">'+nomenclature.toUpperCase()+'</a></li>&nbsp;'	+  fin;
-					}
-				else if (code){
-					html =
-					 breadcrumbs(getParentCode(code), true) + '&nbsp;' 	+
-					fin;
-					}
+					html = '<li><a href="emb.htm" title="Accueil">' + escapeHtml(nomenclature.toUpperCase()) + '</a></li>&nbsp;' + fin;
+				} else if (code) {
+					html = breadcrumbs(getParentCode(code), true) + '&nbsp;' + fin;
+				}
 				return html;
 			}
 
-			/**
-			à partir du code enfant return le code parent
-			**/
 			function getParentCode(code) {
-				//TODO à réécrire pour chaque nomenclature
 				var codeParent;
 				if (code && code.length > 6) {
-					var  codeParentSansPoint = code.substr(0, parentLength[1]);
+					var codeParentSansPoint = code.substr(0, parentLength[1]);
 					codeParent = codeParentSansPoint.substring(0, 2) + "." + codeParentSansPoint.substring(2);
 					return codeParent;
 				}
 				return null;
 			}
-
-
-
 		</script>
 	</head>
 	<body>

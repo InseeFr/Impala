@@ -1,38 +1,61 @@
 <!doctype html>
-<html>
+<html lang="fr">
     <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="Recherche dans la NAF">
+        <title>Recherche dans la NAF</title>
+        <link href="../commun.css" rel="stylesheet" type="text/css"/>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
         <script>
             $(document).ready(function () {
                 $("#chercher").bind("click", function () {
-                    $("#resultat").html("<p>Code non trouv�</p>");
+                    $("#resultat").html("<p>Code non trouvé</p>");
                     var code = document.getElementById("code").value.trim().toUpperCase();
-                    if (code.length == 0) $("#resultat").html("<p><b>Veuillez entrer un code</b></p>");
-                    else {
+                    if (code.length == 0) {
+                        $("#resultat").html("<p><b>Veuillez entrer un code</b></p>");
+                    } else {
                         var query =
                             "prefix skos: <http://www.w3.org/2004/02/skos/core#> select ?libelle from <http://rdf.insee.fr/graphes/codes/nafr2> ";
                         query +=
                             'where {?s skos:notation "' +
-                            code +
+                            escapeHtml(code) +
                             "\" . ?s skos:prefLabel ?libelle filter(lang(?libelle) = 'fr')}";
                         var url = "https://rdf.insee.fr/sparql?query=" + encodeURIComponent(query);
-                        $.getJSON(url).success(function (data) {
-                            $("#resultat").html(
-                                "<p>" + code + " - " + data.results.bindings[0].libelle.value + "</p>"
-                            );
+
+                        $.getJSON(url).done(function (data) {
+                            if (data.results.bindings.length > 0) {
+                                var libelle = data.results.bindings[0].libelle.value;
+                                $("#resultat").html("<p>" + escapeHtml(code) + " - " + escapeHtml(libelle) + "</p>");
+                            } else {
+                                $("#resultat").html("<p>Code non trouvé</p>");
+                            }
+                        }).fail(function () {
+                            $("#resultat").html("<p>Erreur lors de la récupération des données</p>");
                         });
                     }
                 });
+
+                function escapeHtml(text) {
+                    var map = {
+                        '&': '&amp;',
+                        '<': '&lt;',
+                        '>': '&gt;',
+                        '"': '&quot;',
+                        "'": '&#039;'
+                    };
+                    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+                }
             });
         </script>
     </head>
     <body>
         <h1>Recherche dans la NAF</h1>
         <div>
-            <label>Code : </label>
+            <label for="code">Code : </label>
             <input id="code" type="text" autofocus="autofocus" />
             <button id="chercher" required>Chercher</button><br />
         </div>
-        <div id="resultat" />
+        <div id="resultat"></div>
     </body>
 </html>
