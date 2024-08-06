@@ -37,7 +37,7 @@
 				var query = "PREFIX skos:<http://www.w3.org/2004/02/skos/core#> ";
 				query += "SELECT ?uri ?label WHERE {";
 				query += "GRAPH <http://rdf.insee.fr/graphes/codes/" + nomenclature + "> {";
-				query += "?uri skos:prefLabel ?label ; skos:notation '" + escapeHtml(code);
+				query += "?uri skos:prefLabel ?label ; skos:notation '" + code;
 				query += "'. FILTER langMatches (lang(?label), 'fr')}";
 				query += " . }";
 				var queryURL = endpointURL + "?query=" + encodeURIComponent(query);
@@ -60,7 +60,7 @@
 			}
 
 			function getDescription(itemURI) {
-				var query = "PREFIX skos:<http://www.w3.org/2004/02/skos/core#> DESCRIBE <" + escapeHtml(itemURI) + ">";
+				var query = "PREFIX skos:<http://www.w3.org/2004/02/skos/core#> DESCRIBE <" + itemURI + ">";
 				var queryURL = endpointURL + "?query=" + encodeURIComponent(query);
 
 				$.getJSON(queryURL).done(function(data) {
@@ -79,7 +79,7 @@
 			}
 
 			function getChildren(itemURI, childType) {
-				var query = "PREFIX skos:<http://www.w3.org/2004/02/skos/core#> SELECT ?code ?label WHERE { <" + escapeHtml(itemURI) + "> skos:narrower ?child . ";
+				var query = "PREFIX skos:<http://www.w3.org/2004/02/skos/core#> SELECT ?code ?label WHERE { <" + itemURI + "> skos:narrower ?child . ";
 				query += "?child skos:notation ?code ; skos:prefLabel ?label . FILTER langMatches (lang(?label), 'fr') } ORDER BY ?code";
 				var queryURL = endpointURL + "?query=" + encodeURIComponent(query);
 
@@ -104,13 +104,13 @@
 			}
 
 			function getNote(uri, tag) {
-				var query = 'SELECT ?text WHERE { <' + escapeHtml(uri) + '> <http://eurovoc.europa.eu/schema#noteLiteral> ?text }';
+				var query = 'SELECT ?text WHERE { <' + uri + '> <http://eurovoc.europa.eu/schema#noteLiteral> ?text }';
 				var queryURL = endpointURL + "?query=" + encodeURIComponent(query);
 
 				$.getJSON(queryURL).done(function(data) {
 					if (data.results.bindings.length > 0) {
-						var noteText = data.results.bindings[0].text.value.replace(regex, replacement);
-						$('#' + tag).append(escapeHtml(noteText).replace(/\\\$/g, "<br />"));
+						var noteText = escapeHtml(data.results.bindings[0].text.value.replace(regex, replacement));
+						$('#' + tag).append(noteText.replace(/\\\$/g, "<br />"));
 						$('#' + tag).addClass(tag);
 					}
 				}).fail(function() {
