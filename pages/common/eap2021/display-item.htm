@@ -32,47 +32,52 @@
             return sanitized.match(/^[A-Za-z0-9]{1,10}$/) ? sanitized : null;
         }
 
-        function getURLParameter(name) {
-            return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search) || ["", ""])[1].replace(/\+/g, '%20')) || null;
-        }
+		function getURLParameter(name) {
+    const param = decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search) || ["", ""])[1].replace(/\+/g, '%20')) || null;
+    if (param && /^[A-Za-z0-9\-]+$/.test(param)) {  // Added regex validation
+        return param;
+    }
+    return null;
+}
 
-        function validateData(data, requiredVars) {
-            if (data && data.results && data.results.bindings && Array.isArray(data.results.bindings)) {
-                return data.results.bindings.every(binding => {
-                    return requiredVars.every(varName => binding[varName] && binding[varName].value && typeof binding[varName].value === 'string');
-                });
+		function validateData(data, requiredVars) {
+    if (data && data.results && data.results.bindings && Array.isArray(data.results.bindings)) {
+        return data.results.bindings.every(binding => {
+            return requiredVars.every(varName => binding[varName] && binding[varName].value && typeof binding[varName].value === 'string');
+        });
+    }
+    return false;
+}
+
+function getLabel(code) {
+    //console.log("getLabel called with code:", code);
+    const query = `PREFIX skos:<http://www.w3.org/2004/02/skos/core#> 
+        SELECT ?uri ?label WHERE {
+            GRAPH <http://rdf.insee.fr/graphes/codes/${nomenclature}> {
+                ?uri skos:prefLabel ?label ; skos:notation '${escapeHtml(code)}'.
+                FILTER langMatches(lang(?label), 'fr')
             }
-            return false;
-        }
+        }`;
+    const queryURL = `${endpointURL}?query=${encodeURIComponent(query)}`;
+    //console.log("getLabel queryURL:", queryURL);
 
-        function getLabel(code) {
-            //console.log("getLabel called with code:", code);
-            const query = `PREFIX skos:<http://www.w3.org/2004/02/skos/core#> 
-                SELECT ?uri ?label WHERE {
-                    GRAPH <http://rdf.insee.fr/graphes/codes/${nomenclature}> {
-                        ?uri skos:prefLabel ?label ; skos:notation '${escapeHtml(code)}'.
-                        FILTER langMatches(lang(?label), 'fr')
-                    }
-                }`;
-            const queryURL = `${endpointURL}?query=${encodeURIComponent(query)}`;
-            //console.log("getLabel queryURL:", queryURL);
-
-            $.getJSON(queryURL).done(function (data) {
-                if (validateData(data, ['uri', 'label'])) {
-                    const itemURI = escapeHtml(data.results.bindings[0].uri.value);
-                    $('#label').html(`${escapeHtml(code)} - ${escapeHtml(data.results.bindings[0].label.value)}`);
-                    if (code.length > 6) {
-                        getDescription(itemURI);
-                    }
-                    const childTypeIndex = (code.length === 6 ? 1 : 0);
-                    getChildren(itemURI, itemTypes[childTypeIndex]);
-                } else {
-                    $('#label').text("Code non trouvé");
-                }
-            }).fail(function () {
-                $('#label').text("Erreur lors de la récupération des données");
-            });
+    $.getJSON(queryURL).done(function (data) {
+        if (validateData(data, ['uri', 'label'])) {
+            const itemURI = escapeHtml(data.results.bindings[0].uri.value);
+            $('#label').html(`${escapeHtml(code)} - ${escapeHtml(data.results.bindings[0].label.value)}`);
+            if (code.length > 6) {
+                getDescription(itemURI);
+            }
+            const childTypeIndex = (code.length === 6 ? 1 : 0);
+            getChildren(itemURI, itemTypes[childTypeIndex]);
+        } else {
+            $('#label').text("Code non trouvé");
         }
+    }).fail(function () {
+        $('#label').text("Erreur lors de la récupération des données");
+    });
+}
+
 
         function getDescription(itemURI) {
             //console.log("getDescription called with itemURI:", itemURI);
@@ -105,70 +110,85 @@
             });
         }
 
-        function getChildren(itemURI, childType) {
-            //console.log("getChildren called with itemURI:", itemURI, "and childType:", childType);
-            const query = `PREFIX skos:<http://www.w3.org/2004/02/skos/core#> 
-                SELECT ?code ?label WHERE {
-                    <${escapeHtml(itemURI)}> skos:narrower ?child . 
-                    ?child skos:notation ?code ; skos:prefLabel ?label . 
-                    FILTER langMatches(lang(?label), 'fr') 
-                } ORDER BY ?code`;
-            const queryURL = `${endpointURL}?query=${encodeURIComponent(query)}`;
-            //console.log("getChildren queryURL:", queryURL);
+		function getChildren(itemURI, childType) {
+    //console.log("getChildren called with itemURI:", itemURI, "and childType:", childType);
+    const query = `PREFIX skos:<http://www.w3.org/2004/02/skos/core#> 
+        SELECT ?code ?label WHERE {
+            <${escapeHtml(itemURI)}> skos:narrower ?child . 
+            ?child skos:notation ?code ; skos:prefLabel ?label . 
+            FILTER langMatches(lang(?label), 'fr') 
+        } ORDER BY ?code`;
+    const queryURL = `${endpointURL}?query=${encodeURIComponent(query)}`;
+    //console.log("getChildren queryURL:", queryURL);
 
-            $.getJSON(queryURL).done(function (data) {
-                if (validateData(data, ['code', 'label']) && data.results.bindings.length > 0) {
-                    const list = $('<ul>').addClass('enfants');
-                    data.results.bindings.forEach(function (binding) {
-                        const childCode = escapeHtml(binding.code.value);
-                        const label = escapeHtml(binding.label.value);
-                        const listItem = $('<li>');
-                        const link = $('<a>').attr('href', replacement + encodeURIComponent(childCode)).html(`${childCode} - ${label}`);
-                        listItem.append(link);
-                        list.append(listItem);
-                    });
-                    $('#sous-items').empty().append($('<p>').addClass('nom-enfants').text('Liste des produits détaillés')).append(list).addClass("sous-items");
-                } else {
-                    $('#sous-items').empty(); // Modification: efface le contenu si aucune donnée n'est trouvée
-                    //console.log("No children found or invalid data structure received.");
-                }
-            }).fail(function () {
-                // Handle error silently
-                //console.log("Failed to fetch children.");
+    $.getJSON(queryURL).done(function (data) {
+        if (validateData(data, ['code', 'label']) && data.results.bindings.length > 0) {
+            const list = $('<ul>').addClass('enfants');
+            data.results.bindings.forEach(function (binding) {
+                const childCode = escapeHtml(binding.code.value);
+                const label = binding.label.value;
+                const listItem = $('<li>');
+                const link = $('<a>').attr('href', replacement + encodeURIComponent(childCode)).text(`${childCode} - ${label}`);
+                listItem.append(link);
+                list.append(listItem);
             });
+            $('#sous-items').empty().append($('<p>').addClass('nom-enfants').text('Liste des produits détaillés')).append(list).addClass("sous-items");
+        } else {
+            $('#sous-items').empty();
+            //console.log("No children found or invalid data structure received.");
         }
+    }).fail(function () {
+        //console.log("Failed to fetch children.");
+    });
+}
 
-        function getNote(uri, tag) {
-            const query = `SELECT ?text WHERE { <${escapeHtml(uri)}> <http://eurovoc.europa.eu/schema#noteLiteral> ?text }`;
-            const queryURL = `${endpointURL}?query=${encodeURIComponent(query)}`;
 
-            $.getJSON(queryURL).done(function (data) {
-                if (data.results && data.results.bindings && data.results.bindings[0] && data.results.bindings[0].text) {
-                    const noteText = escapeHtml(data.results.bindings[0].text.value.replace(/\\/g, "\n"));
-                    $(`#${tag}`).append($('<div>').text(noteText)).addClass(tag);
-                } else {
-                    console.error("Invalid data structure received.");
-                }
-            }).fail(function () {
-                // Handle error silently
-            });
+
+
+
+function getNote(uri, tag) {
+    // Échappement de l'URI
+    const sanitizedUri = escapeHtml(uri);
+
+    const query = `SELECT ?text WHERE { <${sanitizedUri}> <http://eurovoc.europa.eu/schema#noteLiteral> ?text }`;
+    const queryURL = `${endpointURL}?query=${encodeURIComponent(query)}`;
+
+    $.getJSON(queryURL).done(function (data) {
+        // Validation des données de retour
+        if (data.results && data.results.bindings && Array.isArray(data.results.bindings) && data.results.bindings[0] && data.results.bindings[0].text) {
+            const noteText = escapeHtml(data.results.bindings[0].text.value.replace(/\\/g, "\n"));
+            // Manipulation sécurisée du DOM
+            $(`#${escapeHtml(tag)}`).append($('<div>').text(noteText)).addClass(tag);
+        } else {
+            console.error("Invalid data structure received.");
         }
+    }).fail(function () {
+        console.error("Failed to fetch note.");
+    });
+}
 
-        function breadcrumbs(code, finalLink) {
-            const niveau = code && code.length > 6 ? 'Produit détaillé ' : 'Produit agrégé ';
-            const name = escapeHtml(niveau + code);
-            const fin = finalLink
-                ? $('<li>').append($('<a>').attr('href', replacement + encodeURIComponent(escapeHtml(code))).attr('title', escapeHtml(name)).text(name))
-                : $('<li>').text(name);
 
-            let html;
-            if (code && code.length <= 6) {
-                html = $('<ul>').append($('<li>').append($('<a>').attr('href', 'eap.htm').attr('title', 'Accueil').text(escapeHtml(nomenclature.toUpperCase())))).append(fin);
-            } else if (code) {
-                html = $('<ul>').append(breadcrumbs(getParentCode(code), true)).append(fin);
-            }
-            return html;
-        }
+
+function breadcrumbs(code, finalLink) {
+    const niveau = code && code.length > 6 ? 'Produit détaillé ' : 'Produit agrégé ';
+    const name = escapeHtml(niveau + code);
+    const sanitizedCode = escapeHtml(code);  // Added sanitation
+
+    const fin = finalLink
+        ? $('<li>').append($('<a>').attr('href', replacement + encodeURIComponent(sanitizedCode)).attr('title', name).text(name))
+        : $('<li>').text(name);
+
+    let html;
+    if (code && code.length <= 6) {
+        html = $('<ul>').append($('<li>').append($('<a>').attr('href', 'eap.htm').attr('title', 'Accueil').text(escapeHtml(nomenclature.toUpperCase())))).append(fin);
+    } else if (code) {
+        html = $('<ul>').append(breadcrumbs(getParentCode(sanitizedCode), true)).append(fin);
+    }
+    return html;
+}
+
+
+
 
         function getParentCode(code) {
             if (code && code.length > 6) {
