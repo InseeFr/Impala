@@ -63,7 +63,9 @@
                         })
                     };
 
-                    document.getElementById(elementId).innerHTML = template(context);
+                    // Sanitize the compiled HTML before injecting it into the DOM
+                    const sanitizedHTML = DOMPurify.sanitize(template(context));
+                    document.getElementById(elementId).innerHTML = sanitizedHTML;
                 })
                 .catch(error => console.error('Error fetching data:', error));
             };
