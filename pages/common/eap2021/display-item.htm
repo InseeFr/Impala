@@ -15,9 +15,11 @@
         const parentLength = [0, 4];
 
         document.addEventListener("DOMContentLoaded", function() {
-            const code = encodeHTML(getURLParameter('code'));
-            document.getElementById('fil-ariane').innerHTML = '<ul>' + breadcrumbs(code, false) + '</ul>';
-            getLabel(code);
+            const code = sanitizeInput(getURLParameter('code'));
+            if (code) {
+                document.getElementById('fil-ariane').innerHTML = '<ul>' + breadcrumbs(code, false) + '</ul>';
+                getLabel(code);
+            }
         });
 
         async function fetchData(query, type = "json") {
@@ -77,7 +79,7 @@
             try {
                 const data = await fetchData(query);
                 const itemURI = data.results.bindings[0].uri.value;
-                document.getElementById('label').innerHTML = `${encodeHTML(code)} - ${encodeHTML(data.results.bindings[0].label.value)}`;
+                document.getElementById('label').textContent = `${code} - ${data.results.bindings[0].label.value}`;
                 if (code.length > 6) {
                     getDescription(itemURI);
                 }
@@ -198,6 +200,11 @@
                       .replace(/>/g, '&gt;')
                       .replace(/"/g, '&quot;')
                       .replace(/'/g, '&#39;');
+        }
+
+        // Sanitize input to prevent XSS
+        function sanitizeInput(input) {
+            return input ? input.replace(/[^a-zA-Z0-9-_]/g, '') : '';
         }
     </script>
 </head>

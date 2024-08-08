@@ -5,6 +5,26 @@
     <title>Consultation - EAP 2021</title>
     <link href="../commun.css" rel="stylesheet" type="text/css"/>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.min.js"></script>
+</head>
+<body>
+    <h1 class="titre-class">Nomenclatures de l'Enquête Annuelle de Production (EAP) 2021</h1>
+    <div class="note-generale">
+        <p>Liste des produits de l'Enquête Annuelle de Production 2021</p>
+    </div>
+    <div id="sous-items1" class="sous-items" style="width: 45%; float: left;"></div>
+    <div id="sous-items2" class="sous-items" style="width: 45%; float: left;"></div>
+
+    <!-- Template for items -->
+    <script id="items-template" type="text/x-handlebars-template">
+        <p class="nom-enfants">{{title}}</p>
+        <ul class="enfants">
+        {{#each items}}
+            <li><p><a href="display-item.htm?code={{encodeURIComponent code}}">{{code}} - {{label}}</a></p></li>
+        {{/each}}
+        </ul>
+    </script>
+
     <script>
         const endpointURL = "https://rdf.insee.fr/sparql";
         const racine = "http://id.insee.fr/codes/";
@@ -26,14 +46,18 @@
                     return response.json();
                 })
                 .then(data => {
-                    let innerHTML = `<p class="nom-enfants">${title}</p><ul class="enfants">`;
-                    data.results.bindings.forEach(item => {
-                        const childCode = encodeHTML(item.code.value);
-                        const childLabel = encodeHTML(item.label.value);
-                        innerHTML += `<li><p><a href="display-item.htm?code=${encodeURIComponent(childCode)}">${childCode} - ${childLabel}</a></p></li>`;
-                    });
-                    innerHTML += '</ul>';
-                    document.getElementById(elementId).innerHTML = innerHTML;
+                    const templateSource = document.getElementById('items-template').innerHTML;
+                    const template = Handlebars.compile(templateSource);
+
+                    const context = {
+                        title: title,
+                        items: data.results.bindings.map(item => ({
+                            code: item.code.value,
+                            label: item.label.value
+                        }))
+                    };
+
+                    document.getElementById(elementId).innerHTML = template(context);
                 })
                 .catch(error => console.error('Error fetching data:', error));
             };
@@ -67,22 +91,20 @@
             fetchData(queryURL2, 'sous-items1', 'Liste des produits agrégés');
         });
 
-        // Encode HTML entities to prevent XSS
-        function encodeHTML(str) {
-            return str.replace(/&/g, '&amp;')
-                      .replace(/</g, '&lt;')
-                      .replace(/>/g, '&gt;')
-                      .replace(/"/g, '&quot;')
-                      .replace(/'/g, '&#39;');
+        // Helper to encode URL components
+        Handlebars.registerHelper('encodeURIComponent', function(context) {
+            return encodeURIComponent(context);
+        });
+
+        // Helper to sanitize input
+        Handlebars.registerHelper('sanitize', function(context) {
+            return Handlebars.escapeExpression(context);
+        });
+
+        // Sanitize input to prevent XSS and other injections
+        function sanitizeInput(input) {
+            return input ? input.replace(/[^a-zA-Z0-9-_ ]/g, '') : '';
         }
     </script>
-</head>
-<body>
-    <h1 class="titre-class">Nomenclatures de l'Enquête Annuelle de Production (EAP) 2021</h1>
-    <div class="note-generale">
-        <p>Liste des produits de l'Enquête Annuelle de Production 2021</p>
-    </div>
-    <div id="sous-items1" class="sous-items" style="width: 45%; float: left;"></div>
-    <div id="sous-items2" class="sous-items" style="width: 45%; float: left;"></div>
 </body>
 </html>
