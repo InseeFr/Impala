@@ -17,10 +17,10 @@
 
     <!-- Template for items -->
     <script id="items-template" type="text/x-handlebars-template">
-        <p class="nom-enfants">{{title}}</p>
+        <p class="nom-enfants">{{sanitize title}}</p>
         <ul class="enfants">
         {{#each items}}
-            <li><p><a href="display-item.htm?code={{encodeURIComponent code}}">{{code}} - {{label}}</a></p></li>
+            <li><p><a href="display-item.htm?code={{encodeURIComponent code}}">{{sanitize code}} - {{sanitize label}}</a></p></li>
         {{/each}}
         </ul>
     </script>
