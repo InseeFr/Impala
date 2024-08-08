@@ -6,6 +6,7 @@
     <link href="../commun.css" rel="stylesheet" type="text/css"/>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js" integrity="sha384-kphE34mJ4ksz5JkDejM0mI+5qbb+mRyVDCJm3nDA56bbUFflqAr6KPT3AKz3qOgh" crossorigin="anonymous"></script>
 </head>
 <body>
     <h1 class="titre-class">Nomenclatures de l'Enquête Annuelle de Production (EAP) 2021</h1>
@@ -32,21 +33,6 @@
         const niveau = "produits";
         const niveau2 = "produitsAgreges";
 
-        function escapeHTML(str) {
-            return str.replace(/[&<>"'`=\/]/g, function(s) {
-                return {
-                    '&': '&amp;',
-                    '<': '&lt;',
-                    '>': '&gt;',
-                    '"': '&quot;',
-                    "'": '&#39;',
-                    '/': '&#x2F;',
-                    '`': '&#x60;',
-                    '=': '&#x3D;'
-                }[s];
-            });
-        }
-
         document.addEventListener("DOMContentLoaded", function() {
             const fetchData = (queryURL, elementId, title) => {
                 fetch(queryURL, {
@@ -61,20 +47,18 @@
                     return response.json();
                 })
                 .then(data => {
-                    const sanitizedItems = data.results.bindings.map(item => ({
-                        code: escapeHTML(item.code.value),
-                        label: escapeHTML(item.label.value)
-                    }));
-
                     const templateSource = document.getElementById('items-template').innerHTML;
                     const template = Handlebars.compile(templateSource);
 
                     const context = {
-                        title: escapeHTML(title),
-                        items: sanitizedItems
+                        title: DOMPurify.sanitize(title),
+                        items: data.results.bindings.map(item => ({
+                            code: DOMPurify.sanitize(item.code.value),
+                            label: DOMPurify.sanitize(item.label.value)
+                        }))
                     };
 
-                    document.getElementById(elementId).innerHTML = template(context);
+                    document.getElementById(elementId).innerHTML = DOMPurify.sanitize(template(context));
                 })
                 .catch(error => console.error('Error fetching data:', error));
             };
