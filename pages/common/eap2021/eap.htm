@@ -32,6 +32,21 @@
         const niveau = "produits";
         const niveau2 = "produitsAgreges";
 
+        function escapeHTML(str) {
+            return str.replace(/[&<>"'`=\/]/g, function(s) {
+                return {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;',
+                    '/': '&#x2F;',
+                    '`': '&#x60;',
+                    '=': '&#x3D;'
+                }[s];
+            });
+        }
+
         document.addEventListener("DOMContentLoaded", function() {
             const fetchData = (queryURL, elementId, title) => {
                 fetch(queryURL, {
@@ -46,15 +61,17 @@
                     return response.json();
                 })
                 .then(data => {
+                    const sanitizedItems = data.results.bindings.map(item => ({
+                        code: escapeHTML(item.code.value),
+                        label: escapeHTML(item.label.value)
+                    }));
+
                     const templateSource = document.getElementById('items-template').innerHTML;
                     const template = Handlebars.compile(templateSource);
 
                     const context = {
-                        title: title,
-                        items: data.results.bindings.map(item => ({
-                            code: item.code.value,
-                            label: item.label.value
-                        }))
+                        title: escapeHTML(title),
+                        items: sanitizedItems
                     };
 
                     document.getElementById(elementId).innerHTML = template(context);
@@ -100,11 +117,6 @@
         Handlebars.registerHelper('sanitize', function(context) {
             return Handlebars.escapeExpression(context);
         });
-
-        // Sanitize input to prevent XSS and other injections
-        function sanitizeInput(input) {
-            return input ? input.replace(/[^a-zA-Z0-9-_ ]/g, '') : '';
-        }
     </script>
 </body>
 </html>
