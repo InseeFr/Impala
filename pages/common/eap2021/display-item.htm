@@ -1,203 +1,189 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html>
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="EAP - consultation">
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
     <title>EAP - consultation</title>
     <link href="../commun.css" rel="stylesheet" type="text/css"/>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK" crossorigin="anonymous"></script>
     <script>
         const endpointURL = "https://rdf.insee.fr/sparql";
         const racine = "http://id.insee.fr/codes/";
         const nomenclature = "eap2021";
+        const regex = new RegExp(racine + nomenclature + "/[A-Z0-9]+/", "g");
         const replacement = 'display-item.htm?code=';
         const itemTypes = ['Produit', 'produit'];
         const parentLength = [0, 4];
 
-        function escapeHtml(unsafe) {
-            return unsafe.replace(/[&<"'>]/g, function (m) {
-                return {
-                    '&': '&amp;',
-                    '<': '&lt;',
-                    '>': '&gt;',
-                    '"': '&quot;',
-                    "'": '&#039;'
-                }[m];
-            });
+        document.addEventListener("DOMContentLoaded", function() {
+            const code = encodeHTML(getURLParameter('code'));
+            document.getElementById('fil-ariane').innerHTML = '<ul>' + breadcrumbs(code, false) + '</ul>';
+            getLabel(code);
+        });
+
+        async function fetchData(query, type = "json") {
+            const headers = {
+                'Accept': type === 'n-triples' ? 'application/n-triples' : 'application/sparql-results+json'
+            };
+            try {
+                const response = await fetch(`${endpointURL}?query=${encodeURIComponent(query)}`, {
+                    method: 'GET',
+                    headers: headers,
+                });
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const contentType = response.headers.get("content-type");
+                if (type === "json" && contentType.includes("application/sparql-results+json")) {
+                    return await response.json();
+                } else if (type === "n-triples" && contentType.includes("application/n-triples")) {
+                    const text = await response.text();
+                    return parseNTriples(text);
+                } else {
+                    throw new Error('Received content is not in the expected format');
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                throw error;
+            }
         }
 
-        function sanitizeAndValidateInput(input) {
-            const sanitized = input ? input.replace(/[^a-zA-Z0-9]/g, '') : '';
-            return sanitized.match(/^[A-Za-z0-9]{1,10}$/) ? sanitized : null;
+        function parseNTriples(text) {
+            const triples = text.trim().split('\n').map(line => {
+                const match = line.match(/<([^>]*)>\s*<([^>]*)>\s*<([^>]*)>|<([^>]*)>\s*<([^>]*)>\s*"([^"]*)"/);
+                if (match) {
+                    return {
+                        subject: match[1] || match[4],
+                        predicate: match[2] || match[5],
+                        object: match[3] || match[6]
+                    };
+                } else {
+                    console.error('Failed to parse n-triple line:', line);
+                    return null;
+                }
+            });
+            return triples.filter(triple => triple !== null);
+        }
+
+        async function getLabel(code) {
+            const query = `
+                PREFIX skos:<http://www.w3.org/2004/02/skos/core#>
+                SELECT ?uri ?label WHERE {
+                    GRAPH <http://rdf.insee.fr/graphes/codes/${nomenclature}> {
+                        ?uri skos:prefLabel ?label ; skos:notation '${encodeHTML(code)}'.
+                        FILTER langMatches (lang(?label), 'fr')
+                    }
+                }
+            `;
+            try {
+                const data = await fetchData(query);
+                const itemURI = data.results.bindings[0].uri.value;
+                document.getElementById('label').innerHTML = `${encodeHTML(code)} - ${encodeHTML(data.results.bindings[0].label.value)}`;
+                if (code.length > 6) {
+                    getDescription(itemURI);
+                }
+                const childTypeIndex = (code.length == 6 ? 1 : 0);
+                getChildren(itemURI, itemTypes[childTypeIndex]);
+            } catch (error) {
+                console.error('Error in getLabel:', error);
+            }
+        }
+
+        async function getDescription(itemURI) {
+            const query = `
+                PREFIX skos:<http://www.w3.org/2004/02/skos/core#>
+                DESCRIBE <${encodeHTML(itemURI)}>
+            `;
+            try {
+                const data = await fetchData(query, "n-triples");
+                data.forEach(triple => {
+                    const predicateValue = triple.predicate;
+                    const objectValue = triple.object;
+                    if (predicateValue === "http://www.w3.org/2004/02/skos/core#definition") getNote(objectValue, "note-generale");
+                    else if (predicateValue === "http://www.w3.org/2004/02/skos/core#scopeNote") getNote(objectValue, "note-generale");
+                    else if (predicateValue === "http://rdf-vocabulary.ddialliance.org/xkos#coreContentNote") getNote(objectValue, "contenu-central");
+                    else if (predicateValue === "http://rdf-vocabulary.ddialliance.org/xkos#additionalContentNote") getNote(objectValue, "contenu-limite");
+                    else if (predicateValue === "http://rdf-vocabulary.ddialliance.org/xkos#exclusionNote") getNote(objectValue, "exclusions");
+                    else if (predicateValue === "http://www.w3.org/2004/02/skos/core#note") getNote(objectValue, "remarques");
+                });
+            } catch (error) {
+                console.error('Error in getDescription:', error);
+            }
+        }
+
+        async function getChildren(itemURI, childType) {
+            const query = `
+                PREFIX skos:<http://www.w3.org/2004/02/skos/core#>
+                SELECT ?code ?label WHERE {
+                    <${encodeHTML(itemURI)}> skos:narrower ?child .
+                    ?child skos:notation ?code ; skos:prefLabel ?label .
+                    FILTER langMatches (lang(?label), 'fr')
+                } ORDER BY ?code
+            `;
+            try {
+                const data = await fetchData(query);
+                if (data.results.bindings.length > 0) {
+                    let innerHTML = '<p class="nom-enfants">Liste des produits détaillés</p><ul class="enfants">';
+                    data.results.bindings.forEach(item => {
+                        const childCode = encodeHTML(item.code.value);
+                        const childLabel = encodeHTML(item.label.value);
+                        innerHTML += `<li><p><a href="${replacement}${encodeURIComponent(childCode)}">${childCode} - ${childLabel}</a></p></li>`;
+                    });
+                    innerHTML += '</ul>';
+                    const sousItemsElement = document.getElementById('sous-items');
+                    sousItemsElement.innerHTML = innerHTML;
+                    sousItemsElement.classList.add("sous-items");
+                }
+            } catch (error) {
+                console.error('Error in getChildren:', error);
+            }
+        }
+
+        async function getNote(uri, tag) {
+            const query = `
+                SELECT ?text WHERE {
+                    <${encodeHTML(uri)}> <http://eurovoc.europa.eu/schema#noteLiteral> ?text
+                }
+            `;
+            try {
+                const data = await fetchData(query);
+                const noteText = encodeHTML(data.results.bindings[0].text.value.replace(regex, replacement));
+                const tagElement = document.getElementById(tag);
+                tagElement.innerHTML += noteText.replace(/\\\$/g, "<br />");
+                tagElement.classList.add(tag);
+            } catch (error) {
+                console.error('Error in getNote:', error);
+            }
         }
 
         function getURLParameter(name) {
-            const param = decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search) || ["", ""])[1].replace(/\+/g, '%20')) || null;
-            if (param && /^[A-Za-z0-9\-]+$/.test(param)) {
-                return param;
-            }
-            return null;
-        }
-
-        function validateData(data, requiredVars) {
-            if (data && data.results && data.results.bindings && Array.isArray(data.results.bindings)) {
-                return data.results.bindings.every(binding => {
-                    return requiredVars.every(varName => binding[varName] && binding[varName].value && typeof binding[varName].value === 'string');
-                });
-            }
-            return false;
-        }
-
-        function getLabel(code) {
-            const query = `PREFIX skos:<http://www.w3.org/2004/02/skos/core#> 
-                SELECT ?uri ?label WHERE {
-                    GRAPH <http://rdf.insee.fr/graphes/codes/${nomenclature}> {
-                        ?uri skos:prefLabel ?label ; skos:notation '${escapeHtml(code)}'.
-                        FILTER langMatches(lang(?label), 'fr')
-                    }
-                }`;
-            const queryURL = `${endpointURL}?query=${encodeURIComponent(query)}`;
-
-            fetch(queryURL, {
-                headers: {
-                    'Accept': 'application/sparql-results+json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (validateData(data, ['uri', 'label'])) {
-                    const itemURI = escapeHtml(data.results.bindings[0].uri.value);
-                    $('#label').html(`${escapeHtml(code)} - ${escapeHtml(data.results.bindings[0].label.value)}`);
-                    if (code.length > 6) {
-                        getDescription(itemURI);
-                    }
-                    const childTypeIndex = (code.length === 6 ? 1 : 0);
-                    getChildren(itemURI, itemTypes[childTypeIndex]);
-                } else {
-                    $('#label').text("Code non trouvé");
-                }
-            })
-            .catch(() => {
-                $('#label').text("Erreur lors de la récupération des données");
-            });
-        }
-
-		function getDescription(itemURI) {
-    const query = `PREFIX skos:<http://www.w3.org/2004/02/skos/core#> DESCRIBE <${escapeHtml(itemURI)}>`;
-    const queryURL = `${endpointURL}?query=${encodeURIComponent(query)}`;
-
-    fetch(queryURL)
-        .then(response => response.text())  // Changez response.json() en response.text() car DESCRIBE peut retourner du RDF
-        .then(data => {
-            // Analyser et traiter les données RDF ici
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(data, "application/xml");
-            // Parcourir le document XML pour trouver les notes
-            const bindings = xmlDoc.getElementsByTagName("binding");
-            for (let i = 0; i < bindings.length; i++) {
-                const binding = bindings[i];
-                const predicate = binding.getElementsByTagName("predicate")[0].textContent;
-                const object = binding.getElementsByTagName("object")[0].textContent;
-
-                if ([
-                    "http://www.w3.org/2004/02/skos/core#definition",
-                    "http://www.w3.org/2004/02/skos/core#scopeNote",
-                    "http://rdf-vocabulary.ddialliance.org/xkos#coreContentNote",
-                    "http://rdf-vocabulary.ddialliance.org/xkos#additionalContentNote",
-                    "http://rdf-vocabulary.ddialliance.org/xkos#exclusionNote",
-                    "http://www.w3.org/2004/02/skos/core#note"
-                ].includes(predicate)) {
-                    getNote(object, "note-generale");
-                }
-            }
-        })
-        .catch(() => {
-            console.error("Failed to fetch description.");
-        });
-}
-
-        function getChildren(itemURI, childType) {
-            const query = `PREFIX skos:<http://www.w3.org/2004/02/skos/core#> 
-                SELECT ?code ?label WHERE {
-                    <${escapeHtml(itemURI)}> skos:narrower ?child . 
-                    ?child skos:notation ?code ; skos:prefLabel ?label . 
-                    FILTER langMatches(lang(?label), 'fr') 
-                } ORDER BY ?code`;
-            const queryURL = `${endpointURL}?query=${encodeURIComponent(query)}`;
-
-            fetch(queryURL, {
-                headers: {
-                    'Accept': 'application/sparql-results+json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (validateData(data, ['code', 'label']) && data.results.bindings.length > 0) {
-                    const list = $('<ul>').addClass('enfants');
-                    data.results.bindings.forEach(function (binding) {
-                        const childCode = escapeHtml(binding.code.value);
-                        const label = escapeHtml(binding.label.value);
-                        const listItem = $('<li>');
-                        const link = $('<a>').attr('href', replacement + encodeURIComponent(childCode)).html(`${childCode} - ${label}`);
-                        listItem.append(link);
-                        list.append(listItem);
-                    });
-                    $('#sous-items').empty().append($('<p>').addClass('nom-enfants').text('Liste des produits détaillés')).append(list).addClass("sous-items");
-                } else {
-                    $('#sous-items').empty();
-                }
-            })
-            .catch(() => {
-                console.error("Failed to fetch children.");
-            });
-        }
-
-        function getNote(uri, tag) {
-            const query = `SELECT ?text WHERE { <${escapeHtml(uri)}> <http://eurovoc.europa.eu/schema#noteLiteral> ?text }`;
-            const queryURL = `${endpointURL}?query=${encodeURIComponent(query)}`;
-
-            fetch(queryURL, {
-                headers: {
-                    'Accept': 'application/sparql-results+json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.results && data.results.bindings && Array.isArray(data.results.bindings) && data.results.bindings[0] && data.results.bindings[0].text) {
-                    const noteText = escapeHtml(data.results.bindings[0].text.value.replace(/\\/g, "\n"));
-                    $(`#${escapeHtml(tag)}`).append($('<div>').text(noteText)).addClass(tag);
-                } else {
-                    console.error("Invalid data structure received.");
-                }
-            })
-            .catch(() => {
-                console.error("Failed to fetch note.");
-            });
+            const result = new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search);
+            return result ? decodeURIComponent(result[1].replace(/\+/g, '%20')) : null;
         }
 
         function breadcrumbs(code, finalLink) {
-            const niveau = code && code.length > 6 ? 'Produit détaillé ' : 'Produit agrégé ';
-            const name = escapeHtml(niveau + code);
-            const sanitizedCode = escapeHtml(code);
-
-            const fin = finalLink
-                ? $('<li>').append($('<a>').attr('href', replacement + encodeURIComponent(sanitizedCode)).attr('title', escapeHtml(name)).text(name))
-                : $('<li>').text(name);
-
-            let html;
-            if (code && code.length <= 6) {
-                html = $('<ul>').append($('<li>').append($('<a>').attr('href', 'eap.htm').attr('title', 'Accueil').text(escapeHtml(nomenclature.toUpperCase())))).append(fin);
-            } else if (code) {
-                html = $('<ul>').append(breadcrumbs(getParentCode(sanitizedCode), true)).append(fin);
+            let niveau;
+            if (code && code.length > 6) {
+                niveau = 'Produit détaillé ';
+            } else {
+                niveau = 'Produit agrégé ';
             }
-            return html;
+            const name = `${niveau}${encodeHTML(code)}`;
+            const fin = finalLink ?
+                `<li><a href="${replacement}${encodeURIComponent(code)}" title="${name}">${name}</a></li>` :
+                `<li>${name}</li>`;
+
+            if (code && code.length <= 6) {
+                return `<li><a href="eap.htm" title="Accueil">${nomenclature.toUpperCase()}</a></li>&nbsp;${fin}`;
+            } else if (code) {
+                return `${breadcrumbs(getParentCode(code), true)}&nbsp;${fin}`;
+            }
+            return '';
         }
 
         function getParentCode(code) {
             if (code && code.length > 6) {
                 let codeParent = code.substr(0, parentLength[1]);
-                if (code.slice(-1).match(/[A-Z]/)) {
+                if (/[A-Z]/.test(code.slice(-1))) {
                     codeParent += code.slice(-1).toLowerCase();
                 }
                 return codeParent;
@@ -205,17 +191,15 @@
             return null;
         }
 
-        $(document).ready(function () {
-            const code = sanitizeAndValidateInput(getURLParameter('code'));
-            if (!code) {
-                $('#label').text("Code non trouvé");
-                return;
-            }
-            $('#fil-ariane').empty().append($('<ul>').append(breadcrumbs(code, false)));
-            getLabel(code);
-        });
+        // Encode HTML entities to prevent XSS
+        function encodeHTML(str) {
+            return str.replace(/&/g, '&amp;')
+                      .replace(/</g, '&lt;')
+                      .replace(/>/g, '&gt;')
+                      .replace(/"/g, '&quot;')
+                      .replace(/'/g, '&#39;');
+        }
     </script>
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://code.jquery.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://rdf.insee.fr; object-src 'none';">
 </head>
 <body>
     <div id="fil-ariane"></div>

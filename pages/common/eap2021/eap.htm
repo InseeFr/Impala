@@ -1,12 +1,10 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html>
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Consultation - EAP 2021">
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
     <title>Consultation - EAP 2021</title>
     <link href="../commun.css" rel="stylesheet" type="text/css"/>
-    <script src="https://code.jquery.com/jquery-1.11.1.min.js" integrity="sha256-VAvG3sHdS5LqTT+5A/aeq/bZGa/Uj04xKxY8KM/w9EE=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK" crossorigin="anonymous"></script>
     <script>
         const endpointURL = "https://rdf.insee.fr/sparql";
         const racine = "http://id.insee.fr/codes/";
@@ -14,73 +12,70 @@
         const niveau = "produits";
         const niveau2 = "produitsAgreges";
 
-        function escapeHtml(unsafe) {
-            return unsafe.replace(/[&<"'>]/g, function (m) {
-                return {
-                    '&': '&amp;',
-                    '<': '&lt;',
-                    '>': '&gt;',
-                    '"': '&quot;',
-                    "'": '&#039;'
-                }[m];
-            });
-        }
+        document.addEventListener("DOMContentLoaded", function() {
+            const fetchData = (queryURL, elementId, title) => {
+                fetch(queryURL, {
+                    headers: {
+                        'Accept': 'application/sparql-results+json'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    let innerHTML = `<p class="nom-enfants">${title}</p><ul class="enfants">`;
+                    data.results.bindings.forEach(item => {
+                        const childCode = encodeHTML(item.code.value);
+                        const childLabel = encodeHTML(item.label.value);
+                        innerHTML += `<li><p><a href="display-item.htm?code=${encodeURIComponent(childCode)}">${childCode} - ${childLabel}</a></p></li>`;
+                    });
+                    innerHTML += '</ul>';
+                    document.getElementById(elementId).innerHTML = innerHTML;
+                })
+                .catch(error => console.error('Error fetching data:', error));
+            };
 
-        function validateData(data) {
-            if (data && data.results && data.results.bindings && Array.isArray(data.results.bindings)) {
-                return data.results.bindings.every(binding => {
-                    return binding.code && binding.code.value && typeof binding.code.value === 'string' &&
-                           binding.label && binding.label.value && typeof binding.label.value === 'string';
-                });
-            }
-            return false;
-        }
-
-        $(document).ready(function () {
-            const queryBase = 'PREFIX skos:<http://www.w3.org/2004/02/skos/core#> ';
-
-            function buildQuery(niveau) {
-                return `${queryBase} SELECT ?code ?label WHERE {
+            const query1 = `
+                PREFIX skos:<http://www.w3.org/2004/02/skos/core#>
+                SELECT ?code ?label WHERE {
                     GRAPH <http://rdf.insee.fr/graphes/codes/${nomenclature}> {
-                        ?uri skos:prefLabel ?label ; skos:notation ?code .
+                        ?uri skos:prefLabel ?label ;
+                             skos:notation ?code .
                         <${racine}${nomenclature}/${niveau}> skos:member ?uri .
                         FILTER langMatches(lang(?label), "fr")
                     }
-                } ORDER BY ?code`;
-            }
+                } ORDER BY ?code
+            `;
+            const queryURL1 = `${endpointURL}?query=${encodeURIComponent(query1)}`;
+            fetchData(queryURL1, 'sous-items2', 'Liste des produits détaillés');
 
-            function handleData(data, containerId, title) {
-                if (validateData(data)) {
-                    let innerHTML = `<p class="nom-enfants">${escapeHtml(title)}</p><ul class="enfants">`;
-                    data.results.bindings.forEach(function (binding) {
-                        const childCode = escapeHtml(binding.code.value);
-                        const label = escapeHtml(binding.label.value);
-                        innerHTML += `<li><p><a href="display-item.htm?code=${childCode}">${childCode} - ${label}</a></p></li>`;
-                    });
-                    innerHTML += '</ul>';
-                    $(`#${containerId}`).html(innerHTML);
-                } else {
-                    console.error("Invalid data structure received.");
-                }
-            }
-
-            function fetchData(query, containerId, title) {
-                const queryURL = `${endpointURL}?query=${encodeURIComponent(query)}`;
-                $.getJSON(queryURL).done(function (data) {
-                    handleData(data, containerId, title);
-                }).fail(function () {
-                    console.error("Erreur lors de la récupération des données");
-                });
-            }
-
-            const query1 = buildQuery(niveau);
-            fetchData(query1, 'sous-items2', 'Liste des produits détaillés');
-
-            const query2 = buildQuery(niveau2);
-            fetchData(query2, 'sous-items1', 'Liste des produits agrégés');
+            const query2 = `
+                PREFIX skos:<http://www.w3.org/2004/02/skos/core#>
+                SELECT ?code ?label WHERE {
+                    GRAPH <http://rdf.insee.fr/graphes/codes/${nomenclature}> {
+                        ?uri skos:prefLabel ?label ;
+                             skos:notation ?code .
+                        <${racine}${nomenclature}/${niveau2}> skos:member ?uri .
+                        FILTER langMatches(lang(?label), "fr")
+                    }
+                } ORDER BY ?code
+            `;
+            const queryURL2 = `${endpointURL}?query=${encodeURIComponent(query2)}`;
+            fetchData(queryURL2, 'sous-items1', 'Liste des produits agrégés');
         });
+
+        // Encode HTML entities to prevent XSS
+        function encodeHTML(str) {
+            return str.replace(/&/g, '&amp;')
+                      .replace(/</g, '&lt;')
+                      .replace(/>/g, '&gt;')
+                      .replace(/"/g, '&quot;')
+                      .replace(/'/g, '&#39;');
+        }
     </script>
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://code.jquery.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://rdf.insee.fr; object-src 'none';">
 </head>
 <body>
     <h1 class="titre-class">Nomenclatures de l'Enquête Annuelle de Production (EAP) 2021</h1>
