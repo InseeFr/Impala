@@ -1,60 +1,112 @@
 <!DOCTYPE html>
-<html>
-		<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
-        <title>Consultation - EMB 2018</title>
-        <link href="../commun.css" rel="stylesheet" type="text/css"/>
-		<script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
-		<script>
-			var endpointURL = "http://rdf.insee.fr/sparql";
-			var racine = "http://id.insee.fr/codes/";
-			var nomenclature="emb2018";
-			var niveau="produits"
-			//var niveau2="nafr2"
-			$(document).ready(function() {
+<html lang="fr">
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+    <title>Consultation - EMB 2018</title>
+    <link href="../commun.css" rel="stylesheet" type="text/css"/>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js" integrity="sha384-+VfUPEb0PdtChMwmBcBmykRMDd+v6D/oFmB3rZM/puCMDYcIvF968OimRh4KQY9a" crossorigin="anonymous"></script>
+</head>
+<body>
+    <h1 class="titre-class">Nomenclatures des Enquêtes Mensuelles de Branche (EMB) 2018</h1>
+    <div class="note-generale">
+        <p>Liste des produits des Enquêtes Mensuelles de Branche 2018</p>
+    </div>
+    <div id="sous-items1" class="sous-items" style="width: 45%; float: left;"></div>
+    <div id="sous-items2" class="sous-items" style="width: 45%; float: left;"></div>
 
-				var query = 'PREFIX skos:<http://www.w3.org/2004/02/skos/core#> ';
-				query += 'SELECT ?code ?label WHERE {GRAPH <http://rdf.insee.fr/graphes/codes/'+nomenclature+'> { ?uri skos:prefLabel ?label ; skos:notation ?code . '
-				query += '<'+racine+nomenclature+'/'+niveau+'> skos:member ?uri .  FILTER langMatches (lang(?label), "fr")} . } ORDER BY ?code';
-				var queryURL = endpointURL + "?query=" + encodeURIComponent(query);
+    <!-- Template for items -->
+    <script id="items-template" type="text/x-handlebars-template">
+        <p class="nom-enfants">{{sanitize title}}</p>
+        <ul class="enfants">
+        {{#each items}}
+            <li><p><a href="display-item.htm?code={{encodeURIComponent correctedCode}}">{{{displayCode}}} - {{{label}}}</a></p></li>
+        {{/each}}
+        </ul>
+    </script>
 
-				$.getJSON(queryURL).success(function(data) {
+    <script>
+        const endpointURL = "https://rdf.insee.fr/sparql";
+        const racine = "http://id.insee.fr/codes/";
+        const nomenclature = "emb2018";
+        const niveau = "produits";
+        const niveau2 = "produits";
 
-					var innerHTML = '<p class="nom-enfants">Produits</p><ul class="enfants">';
-					for (var index = 0; index < data.results.bindings.length; index++) {
-						var childCode = data.results.bindings[index].code.value;
-						innerHTML += '<li><p><a href="display-item.htm?code=' + childCode + '">' + childCode + ' - ' + data.results.bindings[index].label.value + '</a></p></li>';
-					}
-					innerHTML += '</ul>';
-					$('#sous-items').html(innerHTML);
-				});
-				
-				
-				var query2 = 'PREFIX skos:<http://www.w3.org/2004/02/skos/core#> ';
-				query2 += 'SELECT distinct ?code ?label WHERE {?uri skos:prefLabel ?label ; skos:notation ?code ; skos:relatedMatch ?child . '
-				query2 += '<'+racine+nomenclature+'/'+niveau+'> skos:member ?child .  FILTER langMatches (lang(?label), "fr") } ORDER BY ?code';
-				
-				var queryURL2 = endpointURL + "?query=" + encodeURIComponent(query2);
-					
-					$.getJSON(queryURL2).success(function(data) {
-					var innerHTML = '<p class="nom-enfants"> Activités de la NAF </p><ul class="enfants">';
-					for (var index = 0; index < data.results.bindings.length; index++) {
-						var childCode = data.results.bindings[index].code.value.replace('.','');
-						innerHTML += '<li><p><a href="display-item.htm?code=' + childCode + '">' + childCode + ' - ' + data.results.bindings[index].label.value + '</a></p></li>';
-					}
-					innerHTML += '</ul>';
-					
-					$('#sous-items2').html(innerHTML);
-					});
-			});
+        document.addEventListener("DOMContentLoaded", function() {
+            const fetchData = (queryURL, elementId, title) => {
+                fetch(queryURL, {
+                    headers: {
+                        'Accept': 'application/sparql-results+json'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const templateSource = document.getElementById('items-template').innerHTML;
+                    const template = Handlebars.compile(templateSource);
 
-		</script>
-	</head>
-	<body>
-		<h1 class="titre-class">Nomenclatures des Enquêtes Mensuelles de Branche (EMB) 2018</h1>
-		<div class="note-generale">
-			<p>Liste des produits des Enquêtes Mensuelles de Branche 2018</p>
-		</div>
-		<div id="sous-items" class="sous-items" style="width: 45%; float: left;"></div>
-		<div id="sous-items2" class="sous-items" style="width: 45%; float: left;"></div>
-	</body>
+                    const context = {
+                        title: DOMPurify.sanitize(title),
+                        items: data.results.bindings.map(item => {
+                            const code = item.code.value;
+                            const displayCode = (code.length === 6 && code.includes('.')) ? code : code.slice(0, 2) + '.' + code.slice(2);
+                            return {
+                                correctedCode: encodeURIComponent(code.replace('.', '')),
+                                displayCode: Handlebars.escapeExpression(displayCode),
+                                label: Handlebars.escapeExpression(item.label.value)
+                            };
+                        })
+                    };
+
+                    // Sanitize the compiled HTML before injecting it into the DOM
+                    const sanitizedHTML = DOMPurify.sanitize(template(context));
+                    document.getElementById(elementId).innerHTML = sanitizedHTML;
+                })
+                .catch(error => console.error('Error fetching data:', error));
+            };
+
+            const query1 = `
+                PREFIX skos:<http://www.w3.org/2004/02/skos/core#>
+                SELECT ?code ?label WHERE {
+                    GRAPH <http://rdf.insee.fr/graphes/codes/${nomenclature}> {
+                        ?uri skos:prefLabel ?label ;
+                             skos:notation ?code .
+                        <${racine}${nomenclature}/${niveau}> skos:member ?uri .
+                        FILTER langMatches(lang(?label), "fr")
+                    }
+                } ORDER BY ?code
+            `;
+            const queryURL1 = `${endpointURL}?query=${encodeURIComponent(query1)}`;
+            fetchData(queryURL1, 'sous-items1', 'Liste des produits');
+
+            const query2 = `
+                PREFIX skos:<http://www.w3.org/2004/02/skos/core#>
+                SELECT distinct ?code ?label WHERE {
+                    ?uri skos:prefLabel ?label ;
+                         skos:notation ?code ;
+                         skos:relatedMatch ?child .
+                    <${racine}${nomenclature}/${niveau2}> skos:member ?child .
+                    FILTER langMatches(lang(?label), "fr")
+                } ORDER BY ?code
+            `;
+            const queryURL2 = `${endpointURL}?query=${encodeURIComponent(query2)}`;
+            fetchData(queryURL2, 'sous-items2', 'Activités de la NAF');
+        });
+
+        // Helper to encode URL components
+        Handlebars.registerHelper('encodeURIComponent', function(context) {
+            return encodeURIComponent(context);
+        });
+
+        // Helper to sanitize input
+        Handlebars.registerHelper('sanitize', function(context) {
+            return Handlebars.escapeExpression(context);
+        });
+    </script>
+</body>
 </html>
