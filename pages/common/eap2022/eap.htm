@@ -1,61 +1,106 @@
 <!DOCTYPE html>
 <html>
-		<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
-        <title>Consultation - EAP 2022</title>
-        <link href="../commun.css" rel="stylesheet" type="text/css"/>
-		<script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
-		<script>
-			var endpointURL = "https://rdf.insee.fr/sparql";
-			var racine = "http://id.insee.fr/codes/";
-			var nomenclature="eap2022";
-			var niveau="produits";
-			var niveau2="produitsAgreges";
-			$(document).ready(function() {
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+    <title>Consultation - EAP 2022</title>
+    <link href="../commun.css" rel="stylesheet" type="text/css"/>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js" integrity="sha384-kphE34mJ4ksz5JkDejM0mI+5qbb+mRyVDCJm3nDA56bbUFflqAr6KPT3AKz3qOgh" crossorigin="anonymous"></script>
+</head>
+<body>
+    <h1 class="titre-class">Nomenclatures de l'Enquête Annuelle de Production (EAP) 2022</h1>
+    <div class="note-generale">
+        <p>Liste des produits de l'Enquête Annuelle de Production 2022</p>
+    </div>
+    <div id="sous-items1" class="sous-items" style="width: 45%; float: left;"></div>
+    <div id="sous-items2" class="sous-items" style="width: 45%; float: left;"></div>
 
-				var query = 'PREFIX skos:<http://www.w3.org/2004/02/skos/core#> ';
-				query += 'SELECT ?code ?label WHERE {GRAPH <http://rdf.insee.fr/graphes/codes/'+nomenclature+'> { ?uri skos:prefLabel ?label ; skos:notation ?code . '
-				query += '<'+racine+nomenclature+'/'+niveau+'> skos:member ?uri .  FILTER langMatches (lang(?label), "fr")} . } ORDER BY ?code';
-				var queryURL = endpointURL + "?query=" + encodeURIComponent(query);
+    <!-- Template for items -->
+    <script id="items-template" type="text/x-handlebars-template">
+        <p class="nom-enfants">{{sanitize title}}</p>
+        <ul class="enfants">
+        {{#each items}}
+            <li><p><a href="display-item.htm?code={{encodeURIComponent code}}">{{sanitize code}} - {{sanitize label}}</a></p></li>
+        {{/each}}
+        </ul>
+    </script>
 
-				$.getJSON(queryURL).success(function(data) {
+    <script>
+        const endpointURL = "https://rdf.insee.fr/sparql";
+        const racine = "http://id.insee.fr/codes/";
+        const nomenclature = "eap2022";
+        const niveau = "produits";
+        const niveau2 = "produitsAgreges";
 
-					var innerHTML = '<p class="nom-enfants"> Liste des produits détaillés </p><ul class="enfants">';
-					for (var index = 0; index < data.results.bindings.length; index++) {
-						var childCode = data.results.bindings[index].code.value;
-						innerHTML += '<li><p><a href="display-item.htm?code=' + childCode + '">' + childCode + ' - ' + data.results.bindings[index].label.value + '</a></p></li>';
-					}
-					innerHTML += '</ul>';
-					$('#sous-items2').html(innerHTML);
+        document.addEventListener("DOMContentLoaded", function() {
+            const fetchData = (queryURL, elementId, title) => {
+                fetch(queryURL, {
+                    headers: {
+                        'Accept': 'application/sparql-results+json'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const templateSource = document.getElementById('items-template').innerHTML;
+                    const template = Handlebars.compile(templateSource);
 
+                    const context = {
+                        title: DOMPurify.sanitize(title),
+                        items: data.results.bindings.map(item => ({
+                            code: DOMPurify.sanitize(item.code.value),
+                            label: DOMPurify.sanitize(item.label.value)
+                        }))
+                    };
 
-				});
-				
-				
-				var query2 = 'PREFIX skos:<http://www.w3.org/2004/02/skos/core#> ';
-				query2 += 'SELECT ?code ?label WHERE {GRAPH <http://rdf.insee.fr/graphes/codes/'+nomenclature+'> { ?uri skos:prefLabel ?label ; skos:notation ?code . '
-				query2 += '<'+racine+nomenclature+'/'+niveau2+'> skos:member ?uri .  FILTER langMatches (lang(?label), "fr")} . } ORDER BY ?code';
-				var queryURL2 = endpointURL + "?query=" + encodeURIComponent(query2);
-					
-					$.getJSON(queryURL2).success(function(data) {
-					var innerHTML = '<p class="nom-enfants"> Liste des produits agrégés </p><ul class="enfants">';
-					for (var index = 0; index < data.results.bindings.length; index++) {
-						var childCode = data.results.bindings[index].code.value;
-						innerHTML += '<li><p><a href="display-item.htm?code=' + childCode + '">' + childCode + ' - ' + data.results.bindings[index].label.value + '</a></p></li>';
-					}
-					innerHTML += '</ul>';
-					
-					$('#sous-items1').html(innerHTML);
-					});
-			});
+                    document.getElementById(elementId).innerHTML = DOMPurify.sanitize(template(context));
+                })
+                .catch(error => console.error('Error fetching data:', error));
+            };
 
-		</script>
-	</head>
-	<body>
-		<h1 class="titre-class">Nomenclatures de l'Enquête Annuelle de Production (EAP) 2022</h1>
-		<div class="note-generale">
-			<p>Liste des produits de l'Enquête Annuelle de Production 2022</p>
-		</div>
-		<div id="sous-items1" class="sous-items" style="width: 45%; float: left;"></div>
-		<div id="sous-items2" class="sous-items" style="width: 45%; float: left;"></div>
-	</body>
+            const query1 = `
+                PREFIX skos:<http://www.w3.org/2004/02/skos/core#>
+                SELECT ?code ?label WHERE {
+                    GRAPH <http://rdf.insee.fr/graphes/codes/${nomenclature}> {
+                        ?uri skos:prefLabel ?label ;
+                             skos:notation ?code .
+                        <${racine}${nomenclature}/${niveau}> skos:member ?uri .
+                        FILTER langMatches(lang(?label), "fr")
+                    }
+                } ORDER BY ?code
+            `;
+            const queryURL1 = `${endpointURL}?query=${encodeURIComponent(query1)}`;
+            fetchData(queryURL1, 'sous-items2', 'Liste des produits détaillés');
+
+            const query2 = `
+                PREFIX skos:<http://www.w3.org/2004/02/skos/core#>
+                SELECT ?code ?label WHERE {
+                    GRAPH <http://rdf.insee.fr/graphes/codes/${nomenclature}> {
+                        ?uri skos:prefLabel ?label ;
+                             skos:notation ?code .
+                        <${racine}${nomenclature}/${niveau2}> skos:member ?uri .
+                        FILTER langMatches(lang(?label), "fr")
+                    }
+                } ORDER BY ?code
+            `;
+            const queryURL2 = `${endpointURL}?query=${encodeURIComponent(query2)}`;
+            fetchData(queryURL2, 'sous-items1', 'Liste des produits agrégés');
+        });
+
+        // Helper to encode URL components
+        Handlebars.registerHelper('encodeURIComponent', function(context) {
+            return encodeURIComponent(context);
+        });
+
+        // Helper to sanitize input
+        Handlebars.registerHelper('sanitize', function(context) {
+            return Handlebars.escapeExpression(context);
+        });
+    </script>
+</body>
 </html>
