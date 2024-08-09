@@ -169,21 +169,23 @@
             }
         }
 
-        function getURLParameter(name) {
-            const result = new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search);
-            return result ? decodeURIComponent(result[1].replace(/\+/g, '%20')) : null;
-        }
+		function getURLParameter(name) {
+    const result = new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search);
+    const paramValue = result ? decodeURIComponent(result[1].replace(/\+/g, '%20')) : null;
+    return sanitizeInput(paramValue);  // Sanitize the input here
+}
 
-		function breadcrumbs(code, finalLink) {
+function breadcrumbs(code, finalLink) {
     if (!code) {
         console.error('Code is null or empty.');
         return '';
     }
 
     const niveau = determineNiveau(code.length);
-    const name = `${niveau}${encodeHTML(code)}`;
+    const sanitizedCode = encodeHTML(code);
+    const name = `${niveau}${sanitizedCode}`;
     const fin = finalLink ?
-        `<li><a href="${replacement}${encodeURIComponent(code)}" title="${name}">${name}</a></li>` :
+        `<li><a href="${replacement}${encodeURIComponent(sanitizedCode)}" title="${name}">${name}</a></li>` :
         `<li>${name}</li>`;
 
     if (code.length === 1) {
@@ -197,6 +199,7 @@
         }
     }
 }
+
 
 function getParentCode(code) {
     // Si le code est déjà au niveau le plus élevé, il ne devrait pas avoir de parent.
