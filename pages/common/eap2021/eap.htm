@@ -50,16 +50,17 @@
                     const templateSource = document.getElementById('items-template').innerHTML;
                     const template = Handlebars.compile(templateSource);
 
-                    // Sanitize title, code, and label before passing to template
                     const context = {
-                        title: DOMPurify.sanitize(title),
+                        title: DOMPurify.sanitize(title), // Sanitize the title
                         items: data.results.bindings.map(item => ({
-                            code: DOMPurify.sanitize(item.code.value),
-                            label: DOMPurify.sanitize(item.label.value)
+                            code: DOMPurify.sanitize(item.code.value), // Sanitize each code
+                            label: DOMPurify.sanitize(item.label.value) // Sanitize each label
                         }))
                     };
 
-                    document.getElementById(elementId).innerHTML = template(context);
+                    const sanitizedHTML = template(context);
+                    const container = document.getElementById(elementId);
+                    container.innerHTML = DOMPurify.sanitize(sanitizedHTML); // Sanitize the final HTML
                 })
                 .catch(error => console.error('Error fetching data:', error));
             };
