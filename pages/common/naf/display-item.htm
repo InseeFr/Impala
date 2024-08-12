@@ -90,10 +90,10 @@
                     const childTypeIndex = code.length === 1 ? 1 : code.length;
                     getChildren(itemURI, itemTypes[childTypeIndex]);
                 } else {
-                    document.getElementById('label').innerHTML = "<p>Code non trouvé</p>";
+                    document.getElementById('label').textContent = "Code non trouvé";
                 }
             } catch (error) {
-                document.getElementById('label').innerHTML = "<p>Erreur lors de la récupération des données</p>";
+                document.getElementById('label').textContent = "Erreur lors de la récupération des données";
                 console.error('Error in getLabel:', error);
             }
         }
@@ -134,18 +134,18 @@
                     let innerHTML = '<p class="nom-enfants">' + escapeHtml(childType) + (data.results.bindings.length > 1 ? 's' : '') + '</p><ul class="enfants">';
                     data.results.bindings.forEach(item => {
                         const childCode = encodeHTML(item.code.value);
-                        const childLabel = encodeHTML(item.label.value);
-                        innerHTML += `<li><p><a href="${replacement}${encodeURIComponent(childCode)}">${childCode} - ${childLabel}</a></p></li>`;
+                        const childLabel = decodeHtmlEntities(item.label.value);  // Decoding the HTML entities here
+                        innerHTML += `<li><p><a href="${replacement}${encodeURIComponent(childCode)}">${escapeHtml(childCode)} - ${escapeHtml(childLabel)}</a></p></li>`;
                     });
                     innerHTML += '</ul>';
                     const sousItemsElement = document.getElementById('sous-items');
                     sousItemsElement.innerHTML = innerHTML;
                     sousItemsElement.classList.add("sous-items");
                 } else {
-                    document.getElementById('sous-items').innerHTML = "<p>Aucun élément trouvé</p>";
+                    document.getElementById('sous-items').textContent = "Aucun élément trouvé";
                 }
             } catch (error) {
-                document.getElementById('sous-items').innerHTML = "<p>Erreur lors de la récupération des données</p>";
+                document.getElementById('sous-items').textContent = "Erreur lors de la récupération des données";
                 console.error('Error in getChildren:', error);
             }
         }
@@ -170,71 +170,72 @@
         }
 
 		function getURLParameter(name) {
-    const result = new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search);
-    const paramValue = result ? decodeURIComponent(result[1].replace(/\+/g, '%20')) : null;
-    return sanitizeInput(paramValue);  // Sanitize the input here
-}
-
-function breadcrumbs(code, finalLink) {
-    if (!code) {
-        console.error('Code is null or empty.');
-        return '';
-    }
-
-    const niveau = determineNiveau(code.length);
-    const sanitizedCode = encodeHTML(code);
-    const name = `${niveau}${sanitizedCode}`;
-    const fin = finalLink ?
-        `<li><a href="${replacement}${encodeURIComponent(sanitizedCode)}" title="${name}">${name}</a></li>` :
-        `<li>${name}</li>`;
-
-    if (code.length === 1) {
-        return `<li><a href="naf.htm" title="Accueil">NAF</a></li>&nbsp;${fin}`;
-    } else {
-        const parentCode = getParentCode(code);
-        if (parentCode && parentCode !== code) {
-            return `${breadcrumbs(parentCode, true)}&nbsp;${fin}`;
-        } else {
-            return fin;
+            const regex = new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)');
+            const result = regex.exec(location.search);
+            let paramValue = result ? decodeURIComponent(result[1].replace(/\+/g, '%20')) : null;
+    
+            return sanitizeInput(paramValue);  // Sanitize the input here
         }
-    }
-}
 
+        function breadcrumbs(code, finalLink) {
+            if (!code) {
+                console.error('Code is null or empty.');
+                return '';
+            }
 
-function getParentCode(code) {
-    // Si le code est déjà au niveau le plus élevé, il ne devrait pas avoir de parent.
-    if (code.length <= 1) {
-        return null;
-    }
+            const niveau = determineNiveau(code.length);
+            const sanitizedCode = encodeHTML(code);
+            const name = `${niveau}${sanitizedCode}`;
+            const fin = finalLink ?
+                `<li><a href="${replacement}${encodeURIComponent(sanitizedCode)}" title="${escapeHtml(name)}">${escapeHtml(decodeHtmlEntities(name))}</a></li>` :
+                `<li>${escapeHtml(decodeHtmlEntities(name))}</li>`;
 
-    // Logique pour calculer le code parent en fonction de la longueur du code.
-    if (code.length === 2) {
-        const codeNum = parseInt(code);
-        const sectionBounds = [1, 5, 10, 35, 36, 41, 45, 49, 55, 58, 64, 68, 69, 77, 84, 85, 86, 90, 94, 97, 99];
-        const sections = "ABCDEFGHIJKLMNOPQRSTU";
-        for (let index = 0; index < sectionBounds.length; index++) {
-            if (codeNum < sectionBounds[index]) return sections[index - 1];
+            if (code.length === 1) {
+                return `<li><a href="naf.htm" title="Accueil">NAF</a></li>&nbsp;${fin}`;
+            } else {
+                const parentCode = getParentCode(code);
+                if (parentCode && parentCode !== code) {
+                    return `${breadcrumbs(parentCode, true)}&nbsp;${fin}`;
+                } else {
+                    return fin;
+                }
+            }
         }
-        return sections[sections.length - 1];
-    }
 
-    if (code.length > 2) {
-        return code.slice(0, -1); // Supprimez le dernier caractère pour obtenir le code parent
-    }
+        function getParentCode(code) {
+            // Si le code est déjà au niveau le plus élevé, il ne devrait pas avoir de parent.
+            if (code.length <= 1) {
+                return null;
+            }
 
-    return null;
-}
+            // Logique pour calculer le code parent en fonction de la longueur du code.
+            if (code.length === 2) {
+                const codeNum = parseInt(code);
+                const sectionBounds = [1, 5, 10, 35, 36, 41, 45, 49, 55, 58, 64, 68, 69, 77, 84, 85, 86, 90, 94, 97, 99];
+                const sections = "ABCDEFGHIJKLMNOPQRSTU";
+                for (let index = 0; index < sectionBounds.length; index++) {
+                    if (codeNum < sectionBounds[index]) return sections[index - 1];
+                }
+                return sections[sections.length - 1];
+            }
 
-function determineNiveau(length) {
-    switch (length) {
-        case 1: return 'Section ';
-        case 2: return 'Division ';
-        case 3: return 'Groupe ';
-        case 4: return 'Classe ';
-        case 5: return 'Sous-classe ';
-        default: return '';
-    }
-}
+            if (code.length > 2) {
+                return code.slice(0, -1); // Supprimez le dernier caractère pour obtenir le code parent
+            }
+
+            return null;
+        }
+
+        function determineNiveau(length) {
+            switch (length) {
+                case 1: return 'Section ';
+                case 2: return 'Division ';
+                case 3: return 'Groupe ';
+                case 4: return 'Classe ';
+                case 5: return 'Sous-classe ';
+                default: return '';
+            }
+        }
 
         function encodeHTML(str) {
             if (str == null) {
@@ -252,19 +253,25 @@ function determineNiveau(length) {
         }
 
 		function escapeHtml(text) {
-    if (typeof text !== 'string') {
-        console.error('Expected a string but got:', text);
-        return '';
-    }
-    const map = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#039;'
-    };
-    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
-}
+            if (typeof text !== 'string') {
+                console.error('Expected a string but got:', text);
+                return '';
+            }
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+
+        function decodeHtmlEntities(text) {
+            const textarea = document.createElement('textarea');
+            textarea.innerHTML = text;
+            return textarea.value;
+        }
 
         function formatCodeWithDot(code) {
             if (code.length === 4 && !code.includes('.')) {
