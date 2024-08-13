@@ -7,6 +7,7 @@
     <title>NAF 2008 - consultation</title>
     <link href="../commun.css" rel="stylesheet" type="text/css"/>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js" integrity="sha384-+VfUPEb0PdtChMwmBcBmykRMDd+v6D/oFmB3rZM/puCMDYcIvF968OimRh4KQY9a" crossorigin="anonymous"></script>
     <script>
         const endpointURL = "https://rdf.insee.fr/sparql";
         const racine = "http://id.insee.fr/codes/";
@@ -20,7 +21,7 @@
             const code = sanitizeInput(getURLParameter('code'));
             if (code) {
                 const formattedCode = formatCodeWithDot(code);
-                document.getElementById('fil-ariane').innerHTML = '<ul>' + breadcrumbs(formattedCode, false) + '</ul>';
+                document.getElementById('fil-ariane').innerHTML = DOMPurify.sanitize('<ul>' + breadcrumbs(formattedCode, false) + '</ul>');
                 getLabel(formattedCode);
             } else {
                 console.error('Code is null or empty.');
@@ -90,10 +91,10 @@
                     const childTypeIndex = code.length === 1 ? 1 : code.length;
                     getChildren(itemURI, itemTypes[childTypeIndex]);
                 } else {
-                    document.getElementById('label').innerHTML = "<p>Code non trouvé</p>";
+                    document.getElementById('label').innerHTML = DOMPurify.sanitize("<p>Code non trouvé</p>");
                 }
             } catch (error) {
-                document.getElementById('label').innerHTML = "<p>Erreur lors de la récupération des données</p>";
+                document.getElementById('label').innerHTML = DOMPurify.sanitize("<p>Erreur lors de la récupération des données</p>");
                 console.error('Error in getLabel:', error);
             }
         }
@@ -134,18 +135,18 @@
                     let innerHTML = '<p class="nom-enfants">' + escapeHtml(childType) + (data.results.bindings.length > 1 ? 's' : '') + '</p><ul class="enfants">';
                     data.results.bindings.forEach(item => {
                         const childCode = encodeHTML(item.code.value);
-                        const childLabel = encodeHTML(item.label.value);
+                        const childLabel = escapeHtml(item.label.value); // Preserve special characters in labels
                         innerHTML += `<li><p><a href="${replacement}${encodeURIComponent(childCode)}">${childCode} - ${childLabel}</a></p></li>`;
                     });
                     innerHTML += '</ul>';
                     const sousItemsElement = document.getElementById('sous-items');
-                    sousItemsElement.innerHTML = innerHTML;
+                    sousItemsElement.innerHTML = DOMPurify.sanitize(innerHTML);
                     sousItemsElement.classList.add("sous-items");
                 } else {
-                    document.getElementById('sous-items').innerHTML = "<p>Aucun élément trouvé</p>";
+                    document.getElementById('sous-items').innerHTML = DOMPurify.sanitize("<p></p>");
                 }
             } catch (error) {
-                document.getElementById('sous-items').innerHTML = "<p>Erreur lors de la récupération des données</p>";
+                document.getElementById('sous-items').innerHTML = DOMPurify.sanitize("<p>Erreur lors de la récupération des données</p>");
                 console.error('Error in getChildren:', error);
             }
         }
@@ -159,9 +160,9 @@
             try {
                 const data = await fetchData(query);
                 if (data.results.bindings.length > 0) {
-                    const noteText = encodeHTML(data.results.bindings[0].text.value.replace(regex, replacement));
+                    const noteText = escapeHtml(data.results.bindings[0].text.value.replace(regex, replacement));
                     const tagElement = document.getElementById(tag);
-                    tagElement.innerHTML += noteText.replace(/\\\$/g, "<br />");
+                    tagElement.innerHTML += DOMPurify.sanitize(noteText.replace(/\\\$/g, "<br />"));
                     tagElement.classList.add(tag);
                 }
             } catch (error) {
@@ -169,72 +170,66 @@
             }
         }
 
-		function getURLParameter(name) {
-    const result = new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search);
-    const paramValue = result ? decodeURIComponent(result[1].replace(/\+/g, '%20')) : null;
-    return sanitizeInput(paramValue);  // Sanitize the input here
-}
-
-function breadcrumbs(code, finalLink) {
-    if (!code) {
-        console.error('Code is null or empty.');
-        return '';
-    }
-
-    const niveau = determineNiveau(code.length);
-    const sanitizedCode = encodeHTML(code);
-    const name = `${niveau}${sanitizedCode}`;
-    const fin = finalLink ?
-        `<li><a href="${replacement}${encodeURIComponent(sanitizedCode)}" title="${name}">${name}</a></li>` :
-        `<li>${name}</li>`;
-
-    if (code.length === 1) {
-        return `<li><a href="naf.htm" title="Accueil">NAF</a></li>&nbsp;${fin}`;
-    } else {
-        const parentCode = getParentCode(code);
-        if (parentCode && parentCode !== code) {
-            return `${breadcrumbs(parentCode, true)}&nbsp;${fin}`;
-        } else {
-            return fin;
+        function getURLParameter(name) {
+            const result = new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search);
+            const paramValue = result ? decodeURIComponent(result[1].replace(/\+/g, '%20')) : null;
+            return sanitizeInput(paramValue);  // Sanitize the input here
         }
-    }
-}
 
+        function breadcrumbs(code, finalLink) {
+            if (!code) {
+                console.error('Code is null or empty.');
+                return '';
+            }
 
-function getParentCode(code) {
-    // Si le code est déjà au niveau le plus élevé, il ne devrait pas avoir de parent.
-    if (code.length <= 1) {
-        return null;
-    }
+            const niveau = determineNiveau(code.length);
+            const sanitizedCode = encodeHTML(code);
+            const name = `${niveau}${sanitizedCode}`;
+            const fin = finalLink ?
+                `<li><a href="${replacement}${encodeURIComponent(sanitizedCode)}" title="${escapeHtml(name)}">${escapeHtml(name)}</a></li>` :
+                `<li>${escapeHtml(name)}</li>`;
 
-    // Logique pour calculer le code parent en fonction de la longueur du code.
-    if (code.length === 2) {
-        const codeNum = parseInt(code);
-        const sectionBounds = [1, 5, 10, 35, 36, 41, 45, 49, 55, 58, 64, 68, 69, 77, 84, 85, 86, 90, 94, 97, 99];
-        const sections = "ABCDEFGHIJKLMNOPQRSTU";
-        for (let index = 0; index < sectionBounds.length; index++) {
-            if (codeNum < sectionBounds[index]) return sections[index - 1];
+            if (code.length === 1) {
+                return `<li><a href="naf.htm" title="Accueil">NAF</a></li>&nbsp;${fin}`;
+            } else {
+                const parentCode = getParentCode(code);
+                if (parentCode && parentCode !== code) {
+                    return `${breadcrumbs(parentCode, true)}&nbsp;${fin}`;
+                } else {
+                    return fin;
+                }
+            }
         }
-        return sections[sections.length - 1];
-    }
 
-    if (code.length > 2) {
-        return code.slice(0, -1); // Supprimez le dernier caractère pour obtenir le code parent
-    }
+        function getParentCode(code) {
+            if (code.length <= 1) {
+                return null;
+            }
+            if (code.length === 2) {
+                const codeNum = parseInt(code);
+                const sectionBounds = [1, 5, 10, 35, 36, 41, 45, 49, 55, 58, 64, 68, 69, 77, 84, 85, 86, 90, 94, 97, 99];
+                const sections = "ABCDEFGHIJKLMNOPQRSTU";
+                for (let index = 0; index < sectionBounds.length; index++) {
+                    if (codeNum < sectionBounds[index]) return sections[index - 1];
+                }
+                return sections[sections.length - 1];
+            }
+            if (code.length > 2) {
+                return code.slice(0, -1);
+            }
+            return null;
+        }
 
-    return null;
-}
-
-function determineNiveau(length) {
-    switch (length) {
-        case 1: return 'Section ';
-        case 2: return 'Division ';
-        case 3: return 'Groupe ';
-        case 4: return 'Classe ';
-        case 5: return 'Sous-classe ';
-        default: return '';
-    }
-}
+        function determineNiveau(length) {
+            switch (length) {
+                case 1: return 'Section ';
+                case 2: return 'Division ';
+                case 3: return 'Groupe ';
+                case 4: return 'Classe ';
+                case 5: return 'Sous-classe ';
+                default: return '';
+            }
+        }
 
         function encodeHTML(str) {
             if (str == null) {
@@ -251,20 +246,20 @@ function determineNiveau(length) {
             return input ? input.replace(/[^a-zA-Z0-9.-_]/g, '') : '';
         }
 
-		function escapeHtml(text) {
-    if (typeof text !== 'string') {
-        console.error('Expected a string but got:', text);
-        return '';
-    }
-    const map = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#039;'
-    };
-    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
-}
+        function escapeHtml(text) {
+            if (typeof text !== 'string') {
+                console.error('Expected a string but got:', text);
+                return '';
+            }
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
 
         function formatCodeWithDot(code) {
             if (code.length === 4 && !code.includes('.')) {

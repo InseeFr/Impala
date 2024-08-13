@@ -6,7 +6,7 @@
     <link href="../commun.css" rel="stylesheet" type="text/css"/>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js" integrity="sha384-kphE34mJ4ksz5JkDejM0mI+5qbb+mRyVDCJm3nDA56bbUFflqAr6KPT3AKz3qOgh" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js" integrity="sha384-+VfUPEb0PdtChMwmBcBmykRMDd+v6D/oFmB3rZM/puCMDYcIvF968OimRh4KQY9a" crossorigin="anonymous"></script>
 </head>
 <body>
     <h1 class="titre-class">Nomenclatures de l'Enquête Annuelle de Production (EAP) 2018</h1>
@@ -18,10 +18,10 @@
 
     <!-- Template for items -->
     <script id="items-template" type="text/x-handlebars-template">
-        <p class="nom-enfants">{{sanitize title}}</p>
+        <p class="nom-enfants">{{title}}</p>
         <ul class="enfants">
         {{#each items}}
-            <li><p><a href="display-item.htm?code={{encodeURIComponent code}}">{{sanitize code}} - {{sanitize label}}</a></p></li>
+            <li><p><a href="display-item.htm?code={{encodeURIComponent code}}">{{code}} - {{label}}</a></p></li>
         {{/each}}
         </ul>
     </script>
@@ -51,14 +51,16 @@
                     const template = Handlebars.compile(templateSource);
 
                     const context = {
-                        title: DOMPurify.sanitize(title),
+                        title: DOMPurify.sanitize(title), // Sanitize the title
                         items: data.results.bindings.map(item => ({
-                            code: DOMPurify.sanitize(item.code.value),
-                            label: DOMPurify.sanitize(item.label.value)
+                            code: DOMPurify.sanitize(item.code.value), // Sanitize each code
+                            label: DOMPurify.sanitize(item.label.value) // Sanitize each label
                         }))
                     };
 
-                    document.getElementById(elementId).innerHTML = DOMPurify.sanitize(template(context));
+                    const sanitizedHTML = template(context);
+                    const container = document.getElementById(elementId);
+                    container.innerHTML = DOMPurify.sanitize(sanitizedHTML); // Sanitize the final HTML
                 })
                 .catch(error => console.error('Error fetching data:', error));
             };
@@ -95,11 +97,6 @@
         // Helper to encode URL components
         Handlebars.registerHelper('encodeURIComponent', function(context) {
             return encodeURIComponent(context);
-        });
-
-        // Helper to sanitize input
-        Handlebars.registerHelper('sanitize', function(context) {
-            return Handlebars.escapeExpression(context);
         });
     </script>
 </body>
