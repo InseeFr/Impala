@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="NAF 2008 - consultation">
     <title>NAF 2008 - consultation</title>
-    <link href="../commun.css" rel="stylesheet" type="text/css"/>
+    <link href="../commun.css" rel="stylesheet" type="text/css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js" integrity="sha384-+VfUPEb0PdtChMwmBcBmykRMDd+v6D/oFmB3rZM/puCMDYcIvF968OimRh4KQY9a" crossorigin="anonymous"></script>
     <script>
@@ -152,23 +152,26 @@
         }
 
         async function getNote(uri, tag) {
-            const query = `
-                SELECT ?text WHERE {
-                    <${encodeHTML(uri)}> <http://eurovoc.europa.eu/schema#noteLiteral> ?text
-                }
-            `;
-            try {
-                const data = await fetchData(query);
-                if (data.results.bindings.length > 0) {
-                    const noteText = escapeHtml(data.results.bindings[0].text.value.replace(regex, replacement));
-                    const tagElement = document.getElementById(tag);
-                    tagElement.innerHTML += DOMPurify.sanitize(noteText.replace(/\\\$/g, "<br />"));
-                    tagElement.classList.add(tag);
-                }
-            } catch (error) {
-                console.error('Error in getNote:', error);
-            }
+    const query = `
+        SELECT ?text WHERE {
+            <${encodeHTML(uri)}> <http://eurovoc.europa.eu/schema#noteLiteral> ?text
         }
+    `;
+    try {
+        const data = await fetchData(query);
+        if (data.results.bindings.length > 0) {
+            let noteText = data.results.bindings[0].text.value;
+            // Remplacer toutes les occurrences de "http://bauhaus/" par "http://id.insee.fr/" dans le texte
+            noteText = noteText.replace(/http:\/\/bauhaus\//g, 'http://id.insee.fr/');
+            // Sanitize and update the HTML content
+            noteText = DOMPurify.sanitize(noteText, { ADD_ATTR: ['target'] });
+            document.getElementById(tag).innerHTML += noteText.replace(/\\\$/g, "<br />");
+            document.getElementById(tag).classList.add(tag);
+        }
+    } catch (error) {
+        console.error('Error in getNote:', error);
+    }
+}
 
         function getURLParameter(name) {
             const result = new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search);
@@ -272,7 +275,7 @@
 <body>
     <div id="fil-ariane"></div>
     <h1 id="label" class="item"></h1>
-    <br/>
+    <br>
     <div id="notes">
         <div id="note-generale"></div>
         <div id="contenu-central"></div>
