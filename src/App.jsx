@@ -1,5 +1,6 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import "./App.css";
+import PropTypes from "prop-types";
 
 const defaultEndpoint = "http://rdf.insee.fr/sparql";
 const defaultPrefix = "https://rdf.insee.fr/sparql?query=DESCRIBE";
@@ -69,6 +70,12 @@ function Editor({ endpoint, queries, prefix }) {
         </>
     );
 }
+
+Editor.propTypes = {
+    endpoint: PropTypes.string,
+    queries: PropTypes.array,
+    prefix: PropTypes.string
+};
 
 function App() {
     const [queries, setQueries] = useState([]);

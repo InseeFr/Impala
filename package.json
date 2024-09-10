@@ -7,6 +7,7 @@
         "web-vitals": "4.2.2"
     },
     "devDependencies": {
+        "@eslint/js": "^9.10.0",
         "@playwright/test": "^1.45.3",
         "@testing-library/dom": "^10.4.0",
         "@testing-library/jest-dom": "^6.4.8",
@@ -16,9 +17,14 @@
         "@vitejs/plugin-react-swc": "^3.7.0",
         "@vitest/coverage-v8": "^2.0.5",
         "bestzip": "^2.2.1",
+        "eslint": "^9.10.0",
+        "eslint-plugin-react": "^7.35.2",
+        "eslint-plugin-vitest": "^0.5.4",
+        "globals": "^15.9.0",
         "jsdom": "^24.1.1",
         "ncp": "^2.0.0",
         "prettier": "^3.3.3",
+        "prop-types": "^15.8.1",
         "vite": "^5.3.4",
         "vitest": "^2.0.4"
     },
@@ -31,19 +37,9 @@
         "test": "vitest test",
         "eject": "react-scripts eject",
         "create-zip": "cd build && bestzip build.zip *",
-        "lint": "eslint src/**/*.js",
+        "lint": "eslint src/",
         "_format": "prettier \"**/*.{js,jsx,css,html}\"",
         "format": "npm run _format -- --write"
-    },
-    "eslintConfig": {
-        "extends": [
-            "eslint:recommended",
-            "react-app",
-            "react-app/jest"
-        ],
-        "rules": {
-            "quotes": "error"
-        }
     },
     "browserslist": {
         "production": [
