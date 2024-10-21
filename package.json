@@ -17,6 +17,7 @@
         "@vitejs/plugin-react-swc": "^3.7.0",
         "@vitest/coverage-v8": "^2.0.5",
         "bestzip": "^2.2.1",
+        "cross-env": "^7.0.3",
         "eslint": "^9.10.0",
         "eslint-plugin-react": "^7.35.2",
         "eslint-plugin-vitest": "^0.5.4",
@@ -29,7 +30,7 @@
         "vitest": "^2.0.4"
     },
     "scripts": {
-        "pre-script": "REACT_APP_VERSION=$(node ./scripts/getVersion.js)",
+        "pre-script": "cross-env VITE_VERSION=$npm_package_version VITE_NAME=$npm_package_name",
         "copy-static": "ncp pages build && ncp temp_dist build/sparql",
         "build-react": "vite build --base=/sparql",
         "start": "yarn pre-script && vite",
