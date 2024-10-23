@@ -1,5 +1,4 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
-import "./App.css";
 import PropTypes from "prop-types";
 
 const defaultEndpoint = "http://rdf.insee.fr/sparql";
@@ -90,7 +89,6 @@ function App() {
             });
     }, []);
 
-    //
     useEffect(() => {
         fetch("/configuration.json")
             .then(response => response.json())
@@ -104,9 +102,16 @@ function App() {
             });
     }, []);
 
+    const name = import.meta.env.VITE_NAME;
+    const version = import.meta.env.VITE_VERSION;
+    const footer = `${name} : v${version}`;
+
     return (
         <div className="App">
             {endpoint && <Editor endpoint={endpoint} queries={queries} prefix={prefix} />}
+            <footer>
+                <p>{footer}</p>
+            </footer>
         </div>
     );
 }
