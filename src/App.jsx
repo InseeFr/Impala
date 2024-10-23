@@ -9,6 +9,7 @@ function Editor({ endpoint, queries, prefix }) {
     const [yasgui, setYasgui] = useState();
     const [counter, setCounter] = useState(0);
     const ref = useRef(null);
+    const editorRef = useRef(null);
 
     const [inserted, setInserted] = useState(false);
 
@@ -33,10 +34,15 @@ function Editor({ endpoint, queries, prefix }) {
     };
 
     useLayoutEffect(() => {
+        if (editorRef.current.getAttribute("data-yasgui") === "true") {
+            return;
+        }
+
         localStorage.removeItem("yagui__config");
+        editorRef.current.setAttribute("data-yasgui", "true");
         setYasgui(
             // eslint-disable-next-line no-undef
-            new Yasgui(document.getElementById("editor"), {
+            new Yasgui(editorRef.current, {
                 requestConfig: {
                     endpoint
                 }
@@ -48,7 +54,7 @@ function Editor({ endpoint, queries, prefix }) {
         <>
             <div className="queries-block" ref={ref}>
                 {queries.map((query, i) => (
-                    <button key={i} onClick={() => click(query)}>
+                    <button type="button" key={i} onClick={() => click(query)}>
                         {" "}
                         {query.label}{" "}
                     </button>
@@ -56,6 +62,7 @@ function Editor({ endpoint, queries, prefix }) {
             </div>
             <div
                 id="editor"
+                ref={editorRef}
                 onClick={e => {
                     if (
                         endpoint !== defaultEndpoint &&
