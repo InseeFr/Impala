@@ -1,5 +1,5 @@
 {
-    "name": "yasgui-react",
+    "name": "impala",
     "version": "1.3.0",
     "dependencies": {
         "react": "^18.3.1",
@@ -33,8 +33,8 @@
         "pre-script": "cross-env VITE_VERSION=$npm_package_version VITE_NAME=$npm_package_name",
         "copy-static": "ncp pages build && ncp temp_dist build/sparql",
         "build-react": "vite build --base=/sparql",
-        "start": "yarn pre-script && vite",
-        "build": "yarn pre-script && yarn build-react && yarn copy-static && yarn create-zip",
+        "start": "yarn pre-script vite",
+        "build": "yarn pre-script yarn build-react && yarn copy-static && yarn create-zip",
         "test": "vitest test",
         "eject": "react-scripts eject",
         "create-zip": "cd build && bestzip build.zip *",

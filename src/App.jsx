@@ -108,9 +108,7 @@ function App() {
             });
     }, []);
 
-    const name = import.meta.env.VITE_NAME;
-    const version = import.meta.env.VITE_VERSION;
-    const footer = `${name} : v${version}`;
+    const footer = `${import.meta.env.VITE_NAME.toUpperCase()} : v${import.meta.env.VITE_VERSION}`;
 
     return (
         <div className="App">
