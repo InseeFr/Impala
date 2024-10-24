@@ -108,7 +108,7 @@ function App() {
             });
     }, []);
 
-    const footer = `${import.meta.env.VITE_NAME.toUpperCase()} : v${import.meta.env.VITE_VERSION}`;
+    const footer = `${import.meta.env.VITE_NAME?.toUpperCase()} : v${import.meta.env.VITE_VERSION}`;
 
     return (
         <div className="App">
