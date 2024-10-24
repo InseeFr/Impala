@@ -1,5 +1,4 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
-import "./App.css";
 import PropTypes from "prop-types";
 
 const defaultEndpoint = "http://rdf.insee.fr/sparql";
@@ -37,7 +36,6 @@ function Editor({ endpoint, queries, prefix }) {
         if (editorRef.current.getAttribute("data-yasgui") === "true") {
             return;
         }
-
         localStorage.removeItem("yagui__config");
         editorRef.current.setAttribute("data-yasgui", "true");
         setYasgui(
@@ -97,7 +95,6 @@ function App() {
             });
     }, []);
 
-    //
     useEffect(() => {
         fetch("/configuration.json")
             .then(response => response.json())
@@ -111,9 +108,14 @@ function App() {
             });
     }, []);
 
+    const footer = `${import.meta.env.VITE_NAME?.toUpperCase()} : v${import.meta.env.VITE_VERSION}`;
+
     return (
         <div className="App">
             {endpoint && <Editor endpoint={endpoint} queries={queries} prefix={prefix} />}
+            <footer>
+                <p>{footer}</p>
+            </footer>
         </div>
     );
 }

@@ -1,15 +1,15 @@
-# Étape de construction
-FROM node:latest as builder
+### BUILD STEP ###
+
+FROM node:latest AS builder
 
 WORKDIR /impala
 
 COPY ./ ./
 
-RUN npm install --force
+RUN yarn && yarn build
 
-RUN npm run build
+### EXECUTION STEP ###
 
-# Étape d'exécution
 FROM nginxinc/nginx-unprivileged:1.27-alpine
 
 # Non root user
@@ -20,12 +20,12 @@ ENV NGINX_GROUP=nginx
 
 USER $NGINX_USER_ID
 
-# Ajout du build au dossier root de nginx
+# Add build to nginx root webapp
 COPY --from=builder --chown=$NGINX_USER:$NGINX_GROUP /impala/build /usr/share/nginx/html
 
-# Copie de la configuration nginx
+# Copy nginx configuration
 RUN rm /etc/nginx/conf.d/default.conf
-COPY --from=builder --chown=$NGINX_USER:$NGINX_GROUP /impala/config/nginx.conf /etc/nginx/conf.d/nginx.conf
+COPY --from=builder --chown=$NGINX_USER:$NGINX_GROUP /impala/nginx.conf /etc/nginx/conf.d/nginx.conf
 
-
+# Strart nginx server
 CMD ["nginx", "-g", "daemon off;"]

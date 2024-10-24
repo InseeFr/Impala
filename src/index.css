@@ -1,6 +1,7 @@
 body {
     width: 70%;
     margin: auto;
+    font: 1em sans-serif;
 }
 
 .controlbar {
@@ -23,4 +24,12 @@ table td {
 
 .queries-block {
     padding: 1em 0;
+}
+
+footer {
+    p {
+        font-weight: bold;
+    }
+    text-align: center;
+    margin-top: 50px;
 }
