@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+    <title>EAP - consultation</title>
+    <link href="../commun.css" rel="stylesheet" type="text/css"/>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK" crossorigin="anonymous"></script>
+    <script>
+        const endpointURL = "https://rdf.insee.fr/sparql";
+        const racine = "http://id.insee.fr/codes/";
+        const nomenclature = "eap2024";
+        const regex = new RegExp(racine + nomenclature + "/[A-Z0-9]+/", "g");
+        const replacement = 'display-item.htm?code=';
+        const itemTypes = ['Produit', 'produit'];
+        const parentLength = [0, 4];
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const code = sanitizeInput(getURLParameter('code'));
+            if (code) {
+                document.getElementById('fil-ariane').innerHTML = '<ul>' + breadcrumbs(code, false) + '</ul>';
+                getLabel(code);
+            }
+        });
+
+        async function fetchData(query, type = "json") {
+            const headers = {
+                'Accept': type === 'n-triples' ? 'application/n-triples' : 'application/sparql-results+json'
+            };
+            try {
+                const response = await fetch(`${endpointURL}?query=${encodeURIComponent(query)}`, {
+                    method: 'GET',
+                    headers: headers,
+                });
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const contentType = response.headers.get("content-type");
+                if (type === "json" && contentType.includes("application/sparql-results+json")) {
+                    return await response.json();
+                } else if (type === "n-triples" && contentType.includes("application/n-triples")) {
+                    const text = await response.text();
+                    return parseNTriples(text);
+                } else {
+                    throw new Error('Received content is not in the expected format');
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                throw error;
+            }
+        }
+
+        function parseNTriples(text) {
+            const triples = text.trim().split('\n').map(line => {
+                const match = line.match(/<([^>]*)>\s*<([^>]*)>\s*<([^>]*)>|<([^>]*)>\s*<([^>]*)>\s*"([^"]*)"/);
+                if (match) {
+                    return {
+                        subject: match[1] || match[4],
+                        predicate: match[2] || match[5],
+                        object: match[3] || match[6]
+                    };
+                } else {
+                    console.error('Failed to parse n-triple line:', line);
+                    return null;
+                }
+            });
+            return triples.filter(triple => triple !== null);
+        }
+
+        async function getLabel(code) {
+            const query = `
+                PREFIX skos:<http://www.w3.org/2004/02/skos/core#>
+                SELECT ?uri ?label WHERE {
+                    GRAPH <http://rdf.insee.fr/graphes/codes/${nomenclature}> {
+                        ?uri skos:prefLabel ?label ; skos:notation '${encodeHTML(code)}'.
+                        FILTER langMatches (lang(?label), 'fr')
+                    }
+                }
+            `;
+            try {
+                const data = await fetchData(query);
+                const itemURI = data.results.bindings[0].uri.value;
+                document.getElementById('label').textContent = `${code} - ${data.results.bindings[0].label.value}`;
+                if (code.length > 6) {
+                    getDescription(itemURI);
+                }
+                const childTypeIndex = (code.length == 6 ? 1 : 0);
+                getChildren(itemURI, itemTypes[childTypeIndex]);
+            } catch (error) {
+                console.error('Error in getLabel:', error);
+            }
+        }
+
+        async function getDescription(itemURI) {
+            const query = `
+                PREFIX skos:<http://www.w3.org/2004/02/skos/core#>
+                DESCRIBE <${encodeHTML(itemURI)}>
+            `;
+            try {
+                const data = await fetchData(query, "n-triples");
+                data.forEach(triple => {
+                    const predicateValue = triple.predicate;
+                    const objectValue = triple.object;
+                    if (predicateValue === "http://www.w3.org/2004/02/skos/core#definition") getNote(objectValue, "note-generale");
+                    else if (predicateValue === "http://www.w3.org/2004/02/skos/core#scopeNote") getNote(objectValue, "note-generale");
+                    else if (predicateValue === "http://rdf-vocabulary.ddialliance.org/xkos#coreContentNote") getNote(objectValue, "contenu-central");
+                    else if (predicateValue === "http://rdf-vocabulary.ddialliance.org/xkos#additionalContentNote") getNote(objectValue, "contenu-limite");
+                    else if (predicateValue === "http://rdf-vocabulary.ddialliance.org/xkos#exclusionNote") getNote(objectValue, "exclusions");
+                    else if (predicateValue === "http://www.w3.org/2004/02/skos/core#note") getNote(objectValue, "remarques");
+                });
+            } catch (error) {
+                console.error('Error in getDescription:', error);
+            }
+        }
+
+        async function getChildren(itemURI, childType) {
+            const query = `
+                PREFIX skos:<http://www.w3.org/2004/02/skos/core#>
+                SELECT ?code ?label WHERE {
+                    <${encodeHTML(itemURI)}> skos:narrower ?child .
+                    ?child skos:notation ?code ; skos:prefLabel ?label .
+                    FILTER langMatches (lang(?label), 'fr')
+                } ORDER BY ?code
+            `;
+            try {
+                const data = await fetchData(query);
+                if (data.results.bindings.length > 0) {
+                    let innerHTML = '<p class="nom-enfants">Liste des produits détaillés</p><ul class="enfants">';
+                    data.results.bindings.forEach(item => {
+                        const childCode = encodeHTML(item.code.value);
+                        const childLabel = encodeHTML(item.label.value);
+                        innerHTML += `<li><p><a href="${replacement}${encodeURIComponent(childCode)}">${childCode} - ${childLabel}</a></p></li>`;
+                    });
+                    innerHTML += '</ul>';
+                    const sousItemsElement = document.getElementById('sous-items');
+                    sousItemsElement.innerHTML = innerHTML;
+                    sousItemsElement.classList.add("sous-items");
+                }
+            } catch (error) {
+                console.error('Error in getChildren:', error);
+            }
+        }
+
+        async function getNote(uri, tag) {
+            const query = `
+                SELECT ?text WHERE {
+                    <${encodeHTML(uri)}> <http://eurovoc.europa.eu/schema#noteLiteral> ?text
+                }
+            `;
+            try {
+                const data = await fetchData(query);
+                const noteText = encodeHTML(data.results.bindings[0].text.value.replace(regex, replacement));
+                const tagElement = document.getElementById(tag);
+                tagElement.innerHTML += noteText.replace(/\\\$/g, "<br />");
+                tagElement.classList.add(tag);
+            } catch (error) {
+                console.error('Error in getNote:', error);
+            }
+        }
+
+        function getURLParameter(name) {
+            const result = new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search);
+            return result ? decodeURIComponent(result[1].replace(/\+/g, '%20')) : null;
+        }
+
+        function breadcrumbs(code, finalLink) {
+            let niveau;
+            if (code && code.length > 6) {
+                niveau = 'Produit détaillé ';
+            } else {
+                niveau = 'Produit agrégé ';
+            }
+            const name = `${niveau}${encodeHTML(code)}`;
+            const fin = finalLink ?
+                `<li><a href="${replacement}${encodeURIComponent(code)}" title="${name}">${name}</a></li>` :
+                `<li>${name}</li>`;
+
+            if (code && code.length <= 6) {
+                return `<li><a href="eap.htm" title="Accueil">${nomenclature.toUpperCase()}</a></li>&nbsp;${fin}`;
+            } else if (code) {
+                return `${breadcrumbs(getParentCode(code), true)}&nbsp;${fin}`;
+            }
+            return '';
+        }
+
+        function getParentCode(code) {
+            if (code && code.length > 6) {
+                let codeParent = code.substr(0, parentLength[1]);
+                if (/[A-Z]/.test(code.slice(-1))) {
+                    codeParent += code.slice(-1).toLowerCase();
+                }
+                return codeParent;
+            }
+            return null;
+        }
+
+        // Encode HTML entities to prevent XSS
+        function encodeHTML(str) {
+            return str.replace(/&/g, '&amp;')
+                      .replace(/</g, '&lt;')
+                      .replace(/>/g, '&gt;')
+                      .replace(/"/g, '&quot;')
+                      .replace(/'/g, '&#39;');
+        }
+
+        // Sanitize input to prevent XSS
+        function sanitizeInput(input) {
+            return input ? input.replace(/[^a-zA-Z0-9-_]/g, '') : '';
+        }
+    </script>
+</head>
+<body>
+    <div id="fil-ariane"></div>
+    <h1 id="label" class="item"></h1>
+    <br/>
+    <div id="notes">
+        <div id="note-generale"></div>
+        <div id="contenu-central"></div>
+        <div id="contenu-limite"></div>
+        <div id="exclusions"></div>
+        <div id="remarques"></div>
+    </div>
+    <div id="sous-items"></div>
+</body>
+</html>
