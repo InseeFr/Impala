@@ -3,6 +3,8 @@ import { configDefaults } from "vitest/config";
 import { readFileSync } from "fs";
 import { resolve } from "path";
 
+const baseDir = resolve(import.meta.dirname, "pages/");
+
 // https://vitejs.dev/config/
 export default {
     base: "/",
@@ -35,12 +37,17 @@ export default {
             },
             "^/queries/.*.txt": {
                 bypass: function (req, res) {
+                    const sanitizedPath =
+                        req.url?.replace(/\.\.|\/\//g, "").replace("/", "") || "index.html";
+
+                    const filePath = resolve(baseDir, sanitizedPath);
+
+                    if (!filePath.startsWith(baseDir)) {
+                        throw new Error("Access denied: Attempted path traversal.");
+                    }
+
                     res.setHeader("Content-Type", "application/json");
-                    res.end(
-                        readFileSync(
-                            resolve(import.meta.dirname, "pages/", req.url!.replace("/", ""))
-                        ).toString()
-                    );
+                    res.end(readFileSync(filePath).toString());
                     return false;
                 }
             }
