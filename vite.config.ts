@@ -2,6 +2,7 @@ import react from "@vitejs/plugin-react-swc";
 import { configDefaults } from "vitest/config";
 import { readFileSync } from "fs";
 import { resolve } from "path";
+import sanitizeHtml from "sanitize-html";
 
 const baseDir = resolve(import.meta.dirname, "pages/");
 
@@ -37,8 +38,9 @@ export default {
             },
             "^/queries/.*.txt": {
                 bypass: function (req, res) {
-                    const sanitizedPath =
-                        req.url?.replace(/\.\.|\/\//g, "").replace("/", "") || "index.html";
+                    const sanitizedPath = sanitizeHtml(
+                        req.url?.replace(/\.\.|\/\//g, "").replace("/", "") || "index.html"
+                    );
 
                     const filePath = resolve(baseDir, sanitizedPath);
 
