@@ -19,6 +19,7 @@ jobs:
           node-version: ${{ matrix.node }}
 
       - run: yarn
+      - run: yarn test --coverage --watch=false
       - run: yarn build
 
       - name: Upload Deploy Artifact
