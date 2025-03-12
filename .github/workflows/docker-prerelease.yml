@@ -3,7 +3,7 @@ on:
     release:
         types: [prereleased]
         branches:
-            - main
+            - migration_to_kube
         paths-ignore:
             - documentation/**
 jobs:
