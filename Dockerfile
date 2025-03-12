@@ -24,8 +24,8 @@ USER $NGINX_USER_ID
 COPY --from=builder --chown=$NGINX_USER:$NGINX_GROUP /impala/build /usr/share/nginx/html
 
 # Copy nginx configuration
-#RUN rm /etc/nginx/conf.d/default.conf
-#COPY --from=builder --chown=$NGINX_USER:$NGINX_GROUP /impala/nginx.conf /etc/nginx/conf.d/nginx.conf
+# Copier le fichier de configuration Nginx
+COPY nginx.conf /etc/nginx/nginx.conf.template
 
-# Strart nginx server
-#CMD ["nginx", "-g", "daemon off;"]
+# Substituer les variables d'environnement et démarrer Nginx
+CMD ["sh", "-c", "envsubst < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"]
