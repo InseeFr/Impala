@@ -28,4 +28,4 @@ COPY --from=builder --chown=$NGINX_USER:$NGINX_GROUP /impala/build /usr/share/ng
 COPY nginx.conf /etc/nginx/nginx.conf.template
 
 # Substituer les variables d'environnement et démarrer Nginx
-CMD ["sh", "-c", "envsubst < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"]
+#CMD ["sh", "-c", "envsubst < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"]
