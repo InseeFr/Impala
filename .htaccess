@@ -1,0 +1,65 @@
+RewriteEngine On
+
+# Regle 1 : Variable => URL de la base de données
+# Rule 1 : URL of the database + apache server used for static content and dereferencing
+RewriteRule .* - [E=RDF4J_API_URI:https://diffusionexterne-metadonnees.insee.fr/repositories/data]
+RewriteRule .* - [E=METADATA_API_URI:https://api-rmes.insee.fr]
+RewriteRule .* - [E=IMPALA_URI:http://%{HTTP_HOST}]
+
+# Regle 2 : redirection root vers index
+# Rule 2 : redirection root to index
+RewriteRule ^/$ /index.html? [L]
+RewriteRule ^$ /index.html? [L]
+
+# Regle 3 : traitement des resources statiques
+# Rule 3 : Static resources
+RewriteRule (.html|.zip|.txt|.json|.map|.png|.css|.ico|.rdf|.htm|.ttl) - [L]
+
+# Regle 4 : Redirection https vers http ne fonctionne pas (car port 443 fermé ?)
+# Rule 4 : https to http
+#RewriteCond %{SERVER_PORT} 443
+#RewriteRule (.*) http://%{HTTP_HOST}%{REQUEST_URI}
+
+# Règle 5 : GET programmatique sur le sparql endpoint avec query en parametre
+# Rule 5 : GET programmatic on the sparql endpoint with query as parameter
+RewriteCond %{HTTP_ACCEPT} !text/html
+RewriteCond %{REQUEST_METHOD} GET
+RewriteCond %{REQUEST_URI}  ^/sparql$
+RewriteCond %{QUERY_STRING} (query=.*)
+RewriteRule ^/.* %{ENV:RDF4J_API_URI} [P,QSA]
+
+# Règle 6 : Affichage de la page de formulaire d'Impala
+# Rule 6 : To show "Impala" Web Form
+RewriteCond %{REQUEST_METHOD} GET
+RewriteCond %{REQUEST_URI} ^/sparql
+RewriteRule ^/.* -  [L]
+
+# Règle 7 : POST avec payload query=[la requete sparql] utilisé par IMPALA
+# Rule 7 : POST with payload query=[Sparql request] used by Impala
+RewriteCond %{HTTP_ACCEPT} !text/html
+RewriteCond %{REQUEST_METHOD} POST
+RewriteCond %{REQUEST_URI} ^/sparql$
+RewriteRule ^/.* %{ENV:RDF4J_API_URI} [P]
+
+# Règle 8 : Acces à une ressource hors navigateur
+# Rule 8 : Acces to a ressource programmaticaly
+RewriteCond %{REQUEST_METHOD} GET
+RewriteCond %{HTTP_ACCEPT} !text/html
+#RewriteRule ^/.* "%{ENV:METADATA_API_URI}/technicalService/describe?uri=http://%{HTTP_HOST}%{REQUEST_URI}" [R=302,L,NE,P]
+RewriteRule ^(.*)$ https://rdf.insee.fr/sparql?query=describe<http://id.insee.fr$1> [R=303,L,NE]
+
+#Regle 8bis pourid.insee.frdans navigateur
+RewriteCond %{HTTP_HOST} ^id\.insee\.fr$ [NC]
+RewriteRule ^(.*)$ https://rdf.insee.fr/sparql?query=DESCRIBE<http://id.insee.fr$1> [R=303,L,NE]
+
+# Règle 9 : Acces à une ressource via un navigateur (on repasse par Impala)
+# Rule 9 : Access with a navigator => redirection to Impala Web Form
+RewriteCond %{HTTP_ACCEPT} text/html
+RewriteRule ^/.* "/sparql?query=DESCRIBE <%{ENV:IMPALA_URI}%{REQUEST_URI}>" [R,L]
+
+# Règle 10 : Ajout d'en-têtes pour autoriser l'utilisation de l'API par toutes les origines
+# Rule 10 : Add headers to authorize usage by all origins 
+Header set Access-Control-Allow-Origin "*"
+
+# Règle 11 : Ecrase l'en-tête Server systématiquement (vulnérabilité)
+Header set Server Apache
