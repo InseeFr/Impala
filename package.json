@@ -1,6 +1,6 @@
 {
     "name": "impala",
-    "version": "v1.5.2-beta8",
+    "version": "v1.5.2-beta9",
     "dependencies": {
         "react": "^18.3.1",
         "react-dom": "^18.3.1",
