@@ -28,6 +28,8 @@ jobs:
         needs: build
         steps:
             - uses: actions/checkout@v4
+              with:
+                  ref: ${{ github.event.release.tag_name }}
             - name: Set up QEMU
               uses: docker/setup-qemu-action@v3
             - name: Set up Docker Buildx
@@ -38,11 +40,9 @@ jobs:
                   registry: ghcr.io
                   username: ${{ github.repository_owner }}
                   password: ${{ secrets.GITHUB_TOKEN }}
-            - name: Extract version
-              run: echo "VERSION=$(cat package.json | jq -r .version)" >> $GITHUB_ENV
             - name: Build and push
               uses: docker/build-push-action@v6
               with:
                   push: true
                   file: Dockerfile
-                  tags: ghcr.io/inseefr/impala:${{ env.VERSION }}
+                  tags: ghcr.io/inseefr/impala:${{ github.event.release.tag_name }}
