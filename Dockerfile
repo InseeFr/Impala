@@ -1,31 +1,28 @@
-### BUILD STEP ###
+# Étape 1 : Build
+FROM node:20-alpine AS builder
 
-FROM node:latest AS builder
+WORKDIR /app
 
-WORKDIR /impala
+COPY package.json package-lock.json* ./
 
-COPY ./ ./
+RUN npm install
 
-RUN yarn && yarn build
+COPY . .
 
-### EXECUTION STEP ###
+RUN npm run build
 
-FROM nginxinc/nginx-unprivileged:1.27-alpine
+FROM node:20-alpine AS runner
 
-# Non root user
-ENV NGINX_USER_ID=101
-ENV NGINX_GROUP_ID=101
-ENV NGINX_USER=nginx
-ENV NGINX_GROUP=nginx
+ENV NODE_ENV=production
+ENV PORT=3000
 
-USER $NGINX_USER_ID
+WORKDIR /app
 
-# Add build to nginx root webapp
-COPY --from=builder --chown=$NGINX_USER:$NGINX_GROUP /impala/build /usr/share/nginx/html
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
 
-# Copy nginx configuration
-# Copier le fichier de configuration Nginx
-COPY nginx.conf /etc/nginx/nginx.conf.template
+EXPOSE 3000
 
-# Substituer les variables d'environnement et démarrer Nginx
-#CMD ["sh", "-c", "envsubst < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"]
+CMD ["npm", "start"]
