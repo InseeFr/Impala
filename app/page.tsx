@@ -1,14 +1,40 @@
+"use client";
+
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
-import PropTypes from "prop-types";
 
-const defaultEndpoint = "http://rdf.insee.fr/sparql";
+const defaultEndpoint = "/sparql";
 const defaultPrefix = "https://rdf.insee.fr/sparql?query=DESCRIBE";
+type YasguiType = {
+    getTab: () => {
+        setQuery: (query: string) => void;
+    };
+};
+declare global {
+    interface Window {
+        Yasgui: new (
+            container: HTMLElement,
+            config?: {
+                requestConfig?: {
+                    endpoint?: string;
+                };
+            }
+        ) => YasguiType;
+    }
+}
 
-function Editor({ endpoint, queries, prefix }) {
-    const [yasgui, setYasgui] = useState();
+function Editor({
+    endpoint,
+    queries,
+    prefix
+}: {
+    endpoint: string;
+    queries: { path: string; label: string }[];
+    prefix: string;
+}) {
+    const [yasgui, setYasgui] = useState<YasguiType>();
     const [counter, setCounter] = useState(0);
-    const ref = useRef(null);
-    const editorRef = useRef(null);
+    const ref = useRef<HTMLDivElement>(null);
+    const editorRef = useRef<HTMLDivElement>(null);
 
     const [inserted, setInserted] = useState(false);
 
@@ -16,31 +42,36 @@ function Editor({ endpoint, queries, prefix }) {
         if (counter > 100 || inserted) {
             return;
         }
-        if (document.querySelector(".yasqe")) {
-            document.querySelector(".yasqe").appendChild(ref.current);
+        const yasque = document.querySelector(".yasqe");
+        if (yasque !== null && ref.current !== null) {
+            yasque.appendChild(ref.current);
             setInserted(true);
         }
         setCounter(counter + 1);
     }, [counter, inserted]);
 
-    const click = query => {
+    const click = (query: { path: string }) => {
         fetch(query.path)
             .then(response => response.text())
             .then(body => {
-                const tab = yasgui.getTab();
-                tab.setQuery(body);
+                if (!!yasgui) {
+                    const tab = yasgui.getTab();
+                    tab.setQuery(body);
+                }
             });
     };
 
     useLayoutEffect(() => {
+        if (!editorRef.current) {
+            return;
+        }
         if (editorRef.current.getAttribute("data-yasgui") === "true") {
             return;
         }
         localStorage.removeItem("yagui__config");
         editorRef.current.setAttribute("data-yasgui", "true");
         setYasgui(
-            // eslint-disable-next-line no-undef
-            new Yasgui(editorRef.current, {
+            new window.Yasgui(editorRef.current, {
                 requestConfig: {
                     endpoint
                 }
@@ -62,13 +93,14 @@ function Editor({ endpoint, queries, prefix }) {
                 id="editor"
                 ref={editorRef}
                 onClick={e => {
+                    const link = e.target as HTMLLinkElement;
                     if (
                         endpoint !== defaultEndpoint &&
-                        e.target.href &&
-                        e.target.href.indexOf("http://id.insee.fr/") === 0 &&
-                        e.target.href.indexOf(prefix) !== 0
+                        link.href &&
+                        link.href.indexOf("http://id.insee.fr/") === 0 &&
+                        link.href.indexOf(prefix) !== 0
                     ) {
-                        e.target.href = prefix + encodeURIComponent(`<${e.target.href}>`);
+                        link.href = prefix + encodeURIComponent(`<${link.href}>`);
                     }
                 }}
             ></div>
@@ -76,16 +108,10 @@ function Editor({ endpoint, queries, prefix }) {
     );
 }
 
-Editor.propTypes = {
-    endpoint: PropTypes.string,
-    queries: PropTypes.array,
-    prefix: PropTypes.string
-};
-
 function App() {
-    const [queries, setQueries] = useState([]);
-    const [prefix, setPrefix] = useState();
-    const [endpoint, setEndpoint] = useState();
+    const [queries, setQueries] = useState<{ path: string; label: string }[]>([]);
+    const [prefix, setPrefix] = useState<string>();
+    const [endpoint, setEndpoint] = useState<string>();
 
     useEffect(() => {
         fetch("/queries/queries.json")
@@ -108,8 +134,10 @@ function App() {
             });
     }, []);
 
-    const footer = `${import.meta.env.VITE_NAME?.toUpperCase()} : v${import.meta.env.VITE_VERSION}`;
-
+    if (!prefix) {
+        return null;
+    }
+    const footer = `${process.env.NEXT_PUBLIC_NAME?.toUpperCase()} : v${process.env.NEXT_PUBLIC_VERSION}`;
     return (
         <div className="App">
             {endpoint && <Editor endpoint={endpoint} queries={queries} prefix={prefix} />}

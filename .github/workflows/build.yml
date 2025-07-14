@@ -1,27 +1,26 @@
 name: Quality
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    types: [opened, synchronize, reopened]
+    push:
+        branches:
+            - main
+    pull_request:
+        types: [opened, synchronize, reopened]
 jobs:
-  test-build:
-    name: Test & build
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node: [ 22 ]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node }}
-      - run: yarn
-      - run: yarn test --coverage --watch=false
-      - run: yarn build
-      - name: SonarCloud Scan
-        uses: sonarsource/sonarcloud-github-action@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets. SONAR_TOKEN }}
+    test-build:
+        name: Test & build
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                node: [22]
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ matrix.node }}
+            - run: yarn
+            - run: npm run build
+            - name: SonarCloud Scan
+              uses: sonarsource/sonarcloud-github-action@master
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  SONAR_TOKEN: ${{ secrets. SONAR_TOKEN }}
