@@ -7,7 +7,7 @@ Impala is a module of Insee's Statistical Metadata Repository (RMéS). It expose
 * Run Unit Tests (Vitest)
 
 ```shell
-yarn test
+pnpm test
 ```
 
 * Run UI Tests (Playwright)

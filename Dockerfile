@@ -6,7 +6,8 @@ WORKDIR /impala
 
 COPY ./ ./
 
-RUN yarn && yarn build
+RUN npm i -g npm
+RUN pnpm install && pnpm build
 
 ### EXECUTION STEP ###
 
