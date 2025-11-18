@@ -25,6 +25,7 @@
         "husky": "^9.1.7",
         "jsdom": "^24.1.1",
         "ncp": "^2.0.0",
+        "oxlint": "^1.29.0",
         "prettier": "^3.3.3",
         "prop-types": "^15.8.1",
         "sanitize-html": "^2.14.0",
@@ -40,7 +41,8 @@
         "test": "vitest test",
         "eject": "react-scripts eject",
         "create-zip": "cd build && bestzip build.zip *",
-        "lint": "eslint src/",
+        "lint": "oxlint src/",
+        "lint:fix": "oxlint src/ --fix",
         "_format": "prettier \"**/*.{js,jsx,css,html}\"",
         "format": "npm run _format -- --write",
         "prepare": "husky"

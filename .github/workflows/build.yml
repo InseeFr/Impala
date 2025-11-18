@@ -23,6 +23,8 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: 'pnpm'
       - run: pnpm install
+      - name: Lint code
+        run: pnpm lint
       - run: pnpm test --coverage --watch=false
       - run: pnpm build
       - name: SonarCloud Scan
