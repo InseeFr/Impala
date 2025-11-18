@@ -4,6 +4,22 @@ Impala is a module of Insee's Statistical Metadata Repository (RMéS). It expose
 
 ## Getting Started
 
+### Development
+
+* Run Linting (oxlint)
+
+```shell
+pnpm lint
+```
+
+* Auto-fix linting issues
+
+```shell
+pnpm lint:fix
+```
+
+### Testing
+
 * Run Unit Tests (Vitest)
 
 ```shell
