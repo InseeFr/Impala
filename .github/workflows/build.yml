@@ -14,12 +14,17 @@ jobs:
         node: [ 22 ]
     steps:
       - uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-      - run: yarn
-      - run: yarn test --coverage --watch=false
-      - run: yarn build
+          cache: 'pnpm'
+      - run: pnpm install
+      - run: pnpm test --coverage --watch=false
+      - run: pnpm build
       - name: SonarCloud Scan
         uses: sonarsource/sonarcloud-github-action@master
         env:
