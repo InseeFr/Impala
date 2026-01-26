@@ -6,7 +6,7 @@ WORKDIR /impala
 
 COPY ./ ./
 
-RUN npm i -g npm
+RUN npm i -g pnpm
 RUN pnpm install && pnpm build
 
 ### EXECUTION STEP ###
