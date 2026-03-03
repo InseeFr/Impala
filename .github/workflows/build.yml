@@ -5,6 +5,9 @@ on:
       - main
   pull_request:
     types: [opened, synchronize, reopened]
+  schedule:
+    # Tous les lundis à 12h UTC
+    - cron: '0 12 * * 1'
 jobs:
   test-build:
     name: Test & build
