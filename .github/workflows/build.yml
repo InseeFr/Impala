@@ -28,6 +28,8 @@ jobs:
       - run: pnpm install
       - name: Lint code
         run: pnpm lint
+      - name: Knip
+        run: pnpm knip
       - run: pnpm test --coverage --watch=false
       - run: pnpm build
       - name: SonarCloud Scan
