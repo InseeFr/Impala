@@ -1,2 +1,2 @@
 gitleaks git --pre-commit --redact --staged --verbose
-pnpm knip
+pnpm exec knip --no-config-hints
