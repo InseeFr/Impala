@@ -1,8 +1,7 @@
 import react from "@vitejs/plugin-react-swc";
 import { configDefaults } from "vitest/config";
-import { readFileSync } from "fs";
-import { resolve } from "path";
-import sanitizeHtml from "sanitize-html";
+import { readFileSync } from "node:fs";
+import { basename, resolve } from "node:path";
 
 const baseDir = resolve(import.meta.dirname, "pages/");
 
@@ -38,11 +37,9 @@ export default {
             },
             "^/queries/.*.txt": {
                 bypass: function (req, res) {
-                    const sanitizedPath = sanitizeHtml(
-                        req.url?.replace(/\.\.|\/\//g, "").replace("/", "") || "index.html"
-                    );
+                    const safeName = basename(req.url?.split("?")[0] || "");
 
-                    const filePath = resolve(baseDir, sanitizedPath);
+                    const filePath = resolve(baseDir, safeName);
 
                     if (!filePath.startsWith(baseDir)) {
                         throw new Error("Access denied: Attempted path traversal.");
