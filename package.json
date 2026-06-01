@@ -24,7 +24,7 @@
         "prettier": "^3.3.3",
         "prop-types": "^15.8.1",
         "vite": "^7.3.1",
-        "vitest": "^4.0.18"
+        "vitest": "^4.1.0"
     },
     "scripts": {
         "pre-script": "cross-env VITE_VERSION=$npm_package_version VITE_NAME=$npm_package_name",
