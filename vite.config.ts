@@ -1,9 +1,16 @@
 import react from "@vitejs/plugin-react-swc";
 import { configDefaults } from "vitest/config";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { basename, resolve } from "node:path";
 
 const baseDir = resolve(import.meta.dirname, "pages/");
+
+// Allowlist statique des fichiers .txt servables, calculée au démarrage.
+// On ne sert que des noms présents dans cet ensemble : la valeur utilisée pour
+// construire le chemin provient de l'allowlist, jamais de l'entrée utilisateur.
+const allowedTxtFiles = new Set(
+    readdirSync(resolve(baseDir, "queries")).filter((name) => name.endsWith(".txt"))
+);
 
 // https://vitejs.dev/config/
 export default {
@@ -37,15 +44,21 @@ export default {
             },
             "^/queries/.*.txt": {
                 bypass: function (req, res) {
-                    const safeName = basename(req.url?.split("?")[0] || "");
+                    const requestedName = basename(req.url?.split("?")[0] || "");
 
-                    const filePath = resolve(baseDir, safeName);
-
-                    if (!filePath.startsWith(baseDir)) {
+                    // `safeName` provient de l'allowlist, pas de l'input utilisateur :
+                    // le chemin servi est donc toujours une valeur d'origine connue.
+                    const safeName = [...allowedTxtFiles].find(
+                        (name) => name === requestedName
+                    );
+                    if (!safeName) {
                         throw new Error("Access denied: Attempted path traversal.");
                     }
 
+                    const filePath = resolve(baseDir, "queries", safeName);
+
                     res.setHeader("Content-Type", "application/json");
+                    res.setHeader("X-Content-Type-Options", "nosniff");
                     res.end(readFileSync(filePath).toString());
                     return false;
                 }
