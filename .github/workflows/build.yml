@@ -32,6 +32,6 @@ jobs:
         run: pnpm knip
       - run: pnpm test --coverage --watch=false
       - run: pnpm build
-      - uses: sonarsource/sonarqube-scan-action@v5
+      - uses: sonarsource/sonarqube-scan-action@v8
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
