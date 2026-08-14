@@ -19,8 +19,8 @@
         "jsdom": "^29.0.0",
         "knip": "^6.15.0",
         "ncp": "^2.0.0",
+        "oxfmt": "^0.63.0",
         "oxlint": "^1.68.0",
-        "prettier": "^3.8.3",
         "prop-types": "^15.8.1",
         "vite": "^8.0.0",
         "vitest": "^4.1.8"
@@ -36,8 +36,9 @@
         "lint": "oxlint src/",
         "lint:fix": "oxlint src/ --fix",
         "knip": "knip",
-        "_format": "prettier \"**/*.{js,jsx,css,html}\"",
-        "format": "npm run _format -- --write",
+        "_format": "oxfmt \"**/*.{js,jsx,ts,tsx,css,html}\"",
+        "format": "pnpm _format",
+        "format:check": "pnpm _format --check",
         "prepare": "husky"
     },
     "browserslist": {

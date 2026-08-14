@@ -9,7 +9,7 @@ const baseDir = resolve(import.meta.dirname, "pages/");
 // On ne sert que des noms présents dans cet ensemble : la valeur utilisée pour
 // construire le chemin provient de l'allowlist, jamais de l'entrée utilisateur.
 const allowedTxtFiles = new Set(
-    readdirSync(resolve(baseDir, "queries")).filter((name) => name.endsWith(".txt"))
+    readdirSync(resolve(baseDir, "queries")).filter(name => name.endsWith(".txt"))
 );
 
 // https://vitejs.dev/config/
@@ -48,9 +48,7 @@ export default {
 
                     // `safeName` provient de l'allowlist, pas de l'input utilisateur :
                     // le chemin servi est donc toujours une valeur d'origine connue.
-                    const safeName = [...allowedTxtFiles].find(
-                        (name) => name === requestedName
-                    );
+                    const safeName = [...allowedTxtFiles].find(name => name === requestedName);
                     if (!safeName) {
                         throw new Error("Access denied: Attempted path traversal.");
                     }

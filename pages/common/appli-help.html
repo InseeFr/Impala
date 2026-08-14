@@ -64,8 +64,7 @@
         <pre class="query">http://rdf.insee.fr/sparql?query=[requête SPARQL URL-encodée]</pre>
         <p>Par exemple pour la requête SPARQL <code>SELECT * WHERE { ?s ?p "42" }</code> :</p>
         <pre class="query">
-http://rdf.insee.fr/sparql?query=SELECT%20*%20WHERE%20%7B%20?s%20?p%20%2242%22%20%7D</pre
-        >
+http://rdf.insee.fr/sparql?query=SELECT%20*%20WHERE%20%7B%20?s%20?p%20%2242%22%20%7D</pre>
         <p>Les résultats de la requête SPARQL sont retournés dans le contenu de la réponse HTTP.</p>
         <p>
             Il est à noter que le point d'accès SPARQL supporte la syntaxe SPARQL 1.1, mais seulement en
@@ -102,8 +101,7 @@ query += "where {?s skos:notation \"" + code + "\" . ?s skos:prefLabel ?libelle 
 var url = "http://rdf.insee.fr/sparql?query=" + encodeURIComponent(query);
 $.getJSON(url).success(function(data) {
    $('#resultat').html("&lt;p&gt;" + code + " - " + data.results.bindings[0].libelle.value + "&lt;/p&gt;");
-})</pre
-        >
+})</pre>
 
         <p>
             La structure JSON des résultats de requêtes SPARQL est spécifiée dans cette
