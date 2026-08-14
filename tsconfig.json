@@ -1,0 +1,25 @@
+{
+    "compilerOptions": {
+        // Aligné sur la cible réelle du build : Vite 8 émet pour `baseline-widely-available`
+        // (≈ chrome 107 / edge 107 / firefox 104 / safari 16), qui supporte tout ES2022.
+        "target": "ES2022",
+        "lib": ["ES2022", "DOM", "DOM.Iterable"],
+        "allowJs": true,
+        "skipLibCheck": true,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "strict": true,
+        "forceConsistentCasingInFileNames": true,
+        "noFallthroughCasesInSwitch": true,
+        "allowUnreachableCode": false,
+        "allowUnusedLabels": false,
+        "module": "esnext",
+        "moduleResolution": "bundler",
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "noEmit": true,
+        "jsx": "react-jsx",
+        "types": ["vite/client", "node"]
+    },
+    "include": ["src", "tests", "vite.config.ts", "playwright.config.ts", "create-zip.js"]
+}

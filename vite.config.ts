@@ -1,5 +1,5 @@
 import react from "@vitejs/plugin-react-swc";
-import { configDefaults } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 import { readdirSync, readFileSync } from "node:fs";
 import { basename, resolve } from "node:path";
 
@@ -13,7 +13,7 @@ const allowedTxtFiles = new Set(
 );
 
 // https://vitejs.dev/config/
-export default {
+export default defineConfig({
     base: "/",
     plugins: [react()],
     test: {
@@ -22,7 +22,7 @@ export default {
         exclude: [...configDefaults.exclude, "tests/*"],
         coverage: {
             reporter: "lcov",
-            include: ["src/**/*.jsx"]
+            include: ["src/**/*.tsx"]
         }
     },
     build: {
@@ -33,6 +33,10 @@ export default {
         proxy: {
             "/queries/queries.json": {
                 bypass: function (req, res) {
+                    // `res` est absent sur les upgrades WebSocket : rien à servir, on laisse passer.
+                    if (!res) {
+                        return;
+                    }
                     res.setHeader("Content-Type", "application/json");
                     res.end(
                         readFileSync(
@@ -44,6 +48,10 @@ export default {
             },
             "^/queries/.*.txt": {
                 bypass: function (req, res) {
+                    // `res` est absent sur les upgrades WebSocket : rien à servir, on laisse passer.
+                    if (!res) {
+                        return;
+                    }
                     const requestedName = basename(req.url?.split("?")[0] || "");
 
                     // `safeName` provient de l'allowlist, pas de l'input utilisateur :
@@ -63,4 +71,4 @@ export default {
             }
         }
     }
-};
+});

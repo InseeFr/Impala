@@ -1,14 +1,29 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
-import PropTypes from "prop-types";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 const defaultEndpoint = "http://rdf.insee.fr/sparql";
 const defaultPrefix = "https://rdf.insee.fr/sparql?query=DESCRIBE";
 
-function Editor({ endpoint, queries, prefix }) {
-    const [yasgui, setYasgui] = useState();
+interface Query {
+    label: string;
+    path: string;
+}
+
+interface Configuration {
+    sparql_endpoint?: string;
+    prefix?: string;
+}
+
+interface EditorProps {
+    endpoint: string;
+    queries: Query[];
+    prefix: string;
+}
+
+function Editor({ endpoint, queries, prefix }: EditorProps) {
+    const [yasgui, setYasgui] = useState<YasguiInstance>();
     const [counter, setCounter] = useState(0);
-    const ref = useRef(null);
-    const editorRef = useRef(null);
+    const ref = useRef<HTMLDivElement>(null);
+    const editorRef = useRef<HTMLDivElement>(null);
 
     const [inserted, setInserted] = useState(false);
 
@@ -16,14 +31,18 @@ function Editor({ endpoint, queries, prefix }) {
         if (counter > 100 || inserted) {
             return;
         }
-        if (document.querySelector(".yasqe")) {
-            document.querySelector(".yasqe").appendChild(ref.current);
+        const yasqe = document.querySelector(".yasqe");
+        if (yasqe && ref.current) {
+            yasqe.appendChild(ref.current);
             setInserted(true);
         }
         setCounter(counter + 1);
     }, [counter, inserted]);
 
-    const click = query => {
+    const click = (query: Query) => {
+        if (!yasgui) {
+            return;
+        }
         fetch(query.path)
             .then(response => response.text())
             .then(body => {
@@ -33,14 +52,14 @@ function Editor({ endpoint, queries, prefix }) {
     };
 
     useLayoutEffect(() => {
-        if (editorRef.current.getAttribute("data-yasgui") === "true") {
+        const element = editorRef.current;
+        if (!element || element.getAttribute("data-yasgui") === "true") {
             return;
         }
         localStorage.removeItem("yagui__config");
-        editorRef.current.setAttribute("data-yasgui", "true");
+        element.setAttribute("data-yasgui", "true");
         setYasgui(
-            // eslint-disable-next-line no-undef
-            new Yasgui(editorRef.current, {
+            new Yasgui(element, {
                 requestConfig: {
                     endpoint
                 }
@@ -62,13 +81,14 @@ function Editor({ endpoint, queries, prefix }) {
                 id="editor"
                 ref={editorRef}
                 onClick={e => {
+                    const target = e.target as HTMLAnchorElement;
                     if (
                         endpoint !== defaultEndpoint &&
-                        e.target.href &&
-                        e.target.href.indexOf("http://id.insee.fr/") === 0 &&
-                        e.target.href.indexOf(prefix) !== 0
+                        target.href &&
+                        target.href.indexOf("http://id.insee.fr/") === 0 &&
+                        target.href.indexOf(prefix) !== 0
                     ) {
-                        e.target.href = prefix + encodeURIComponent(`<${e.target.href}>`);
+                        target.href = prefix + encodeURIComponent(`<${target.href}>`);
                     }
                 }}
             ></div>
@@ -76,21 +96,15 @@ function Editor({ endpoint, queries, prefix }) {
     );
 }
 
-Editor.propTypes = {
-    endpoint: PropTypes.string,
-    queries: PropTypes.array,
-    prefix: PropTypes.string
-};
-
 function App() {
-    const [queries, setQueries] = useState([]);
-    const [prefix, setPrefix] = useState();
-    const [endpoint, setEndpoint] = useState();
+    const [queries, setQueries] = useState<Query[]>([]);
+    const [prefix, setPrefix] = useState<string>();
+    const [endpoint, setEndpoint] = useState<string>();
 
     useEffect(() => {
         fetch("/queries/queries.json")
             .then(response => response.json())
-            .then(body => {
+            .then((body: Query[]) => {
                 setQueries(body);
             });
     }, []);
@@ -98,7 +112,7 @@ function App() {
     useEffect(() => {
         fetch("/configuration.json")
             .then(response => response.json())
-            .then(configuration => {
+            .then((configuration: Configuration) => {
                 setEndpoint(configuration.sparql_endpoint ?? defaultEndpoint);
                 setPrefix(configuration.prefix ?? defaultPrefix);
             })
@@ -112,7 +126,7 @@ function App() {
 
     return (
         <div className="App">
-            {endpoint && <Editor endpoint={endpoint} queries={queries} prefix={prefix} />}
+            {endpoint && prefix && <Editor endpoint={endpoint} queries={queries} prefix={prefix} />}
             <footer>
                 <p>{footer}</p>
             </footer>

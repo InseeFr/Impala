@@ -28,6 +28,8 @@ jobs:
       - run: pnpm install
       - name: Lint code
         run: pnpm lint
+      - name: Typecheck
+        run: pnpm typecheck
       - name: Knip
         run: pnpm knip
       - run: pnpm test --coverage --watch=false
