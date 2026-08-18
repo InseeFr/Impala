@@ -125,8 +125,7 @@
             <div>
                 <p>Entrez la requête :</p>
                 <textarea id="query" type="text" style="width: 700px; height: 100px" spellcheck="false">
-&nbsp;</textarea
-                >
+&nbsp;</textarea>
                 <span style="padding-left: 10px; padding-right: 10px"
                     >Format :
                     <select id="results-format-query">
@@ -142,8 +141,7 @@
             <legend>Résultat :</legend>
             <div>
                 <textarea id="resultat" rows="15" style="width: 100%" spellcheck="false">
-&nbsp;</textarea
-                >
+&nbsp;</textarea>
             </div>
         </fieldset>
         <hr />
@@ -157,8 +155,7 @@ SELECT ?region ?nom WHERE {
 	?region rdf:type igeo:Region .
 	?region igeo:nom ?nom .
 	FILTER (strStarts(?nom, "A")).
-}</pre
-        >
+}</pre>
         <h5>Postes de la NAF dont l'intitulé contient "automobiles"</h5>
         <pre class="query">
 PREFIX skos: &lt;http://www.w3.org/2004/02/skos/core#&gt;
@@ -167,8 +164,7 @@ SELECT ?poste ?intitule WHERE {
 	?poste skos:inScheme &lt;http://id.insee.fr/codes/nafr2/naf&gt; .
 	?poste skos:prefLabel ?intitule .
 	FILTER(CONTAINS(?intitule, "automobiles")).
-}</pre
-        >
+}</pre>
 
         <h5>Les dix communes les plus peuplées de la Nièvre en 2010</h5>
         <pre class="query">
@@ -185,8 +181,7 @@ WHERE {
 	FILTER (strStarts(?code, "58")).
 }
 ORDER BY DESC(?popTotale)
-LIMIT 10</pre
-        >
+LIMIT 10</pre>
         <h5>Contour d'une commune (requête IGN)</h5>
         <pre class="query">
 PREFIX geofla: &lt;http://data.ign.fr/id/geofla/&gt;
@@ -195,8 +190,7 @@ SELECT ?zone ?contour
 WHERE {
 	?zone geofla:insee-com "60683" .
 	?zone geofla:st-astext ?contour .
-}</pre
-        >
+}</pre>
 
         <h5>Autres exemples pour les populations légales 2010</h5>
         <p>

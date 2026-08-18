@@ -63,8 +63,7 @@ SELECT ?departement ?nom ?popLeg WHERE {
 	?departement idemo:population ?popLeg .
 	?popLeg idemo:populationTotale ?popTotale .
 	?popLeg idemo:date "2013-01-01"^^xsd:date 
-} ORDER BY ?nom</pre
-        >
+} ORDER BY ?nom</pre>
         <h5>
             Populations municipales, comptées à part et totales d'une commune donnée (ici Bordeaux, code
             de commune 33063) depuis 2010 :
@@ -79,7 +78,6 @@ SELECT ?commune ?nom (year(?date) as ?annee) ?popMunicipale ?popCompteeAPart ?po
 	?commune igeo:nom ?nom .
 	?commune idemo:population ?popLeg .
 	?popLeg idemo:date ?date ; idemo:populationMunicipale ?popMunicipale ; idemo:populationCompteeAPart ?popCompteeAPart ; idemo:populationTotale ?popTotale .
-}</pre
-        >
+}</pre>
     </body>
 </html>

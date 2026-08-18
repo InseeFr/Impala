@@ -1,5 +1,5 @@
 import react from "@vitejs/plugin-react-swc";
-import { configDefaults } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 import { readdirSync, readFileSync } from "node:fs";
 import { basename, resolve } from "node:path";
 
@@ -9,11 +9,11 @@ const baseDir = resolve(import.meta.dirname, "pages/");
 // On ne sert que des noms présents dans cet ensemble : la valeur utilisée pour
 // construire le chemin provient de l'allowlist, jamais de l'entrée utilisateur.
 const allowedTxtFiles = new Set(
-    readdirSync(resolve(baseDir, "queries")).filter((name) => name.endsWith(".txt"))
+    readdirSync(resolve(baseDir, "queries")).filter(name => name.endsWith(".txt"))
 );
 
 // https://vitejs.dev/config/
-export default {
+export default defineConfig({
     base: "/",
     plugins: [react()],
     test: {
@@ -22,7 +22,7 @@ export default {
         exclude: [...configDefaults.exclude, "tests/*"],
         coverage: {
             reporter: "lcov",
-            include: ["src/**/*.jsx"]
+            include: ["src/**/*.tsx"]
         }
     },
     build: {
@@ -33,6 +33,10 @@ export default {
         proxy: {
             "/queries/queries.json": {
                 bypass: function (req, res) {
+                    // `res` est absent sur les upgrades WebSocket : rien à servir, on laisse passer.
+                    if (!res) {
+                        return;
+                    }
                     res.setHeader("Content-Type", "application/json");
                     res.end(
                         readFileSync(
@@ -44,13 +48,15 @@ export default {
             },
             "^/queries/.*.txt": {
                 bypass: function (req, res) {
+                    // `res` est absent sur les upgrades WebSocket : rien à servir, on laisse passer.
+                    if (!res) {
+                        return;
+                    }
                     const requestedName = basename(req.url?.split("?")[0] || "");
 
                     // `safeName` provient de l'allowlist, pas de l'input utilisateur :
                     // le chemin servi est donc toujours une valeur d'origine connue.
-                    const safeName = [...allowedTxtFiles].find(
-                        (name) => name === requestedName
-                    );
+                    const safeName = [...allowedTxtFiles].find(name => name === requestedName);
                     if (!safeName) {
                         throw new Error("Access denied: Attempted path traversal.");
                     }
@@ -65,4 +71,4 @@ export default {
             }
         }
     }
-};
+});

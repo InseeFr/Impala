@@ -1,0 +1,14 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "printWidth": 105,
+  "tabWidth": 4,
+  "useTabs": false,
+  "semi": true,
+  "singleQuote": false,
+  "quoteProps": "preserve",
+  "trailingComma": "none",
+  "bracketSpacing": true,
+  "arrowParens": "avoid",
+  "sortPackageJson": false,
+  "ignorePatterns": ["public/yasgui.min.js", "public/yasgui.css"]
+}
