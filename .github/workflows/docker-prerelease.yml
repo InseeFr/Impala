@@ -12,16 +12,27 @@ jobs:
         runs-on: ubuntu-latest
         strategy:
             matrix:
-                node: [20]
+                node: [22]
         steps:
             - uses: actions/checkout@v4
 
-            - uses: actions/setup-node@v3
+            - name: Install pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: 10
+
+            - uses: actions/setup-node@v4
               with:
                   node-version: ${{ matrix.node }}
+                  cache: 'pnpm'
 
-            - run: yarn
-            - run: yarn test --coverage --watch=false
+            - run: pnpm install
+            - run: pnpm test --coverage --watch=false
+
+            # Garde-fou avant publication : verifie sur l'image elle-meme que les
+            # regles de reecriture de nginx se comportent comme attendu.
+            - name: Test rewrite rules against the Docker image
+              run: pnpm test:docker
 
     docker:
         runs-on: ubuntu-latest
@@ -31,17 +42,17 @@ jobs:
               with:
                   ref: ${{ github.event.release.tag_name }}
             - name: Set up QEMU
-              uses: docker/setup-qemu-action@v3
+              uses: docker/setup-qemu-action@v4
             - name: Set up Docker Buildx
-              uses: docker/setup-buildx-action@v3
+              uses: docker/setup-buildx-action@v4
             - name: Login to GitHub Container Registry
-              uses: docker/login-action@v3
+              uses: docker/login-action@v4
               with:
                   registry: ghcr.io
                   username: ${{ github.repository_owner }}
                   password: ${{ secrets.GITHUB_TOKEN }}
             - name: Build and push
-              uses: docker/build-push-action@v6
+              uses: docker/build-push-action@v7
               with:
                   push: true
                   file: Dockerfile

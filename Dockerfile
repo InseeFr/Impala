@@ -11,30 +11,26 @@ RUN pnpm install --config.dangerouslyAllowAllBuilds=true && pnpm build
 
 ### EXECUTION STEP ###
 
-FROM httpd:2.4-alpine
+FROM nginxinc/nginx-unprivileged:stable-alpine
 
-# Non root user
-ENV HTTPD_USER_ID=101
-ENV HTTPD_GROUP_ID=101
-ENV HTTPD_USER=impala
-ENV HTTPD_GROUP=impala
+# SPARQL endpoint, overridable at runtime (docker run -e RDF4J_API_URI=...)
+# Endpoint SPARQL, surchargeable au demarrage du conteneur
+ENV RDF4J_API_URI=https://api-rmes-cache.insee.fr/sparql
 
-RUN addgroup -g $HTTPD_GROUP_ID -S $HTTPD_GROUP \
-    && adduser -u $HTTPD_USER_ID -S -G $HTTPD_GROUP $HTTPD_USER
+# Non root user (deja provisionne par l'image nginx-unprivileged)
+ENV NGINX_USER_ID=101
+ENV NGINX_GROUP_ID=101
+ENV NGINX_USER=nginx
+ENV NGINX_GROUP=nginx
 
-# Copy apache configuration (loads mod_rewrite/mod_proxy/mod_headers and the rewrite rules)
-# Copier la configuration Apache
-COPY httpd.conf /usr/local/apache2/conf/httpd.conf
+# Rewrite rules. Installed as a template: the nginx entrypoint substitutes
+# ${RDF4J_API_URI} at startup, then writes the result to conf.d/default.conf.
+# Regles de reecriture, avec substitution de ${RDF4J_API_URI} au demarrage
+COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 
-# Add build to apache root webapp
-COPY --from=builder --chown=$HTTPD_USER:$HTTPD_GROUP /impala/build/ /usr/local/apache2/htdocs/
+# Add build to nginx root webapp
+COPY --from=builder --chown=$NGINX_USER:$NGINX_GROUP /impala/build/ /usr/share/nginx/html/
 
-# Rewrite rules, loaded at server level (see Include in httpd.conf)
-# Regles de reecriture, chargees en contexte serveur (voir Include dans httpd.conf)
-COPY .htaccess /usr/local/apache2/conf/impala-rewrite.conf
-
-USER $HTTPD_USER_ID
+USER $NGINX_USER_ID
 
 EXPOSE 8080
-
-CMD ["httpd-foreground"]

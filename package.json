@@ -23,6 +23,7 @@
         "oxlint": "^1.68.0",
         "prettier": "^3.8.3",
         "prop-types": "^15.8.1",
+        "react-doctor": "^0.9.12",
         "vite": "^8.0.0",
         "vitest": "^4.1.8"
     },
@@ -33,10 +34,13 @@
         "start": "pnpm pre-script vite",
         "build": "pnpm pre-script pnpm build-react && pnpm copy-static && pnpm create-zip",
         "test": "vitest test",
+        "test:docker": "playwright test --config=playwright.docker.config.ts",
         "create-zip": "node create-zip.js",
         "lint": "oxlint src/",
         "lint:fix": "oxlint src/ --fix",
         "knip": "knip",
+        "react-doctor": "react-doctor",
+        "react-doctor:staged": "react-doctor --staged --no-supply-chain",
         "_format": "prettier \"**/*.{js,jsx,css,html}\"",
         "format": "npm run _format -- --write",
         "prepare": "husky"

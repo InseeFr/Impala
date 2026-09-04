@@ -30,6 +30,10 @@ jobs:
         run: pnpm lint
       - name: Knip
         run: pnpm knip
+      # Scan complet : diagnostics React + audit Socket.dev des dependances.
+      # Bloque des le niveau "warning" (doctor.config.json).
+      - name: React Doctor
+        run: pnpm run react-doctor
       - run: pnpm test --coverage --watch=false
       - run: pnpm build
       - uses: sonarsource/sonarqube-scan-action@v8

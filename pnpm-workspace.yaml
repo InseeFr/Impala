@@ -1,0 +1,18 @@
+# Durcissement de la chaîne d'approvisionnement npm.
+# minimumReleaseAge : n'installe une version qu'après 7 jours de publication,
+# le temps qu'une version compromise soit détectée et dépubliée.
+# trustPolicy : refuse une mise à jour dont les signaux de confiance
+# (provenance, signatures) régressent par rapport à la version installée.
+minimumReleaseAge: 10080
+trustPolicy: no-downgrade
+
+# Exceptions ciblées, transitives via react-doctor. Ces deux versions sont
+# antérieures à la généralisation des attestations de provenance : pnpm les lit
+# comme une régression de confiance alors qu'il s'agit de paquets historiques.
+# Les versions sont épinglées, l'exception ne couvre donc pas le paquet entier
+# et sera à réévaluer à chaque montée de version.
+#   semver@6.3.1  : react-doctor > eslint-plugin-react-hooks > @babel/core
+#   fastq@1.20.2  : react-doctor > deslop-js > fast-glob > @nodelib/fs.walk
+trustPolicyExclude:
+  - semver@6.3.1
+  - fastq@1.20.2

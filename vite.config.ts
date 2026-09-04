@@ -19,7 +19,7 @@ export default {
     test: {
         environment: "jsdom",
         dangerouslyIgnoreUnhandledErrors: true,
-        exclude: [...configDefaults.exclude, "tests/*"],
+        exclude: [...configDefaults.exclude, "tests/**"],
         coverage: {
             reporter: "lcov",
             include: ["src/**/*.jsx"]

@@ -6,6 +6,7 @@ on:
         branches: [main]
 jobs:
     test:
+        name: UI tests
         timeout-minutes: 60
         runs-on: ubuntu-latest
         steps:
@@ -30,3 +31,32 @@ jobs:
                   name: playwright-report
                   path: playwright-report/
                   retention-days: 30
+
+    rewrite-rules:
+        name: Rewrite rules
+        timeout-minutes: 20
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - name: Install pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                version: 10
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: 'pnpm'
+            - name: Install dependencies
+              run: pnpm install
+            # Aucun navigateur n'est necessaire : la suite n'utilise que le client HTTP
+            # de Playwright. Elle construit l'image Docker et la teste avec un faux
+            # endpoint SPARQL (tests/docker/compose.yaml).
+            - name: Run rewrite rules tests against the Docker image
+              run: pnpm test:docker
+              # La pile est conservee pour pouvoir recuperer les logs ci-dessous
+              # en cas d'echec ; le runner est ephemere.
+              env:
+                  KEEP_STACK: 1
+            - name: Container logs
+              if: failure()
+              run: docker compose -f tests/docker/compose.yaml logs
