@@ -6,27 +6,35 @@ WORKDIR /impala
 
 COPY ./ ./
 
-RUN npm i -g npm
-RUN pnpm install && pnpm build
+RUN npm i -g npm pnpm
+RUN pnpm install --config.dangerouslyAllowAllBuilds=true && pnpm build
 
 ### EXECUTION STEP ###
 
-FROM nginxinc/nginx-unprivileged:1.27-alpine
+FROM httpd:2.4-alpine
 
 # Non root user
-ENV NGINX_USER_ID=101
-ENV NGINX_GROUP_ID=101
-ENV NGINX_USER=nginx
-ENV NGINX_GROUP=nginx
+ENV HTTPD_USER_ID=101
+ENV HTTPD_GROUP_ID=101
+ENV HTTPD_USER=impala
+ENV HTTPD_GROUP=impala
 
-USER $NGINX_USER_ID
+RUN addgroup -g $HTTPD_GROUP_ID -S $HTTPD_GROUP \
+    && adduser -u $HTTPD_USER_ID -S -G $HTTPD_GROUP $HTTPD_USER
 
-# Add build to nginx root webapp
-COPY --from=builder --chown=$NGINX_USER:$NGINX_GROUP /impala/build /usr/share/nginx/html
+# Copy apache configuration (loads mod_rewrite/mod_proxy/mod_headers and the rewrite rules)
+# Copier la configuration Apache
+COPY httpd.conf /usr/local/apache2/conf/httpd.conf
 
-# Copy nginx configuration
-# Copier le fichier de configuration Nginx
-COPY nginx.conf /etc/nginx/nginx.conf.template
+# Add build to apache root webapp
+COPY --from=builder --chown=$HTTPD_USER:$HTTPD_GROUP /impala/build/ /usr/local/apache2/htdocs/
 
-# Substituer les variables d'environnement et démarrer Nginx
-#CMD ["sh", "-c", "envsubst < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"]
+# Rewrite rules, loaded at server level (see Include in httpd.conf)
+# Regles de reecriture, chargees en contexte serveur (voir Include dans httpd.conf)
+COPY .htaccess /usr/local/apache2/conf/impala-rewrite.conf
+
+USER $HTTPD_USER_ID
+
+EXPOSE 8080
+
+CMD ["httpd-foreground"]
