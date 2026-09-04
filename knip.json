@@ -1,5 +1,6 @@
 {
     "$schema": "https://unpkg.com/knip@6/schema.json",
     "ignore": ["public/**"],
-    "ignoreBinaries": ["knip"]
+    "ignoreBinaries": ["prettier"],
+    "ignoreDependencies": ["prettier"]
 }
