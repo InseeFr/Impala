@@ -6,13 +6,18 @@
 minimumReleaseAge: 10080
 trustPolicy: no-downgrade
 
-# Exceptions ciblées, transitives via react-doctor. Ces deux versions sont
-# antérieures à la généralisation des attestations de provenance : pnpm les lit
-# comme une régression de confiance alors qu'il s'agit de paquets historiques.
+# Exceptions ciblées, toutes transitives. Ces versions sont antérieures à la
+# généralisation des attestations de provenance : pnpm les lit comme une
+# régression de confiance alors qu'il s'agit de paquets historiques.
 # Les versions sont épinglées, l'exception ne couvre donc pas le paquet entier
 # et sera à réévaluer à chaque montée de version.
-#   semver@6.3.1  : react-doctor > eslint-plugin-react-hooks > @babel/core
-#   fastq@1.20.2  : react-doctor > deslop-js > fast-glob > @nodelib/fs.walk
+#   semver@6.3.1        : react-doctor > eslint-plugin-react-hooks > @babel/core
+#   fastq@1.20.2        : react-doctor > deslop-js > fast-glob > @nodelib/fs.walk
+#   undici-types@6.21.0 : @types/node, qui contraint ~6.21.0 sur toute la branche
+#                         22.x — aucune montée de @types/node en 22.x n'en sort.
+#                         Signalée depuis la publication signée de la 6.28.1, le
+#                         04/09/2026. À retirer en passant @types/node en 24.x.
 trustPolicyExclude:
   - semver@6.3.1
   - fastq@1.20.2
+  - undici-types@6.21.0

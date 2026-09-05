@@ -6,7 +6,11 @@ WORKDIR /impala
 
 COPY ./ ./
 
-RUN npm i -g npm pnpm
+# pnpm est epingle sur une majeure : sans cela le build d'image suit la derniere
+# version publiee et peut casser sans qu'aucun fichier du depot n'ait bouge.
+# pnpm 11 verifie l'integralite du lockfile contre les politiques de
+# pnpm-workspace.yaml, ce que pnpm 10 ne fait pas.
+RUN npm i -g npm pnpm@11
 RUN pnpm install --config.dangerouslyAllowAllBuilds=true && pnpm build
 
 ### EXECUTION STEP ###
