@@ -18,6 +18,27 @@ pnpm lint
 pnpm lint:fix
 ```
 
+### Configuration
+
+The SPARQL endpoint used by the editor and the `DESCRIBE` prefix applied to
+`id.insee.fr` links are read from Vite environment variables at build time:
+
+| Variable                     | Declared in `.env`                           |
+| ---------------------------- | -------------------------------------------- |
+| `VITE_SPARQL_ENDPOINT`       | `http://rdf.insee.fr/sparql`                 |
+| `VITE_SPARQL_PREFIX`         | `https://rdf.insee.fr/sparql?query=DESCRIBE` |
+| `VITE_INSEE_SPARQL_ENDPOINT` | `http://rdf.insee.fr/sparql`                 |
+
+`VITE_INSEE_SPARQL_ENDPOINT` is a comparison value, not a target: `id.insee.fr`
+links are rewritten to a `DESCRIBE` query only when `VITE_SPARQL_ENDPOINT`
+points somewhere else. Leave it alone.
+
+Override the others in a `.env.local` file or on the command line, then rebuild:
+
+```shell
+VITE_SPARQL_ENDPOINT=http://example.org/sparql pnpm build
+```
+
 ### Testing
 
 * Run Unit Tests (Vitest)

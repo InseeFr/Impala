@@ -15,11 +15,6 @@ export async function loadQueries() {
     return response.json();
 }
 
-export async function loadConfiguration() {
-    const response = await fetchOk("/configuration.json");
-    return response.json();
-}
-
 export async function loadQueryBody(path) {
     const response = await fetchOk(path);
     return response.text();

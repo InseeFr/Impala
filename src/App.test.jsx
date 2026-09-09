@@ -8,14 +8,15 @@ const queries = [
     { label: "Liste des concepts", path: "/queries/liste_concepts.txt" }
 ];
 
-let configuration;
 let setQuery;
+let yasguiConfig;
 
 beforeEach(() => {
-    configuration = {};
     setQuery = vi.fn();
+    yasguiConfig = undefined;
 
-    vi.stubGlobal("Yasgui", function Yasgui(element) {
+    vi.stubGlobal("Yasgui", function Yasgui(element, config) {
+        yasguiConfig = config;
         const yasqe = document.createElement("div");
         yasqe.classList.add("yasqe");
         element.appendChild(yasqe);
@@ -27,8 +28,7 @@ beforeEach(() => {
             ok: true,
             status: 200,
             statusText: "OK",
-            json: () =>
-                Promise.resolve(url.includes("/configuration.json") ? configuration : queries),
+            json: () => Promise.resolve(queries),
             text: () => Promise.resolve(`# ${url}`)
         })
     );
@@ -37,6 +37,7 @@ beforeEach(() => {
 afterEach(() => {
     cleanup();
     vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
     vi.restoreAllMocks();
 });
 
@@ -70,11 +71,35 @@ test("loads the query body into the current tab when a query button is clicked",
     });
 });
 
+test("configures Yasgui with the endpoint declared in .env", async () => {
+    render(<App />);
+
+    await waitFor(() => expect(yasguiConfig).toBeDefined());
+    expect(yasguiConfig.requestConfig.endpoint).toBe("http://rdf.insee.fr/sparql");
+});
+
+test("reads the endpoint from the build-time environment instead of a fetched file", async () => {
+    vi.stubEnv("VITE_SPARQL_ENDPOINT", "http://example.org/sparql");
+    const fetchSpy = vi.fn(url =>
+        Promise.resolve({
+            ok: true,
+            status: 200,
+            statusText: "OK",
+            json: () => Promise.resolve(queries),
+            text: () => Promise.resolve(`# ${url}`)
+        })
+    );
+    vi.stubGlobal("fetch", fetchSpy);
+
+    render(<App />);
+
+    await waitFor(() => expect(fetchSpy).toHaveBeenCalled());
+    expect(fetchSpy.mock.calls.some(([url]) => String(url).includes("configuration.json"))).toBe(false);
+});
+
 test("rewrites id.insee.fr links to the DESCRIBE prefix when a custom endpoint is configured", async () => {
-    configuration = {
-        sparql_endpoint: "http://example.org/sparql",
-        prefix: "https://example.org/sparql?query=DESCRIBE"
-    };
+    vi.stubEnv("VITE_SPARQL_ENDPOINT", "http://example.org/sparql");
+    vi.stubEnv("VITE_SPARQL_PREFIX", "https://example.org/sparql?query=DESCRIBE");
     const { container } = render(<App />);
 
     await waitFor(() => expect(container.querySelector("#editor")).not.toBeNull());
@@ -122,12 +147,7 @@ test("ignores the body of an HTTP error response for the query list", async () =
             ok: !url.includes("/queries/queries.json"),
             status: url.includes("/queries/queries.json") ? 404 : 200,
             statusText: url.includes("/queries/queries.json") ? "Not Found" : "OK",
-            json: () =>
-                Promise.resolve(
-                    url.includes("/queries/queries.json")
-                        ? [{ label: "Not Found", path: "/error" }]
-                        : configuration
-                ),
+            json: () => Promise.resolve([{ label: "Not Found", path: "/error" }]),
             text: () => Promise.resolve(`# ${url}`)
         })
     );

@@ -1,9 +1,13 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
-import { loadConfiguration, loadQueries, loadQueryBody } from "./api";
+import { loadQueries, loadQueryBody } from "./api";
 
-const defaultEndpoint = "http://rdf.insee.fr/sparql";
-const defaultPrefix = "https://rdf.insee.fr/sparql?query=DESCRIBE";
+//TODO TypeScript
+
+// Toute la configuration vit dans .env : Vite remplace `import.meta.env.VITE_*`
+// par sa valeur litterale a la construction du bundle. La surcharger revient
+// donc a rejouer un build (`VITE_SPARQL_ENDPOINT=... pnpm build`), la ou
+// l'ancien public/configuration.json etait lu au demarrage de l'application.
 
 function Editor({ endpoint, queries, prefix }) {
     const yasguiRef = useRef(null);
@@ -62,7 +66,7 @@ function Editor({ endpoint, queries, prefix }) {
         const rewriteDescribeLinks = event => {
             const { target } = event;
             if (
-                endpoint !== defaultEndpoint &&
+                endpoint !== import.meta.env.VITE_INSEE_SPARQL_ENDPOINT &&
                 target.href &&
                 target.href.indexOf("http://id.insee.fr/") === 0 &&
                 target.href.indexOf(prefix) !== 0
@@ -108,8 +112,8 @@ Editor.propTypes = {
 
 function App() {
     const [queries, setQueries] = useState([]);
-    const [prefix, setPrefix] = useState();
-    const [endpoint, setEndpoint] = useState();
+    const endpoint = import.meta.env.VITE_SPARQL_ENDPOINT;
+    const prefix = import.meta.env.VITE_SPARQL_PREFIX;
 
     useEffect(() => {
         loadQueries()
@@ -122,23 +126,11 @@ function App() {
             });
     }, []);
 
-    useEffect(() => {
-        loadConfiguration()
-            .then(configuration => {
-                setEndpoint(configuration.sparql_endpoint ?? defaultEndpoint);
-                setPrefix(configuration.prefix ?? defaultPrefix);
-            })
-            .catch(() => {
-                setEndpoint(defaultEndpoint);
-                setPrefix(defaultPrefix);
-            });
-    }, []);
-
     const footer = `${import.meta.env.VITE_NAME?.toUpperCase()} : v${import.meta.env.VITE_VERSION}`;
 
     return (
         <div className="App">
-            {endpoint && <Editor endpoint={endpoint} queries={queries} prefix={prefix} />}
+            <Editor endpoint={endpoint} queries={queries} prefix={prefix} />
             <footer>
                 <p>{footer}</p>
             </footer>
