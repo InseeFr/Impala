@@ -1,5 +1,5 @@
 import react from "@vitejs/plugin-react-swc";
-import { configDefaults } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 import { readdirSync, readFileSync } from "node:fs";
 import { basename, resolve } from "node:path";
 
@@ -9,11 +9,11 @@ const baseDir = resolve(import.meta.dirname, "pages/");
 // On ne sert que des noms présents dans cet ensemble : la valeur utilisée pour
 // construire le chemin provient de l'allowlist, jamais de l'entrée utilisateur.
 const allowedTxtFiles = new Set(
-    readdirSync(resolve(baseDir, "queries")).filter((name) => name.endsWith(".txt"))
+    readdirSync(resolve(baseDir, "queries")).filter(name => name.endsWith(".txt"))
 );
 
 // https://vitejs.dev/config/
-export default {
+export default defineConfig({
     base: "/",
     plugins: [react()],
     test: {
@@ -22,7 +22,8 @@ export default {
         exclude: [...configDefaults.exclude, "tests/**"],
         coverage: {
             reporter: "lcov",
-            include: ["src/**/*.jsx"]
+            include: ["src/**/*.{ts,tsx}"],
+            exclude: ["src/**/*.d.ts"]
         }
     },
     build: {
@@ -32,7 +33,12 @@ export default {
         port: 3000,
         proxy: {
             "/queries/queries.json": {
-                bypass: function (req, res) {
+                bypass: function (_req, res) {
+                    // `res` est absent lors d'une montee en WebSocket : il n'y a
+                    // alors rien a servir, on laisse la requete suivre son cours.
+                    if (!res) {
+                        return undefined;
+                    }
                     res.setHeader("Content-Type", "application/json");
                     res.end(
                         readFileSync(
@@ -44,13 +50,16 @@ export default {
             },
             "^/queries/.*.txt": {
                 bypass: function (req, res) {
-                    const requestedName = basename(req.url?.split("?")[0] || "");
+                    // `res` est absent lors d'une montee en WebSocket : il n'y a
+                    // alors rien a servir, on laisse la requete suivre son cours.
+                    if (!res) {
+                        return undefined;
+                    }
+                    const requestedName = basename(req.url?.split("?")[0] ?? "");
 
                     // `safeName` provient de l'allowlist, pas de l'input utilisateur :
                     // le chemin servi est donc toujours une valeur d'origine connue.
-                    const safeName = [...allowedTxtFiles].find(
-                        (name) => name === requestedName
-                    );
+                    const safeName = [...allowedTxtFiles].find(name => name === requestedName);
                     if (!safeName) {
                         throw new Error("Access denied: Attempted path traversal.");
                     }
@@ -65,4 +74,4 @@ export default {
             }
         }
     }
-};
+});

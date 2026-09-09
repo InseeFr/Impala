@@ -28,6 +28,8 @@ jobs:
       - run: pnpm install
       - name: Lint code
         run: pnpm lint
+      - name: Type check
+        run: pnpm typecheck
       - name: Knip
         run: pnpm knip
       # Scan complet : diagnostics React + audit Socket.dev des dependances.

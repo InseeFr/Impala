@@ -1,37 +1,56 @@
-import React from "react";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, beforeEach, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, expect, test, vi, type Mock } from "vitest";
 import App from "./App";
+import type { Query } from "./api";
 
-const queries = [
+const queries: Query[] = [
     { label: "Région par son nom", path: "/queries/region_nom.txt" },
     { label: "Liste des concepts", path: "/queries/liste_concepts.txt" }
 ];
 
-let setQuery;
-let yasguiConfig;
+// La réponse renvoyée par les stubs de `fetch` : seule la portion de l'API
+// Response consommée par src/api.ts est simulée.
+const fetchResponse = (url: string, ok = true, payload: Query[] = queries) => ({
+    ok,
+    status: ok ? 200 : 404,
+    statusText: ok ? "OK" : "Not Found",
+    json: () => Promise.resolve(payload),
+    text: () => Promise.resolve(`# ${url}`)
+});
+
+type SetQuery = (query: string) => void;
+type FetchStub = (url: string) => Promise<ReturnType<typeof fetchResponse>>;
+
+const editorIn = (container: HTMLElement): HTMLElement => {
+    const editor = container.querySelector<HTMLElement>("#editor");
+    if (!editor) {
+        throw new Error("#editor absent du rendu");
+    }
+    return editor;
+};
+
+let setQuery: Mock<SetQuery>;
+let yasguiConfig: YasguiConfig | undefined;
 
 beforeEach(() => {
-    setQuery = vi.fn();
+    setQuery = vi.fn<SetQuery>();
     yasguiConfig = undefined;
 
-    vi.stubGlobal("Yasgui", function Yasgui(element, config) {
-        yasguiConfig = config;
-        const yasqe = document.createElement("div");
-        yasqe.classList.add("yasqe");
-        element.appendChild(yasqe);
-        this.getTab = () => ({ setQuery });
-    });
+    vi.stubGlobal(
+        "Yasgui",
+        class {
+            getTab = () => ({ setQuery });
 
-    vi.stubGlobal("fetch", url =>
-        Promise.resolve({
-            ok: true,
-            status: 200,
-            statusText: "OK",
-            json: () => Promise.resolve(queries),
-            text: () => Promise.resolve(`# ${url}`)
-        })
+            constructor(element: HTMLElement, config?: YasguiConfig) {
+                yasguiConfig = config;
+                const yasqe = document.createElement("div");
+                yasqe.classList.add("yasqe");
+                element.appendChild(yasqe);
+            }
+        }
     );
+
+    vi.stubGlobal("fetch", (url: string) => Promise.resolve(fetchResponse(url)));
 });
 
 afterEach(() => {
@@ -75,20 +94,12 @@ test("configures Yasgui with the endpoint declared in .env", async () => {
     render(<App />);
 
     await waitFor(() => expect(yasguiConfig).toBeDefined());
-    expect(yasguiConfig.requestConfig.endpoint).toBe("http://rdf.insee.fr/sparql");
+    expect(yasguiConfig?.requestConfig?.endpoint).toBe("http://rdf.insee.fr/sparql");
 });
 
 test("reads the endpoint from the build-time environment instead of a fetched file", async () => {
     vi.stubEnv("VITE_SPARQL_ENDPOINT", "http://example.org/sparql");
-    const fetchSpy = vi.fn(url =>
-        Promise.resolve({
-            ok: true,
-            status: 200,
-            statusText: "OK",
-            json: () => Promise.resolve(queries),
-            text: () => Promise.resolve(`# ${url}`)
-        })
-    );
+    const fetchSpy = vi.fn<FetchStub>(url => Promise.resolve(fetchResponse(url)));
     vi.stubGlobal("fetch", fetchSpy);
 
     render(<App />);
@@ -105,9 +116,9 @@ test("rewrites id.insee.fr links to the DESCRIBE prefix when a custom endpoint i
     await waitFor(() => expect(container.querySelector("#editor")).not.toBeNull());
     const link = document.createElement("a");
     link.href = "http://id.insee.fr/geo/region/11";
-    container.querySelector("#editor").appendChild(link);
+    editorIn(container).appendChild(link);
 
-    const preventNavigation = event => event.preventDefault();
+    const preventNavigation = (event: Event) => event.preventDefault();
     document.addEventListener("click", preventNavigation, true);
     try {
         fireEvent.click(link);
@@ -128,9 +139,9 @@ test("keeps id.insee.fr links untouched on the default endpoint", async () => {
     await waitFor(() => expect(container.querySelector("#editor")).not.toBeNull());
     const link = document.createElement("a");
     link.href = "http://id.insee.fr/geo/region/11";
-    container.querySelector("#editor").appendChild(link);
+    editorIn(container).appendChild(link);
 
-    const preventNavigation = event => event.preventDefault();
+    const preventNavigation = (event: Event) => event.preventDefault();
     document.addEventListener("click", preventNavigation, true);
     try {
         fireEvent.click(link);
@@ -142,14 +153,12 @@ test("keeps id.insee.fr links untouched on the default endpoint", async () => {
 });
 
 test("ignores the body of an HTTP error response for the query list", async () => {
-    vi.stubGlobal("fetch", url =>
-        Promise.resolve({
-            ok: !url.includes("/queries/queries.json"),
-            status: url.includes("/queries/queries.json") ? 404 : 200,
-            statusText: url.includes("/queries/queries.json") ? "Not Found" : "OK",
-            json: () => Promise.resolve([{ label: "Not Found", path: "/error" }]),
-            text: () => Promise.resolve(`# ${url}`)
-        })
+    vi.stubGlobal("fetch", (url: string) =>
+        Promise.resolve(
+            fetchResponse(url, !url.includes("/queries/queries.json"), [
+                { label: "Not Found", path: "/error" }
+            ])
+        )
     );
     // `using` n'est pas activé par le parseur SWC de ce projet
     // (jsc.parser.explicitResourceManagement), d'où la restauration explicite.

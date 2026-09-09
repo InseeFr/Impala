@@ -6,6 +6,16 @@ Impala is a module of Insee's Statistical Metadata Repository (RMéS). It expose
 
 ### Development
 
+The application is written in TypeScript (`src/*.ts`, `src/*.tsx`); the Node
+scripts (`create-zip.ts`, `tests/docker/sparql-mock.ts`) are run directly by
+Node, which strips the type annotations at load time (Node >= 22.18).
+
+* Type check the whole project (tsc)
+
+```shell
+pnpm typecheck
+```
+
 * Run Linting (oxlint)
 
 ```shell

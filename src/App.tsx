@@ -1,27 +1,29 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
-import PropTypes from "prop-types";
-import { loadQueries, loadQueryBody } from "./api";
-
-//TODO TypeScript
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { loadQueries, loadQueryBody, type Query } from "./api";
 
 // Toute la configuration vit dans .env : Vite remplace `import.meta.env.VITE_*`
 // par sa valeur litterale a la construction du bundle. La surcharger revient
 // donc a rejouer un build (`VITE_SPARQL_ENDPOINT=... pnpm build`), la ou
 // l'ancien public/configuration.json etait lu au demarrage de l'application.
 
-function Editor({ endpoint, queries, prefix }) {
-    const yasguiRef = useRef(null);
-    const queriesRef = useRef(null);
-    const editorRef = useRef(null);
+interface EditorProps {
+    endpoint: string;
+    queries: Query[];
+    prefix: string;
+}
+
+function Editor({ endpoint, queries, prefix }: EditorProps) {
+    const yasguiRef = useRef<Yasgui | null>(null);
+    const queriesRef = useRef<HTMLDivElement>(null);
+    const editorRef = useRef<HTMLDivElement>(null);
 
     useLayoutEffect(() => {
         const editor = editorRef.current;
-        if (editor.getAttribute("data-yasgui") === "true") {
+        if (!editor || editor.getAttribute("data-yasgui") === "true") {
             return;
         }
         localStorage.removeItem("yagui__config");
         editor.setAttribute("data-yasgui", "true");
-        // eslint-disable-next-line no-undef
         yasguiRef.current = new Yasgui(editor, {
             requestConfig: {
                 endpoint
@@ -35,12 +37,17 @@ function Editor({ endpoint, queries, prefix }) {
     // filet si une version de Yasgui la rendait plus tard.
     useLayoutEffect(() => {
         const editor = editorRef.current;
+        const queriesBlock = queriesRef.current;
+        if (!editor || !queriesBlock) {
+            return undefined;
+        }
+
         const insertQueriesBlock = () => {
             const yasqe = editor.querySelector(".yasqe");
             if (!yasqe) {
                 return false;
             }
-            yasqe.appendChild(queriesRef.current);
+            yasqe.appendChild(queriesBlock);
             return true;
         };
 
@@ -63,11 +70,15 @@ function Editor({ endpoint, queries, prefix }) {
     // rendrait ce `div` interactif pour les technologies d'assistance).
     useEffect(() => {
         const editor = editorRef.current;
-        const rewriteDescribeLinks = event => {
+        if (!editor) {
+            return undefined;
+        }
+
+        const rewriteDescribeLinks = (event: MouseEvent) => {
             const { target } = event;
             if (
                 endpoint !== import.meta.env.VITE_INSEE_SPARQL_ENDPOINT &&
-                target.href &&
+                target instanceof HTMLAnchorElement &&
                 target.href.indexOf("http://id.insee.fr/") === 0 &&
                 target.href.indexOf(prefix) !== 0
             ) {
@@ -79,12 +90,12 @@ function Editor({ endpoint, queries, prefix }) {
         return () => editor.removeEventListener("click", rewriteDescribeLinks);
     }, [endpoint, prefix]);
 
-    const click = query => {
+    const click = (query: Query) => {
         loadQueryBody(query.path)
             .then(body => {
-                yasguiRef.current.getTab().setQuery(body);
+                yasguiRef.current?.getTab().setQuery(body);
             })
-            .catch(error => {
+            .catch((error: unknown) => {
                 console.error(`Impossible de charger la requête ${query.path}`, error);
             });
     };
@@ -104,14 +115,8 @@ function Editor({ endpoint, queries, prefix }) {
     );
 }
 
-Editor.propTypes = {
-    endpoint: PropTypes.string,
-    queries: PropTypes.array,
-    prefix: PropTypes.string
-};
-
 function App() {
-    const [queries, setQueries] = useState([]);
+    const [queries, setQueries] = useState<Query[]>([]);
     const endpoint = import.meta.env.VITE_SPARQL_ENDPOINT;
     const prefix = import.meta.env.VITE_SPARQL_PREFIX;
 
@@ -120,7 +125,7 @@ function App() {
             .then(body => {
                 setQueries(body);
             })
-            .catch(error => {
+            .catch((error: unknown) => {
                 console.error("Impossible de charger la liste des requêtes", error);
                 setQueries([]);
             });

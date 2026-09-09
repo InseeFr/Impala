@@ -6,8 +6,8 @@ services:
         image: node:22-alpine
         working_dir: /mock
         volumes:
-            - ./sparql-mock.mjs:/mock/sparql-mock.mjs:ro
-        command: ["node", "sparql-mock.mjs"]
+            - ./sparql-mock.ts:/mock/sparql-mock.ts:ro
+        command: ["node", "sparql-mock.ts"]
 
     impala:
         build:

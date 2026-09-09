@@ -1,6 +1,6 @@
 {
     "$schema": "https://unpkg.com/knip@6/schema.json",
-    "ignore": ["public/**", "tests/docker/sparql-mock.mjs"],
+    "ignore": ["public/**", "tests/docker/sparql-mock.ts"],
     "ignoreBinaries": ["prettier"],
     "ignoreDependencies": ["prettier"]
 }

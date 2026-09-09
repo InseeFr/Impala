@@ -8,7 +8,7 @@ const PORT = Number(process.env.PORT ?? 8081);
 
 createServer((req, res) => {
     let body = "";
-    req.on("data", (chunk) => (body += chunk));
+    req.on("data", (chunk: Buffer | string) => (body += chunk));
     req.on("end", () => {
         res.writeHead(200, {
             "Content-Type": "application/sparql-results+json",

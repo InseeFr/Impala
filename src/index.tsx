@@ -4,7 +4,12 @@ import reportWebVitals from "./reportWebVitals";
 import "./index.css";
 import { createRoot } from "react-dom/client";
 
-const root = createRoot(document.getElementById("root"));
+const container = document.getElementById("root");
+if (!container) {
+    throw new Error("Element #root introuvable : index.html a-t-il ete modifie ?");
+}
+
+const root = createRoot(container);
 root.render(
     <React.StrictMode>
         <App />

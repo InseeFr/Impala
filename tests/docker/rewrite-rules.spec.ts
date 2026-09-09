@@ -114,7 +114,7 @@ test.describe("Regle 9 : dereferencement dans un navigateur", () => {
         const response = await request.get("/produits/serie/s1", { headers: html, ...noRedirect });
 
         expect(response.status()).toBe(302);
-        expect(decodeURIComponent(response.headers()["location"])).toContain(
+        expect(decodeURIComponent(response.headers()["location"] ?? "")).toContain(
             "/sparql?query=DESCRIBE <http://localhost:8080/produits/serie/s1>"
         );
     });
