@@ -94,7 +94,7 @@ test("configures Yasgui with the endpoint declared in .env", async () => {
     render(<App />);
 
     await waitFor(() => expect(yasguiConfig).toBeDefined());
-    expect(yasguiConfig?.requestConfig?.endpoint).toBe("http://rdf.insee.fr/sparql");
+    expect(yasguiConfig?.requestConfig?.endpoint).toBe("https://rdf.insee.fr/sparql");
 });
 
 test("reads the endpoint from the build-time environment instead of a fetched file", async () => {
