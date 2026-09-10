@@ -15,7 +15,7 @@
         "@types/react": "^18.3.31",
         "@types/react-dom": "^18.3.7",
         "@vitejs/plugin-react-swc": "^4.3.1",
-        "@vitest/coverage-v8": "^4.1.8",
+        "@vitest/coverage-v8": "^5.0.0",
         "archiver": "^8.0.0",
         "cross-env": "^7.0.3",
         "husky": "^9.1.7",
@@ -27,7 +27,7 @@
         "react-doctor": "^0.9.12",
         "typescript": "^7.0.2",
         "vite": "^8.0.0",
-        "vitest": "^4.1.8"
+        "vitest": "^5.0.0"
     },
     "scripts": {
         "pre-script": "cross-env VITE_VERSION=$npm_package_version VITE_NAME=$npm_package_name",
