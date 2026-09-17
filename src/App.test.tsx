@@ -152,6 +152,24 @@ test("keeps id.insee.fr links untouched on the default endpoint", async () => {
     expect(link.href).toBe("http://id.insee.fr/geo/region/11");
 });
 
+test("ignores manifest entries whose path is not a query file", async () => {
+    const hostile: Query[] = [
+        { label: "Absolue", path: "https://example.com/steal" },
+        { label: "Traversée", path: "/queries/../../etc/passwd" },
+        { label: "Protocole", path: "javascript:alert(1)" },
+        ...queries
+    ];
+    const fetchSpy = vi.fn<FetchStub>(url => Promise.resolve(fetchResponse(url, true, hostile)));
+    vi.stubGlobal("fetch", fetchSpy);
+
+    render(<App />);
+
+    expect(await screen.findByRole("button", { name: "Liste des concepts" })).toBeTruthy();
+    for (const label of ["Absolue", "Traversée", "Protocole"]) {
+        expect(screen.queryByRole("button", { name: label })).toBeNull();
+    }
+});
+
 test("ignores the body of an HTTP error response for the query list", async () => {
     vi.stubGlobal("fetch", (url: string) =>
         Promise.resolve(
