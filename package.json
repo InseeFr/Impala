@@ -1,30 +1,33 @@
 {
     "name": "impala",
     "type": "module",
-    "version": "1.5.10",
+    "version": "2.0.0-rc1",
     "dependencies": {
         "react": "^18.3.1",
-        "react-dom": "^18.3.1",
-        "web-vitals": "4.2.2"
+        "react-dom": "^18.3.1"
     },
     "devDependencies": {
         "@playwright/test": "^1.45.3",
         "@testing-library/dom": "^10.4.0",
         "@testing-library/react": "16.3.2",
         "@types/node": "^22.19.19",
+        "@types/react": "^18.3.31",
+        "@types/react-dom": "^18.3.7",
         "@vitejs/plugin-react-swc": "^4.3.1",
-        "@vitest/coverage-v8": "^4.1.8",
+        "@vitest/coverage-v8": "^5.0.0",
         "archiver": "^8.0.0",
         "cross-env": "^7.0.3",
         "husky": "^9.1.7",
+        "jscpd": "^5.2.0",
         "jsdom": "^29.0.0",
         "knip": "^6.15.0",
         "ncp": "^2.0.0",
         "oxlint": "^1.68.0",
         "prettier": "^3.8.3",
-        "prop-types": "^15.8.1",
+        "react-doctor": "^0.9.12",
+        "typescript": "^7.0.2",
         "vite": "^8.0.0",
-        "vitest": "^4.1.8"
+        "vitest": "^5.0.0"
     },
     "scripts": {
         "pre-script": "cross-env VITE_VERSION=$npm_package_version VITE_NAME=$npm_package_name",
@@ -33,11 +36,16 @@
         "start": "pnpm pre-script vite",
         "build": "pnpm pre-script pnpm build-react && pnpm copy-static && pnpm create-zip",
         "test": "vitest test",
-        "create-zip": "node create-zip.js",
+        "test:docker": "playwright test --config=playwright.docker.config.ts",
+        "create-zip": "node create-zip.ts",
         "lint": "oxlint src/",
         "lint:fix": "oxlint src/ --fix",
+        "typecheck": "tsc --noEmit",
         "knip": "knip",
-        "_format": "prettier \"**/*.{js,jsx,css,html}\"",
+        "jscpd": "jscpd .",
+        "react-doctor": "react-doctor",
+        "react-doctor:staged": "react-doctor --staged --no-supply-chain",
+        "_format": "prettier \"**/*.{ts,tsx,css,html}\"",
         "format": "npm run _format -- --write",
         "prepare": "husky"
     },

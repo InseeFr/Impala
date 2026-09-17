@@ -1,0 +1,21 @@
+# Pile de test des regles de reecriture : l'image Impala telle qu'elle sera
+# publiee, mais dont l'endpoint SPARQL pointe vers un mock local. Aucun acces
+# reseau vers l'exterieur n'est necessaire.
+services:
+    sparql-mock:
+        image: node:22-alpine
+        working_dir: /mock
+        volumes:
+            - ./sparql-mock.ts:/mock/sparql-mock.ts:ro
+        command: ["node", "sparql-mock.ts"]
+
+    impala:
+        build:
+            context: ../..
+            dockerfile: Dockerfile
+        environment:
+            RDF4J_API_URI: http://sparql-mock:8081/sparql
+        ports:
+            - "8080:8080"
+        depends_on:
+            - sparql-mock

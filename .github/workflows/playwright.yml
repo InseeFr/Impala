@@ -6,7 +6,19 @@ on:
         branches: [main]
 jobs:
     test:
+        name: UI tests
         timeout-minutes: 60
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v7
+            - uses: InseeFr/rmes-githubactions-commons/.github/actions/playwright@main
+              with:
+                  node-version: '22'
+                  pnpm-version: '10'
+
+    rewrite-rules:
+        name: Rewrite rules
+        timeout-minutes: 20
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v4
@@ -20,13 +32,15 @@ jobs:
                   cache: 'pnpm'
             - name: Install dependencies
               run: pnpm install
-            - name: Install Playwright Browsers
-              run: npx playwright install --with-deps
-            - name: Run Playwright tests
-              run: npx playwright test
-            - uses: actions/upload-artifact@v4
-              if: always()
-              with:
-                  name: playwright-report
-                  path: playwright-report/
-                  retention-days: 30
+            # Aucun navigateur n'est necessaire : la suite n'utilise que le client HTTP
+            # de Playwright. Elle construit l'image Docker et la teste avec un faux
+            # endpoint SPARQL (tests/docker/compose.yaml).
+            - name: Run rewrite rules tests against the Docker image
+              run: pnpm test:docker
+              # La pile est conservee pour pouvoir recuperer les logs ci-dessous
+              # en cas d'echec ; le runner est ephemere.
+              env:
+                  KEEP_STACK: 1
+            - name: Container logs
+              if: failure()
+              run: docker compose -f tests/docker/compose.yaml logs

@@ -1,0 +1,7 @@
+{
+    "ignore": {
+        "files": ["temp_dist/**", "build/**", "coverage/**", "public/yasgui.min.js"]
+    },
+    "blocking": "warning",
+    "noScore": true
+}

@@ -1,5 +1,12 @@
 name: Quality
+
+# Verifie le front sur chaque PR et publie le rapport Sonar. Les verifications
+# elles-memes, React Doctor et scan Sonar compris, vivent dans
+# InseeFr/rmes-githubactions-commons, partagees avec les autres fronts RMeS ;
+# seul le token reste ici, un secret ne traversant pas une action composite.
+
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -8,30 +15,22 @@ on:
   schedule:
     # Tous les lundis à 12h UTC
     - cron: '0 12 * * 1'
+concurrency:
+  group: '${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}'
+  cancel-in-progress: true
 jobs:
   test-build:
     name: Test & build
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node: [ 22 ]
     steps:
-      - uses: actions/checkout@v4
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v7
+      # Titre de PR, install, lint, typecheck, knip, tests, build, puis React
+      # Doctor (diagnostics React + audit Socket.dev, bloquant des le niveau
+      # "warning" via doctor.config.json) et le scan Sonar.
+      - uses: InseeFr/rmes-githubactions-commons/.github/actions/quality-front@main
         with:
-          version: 10
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node }}
-          cache: 'pnpm'
-      - run: pnpm install
-      - name: Lint code
-        run: pnpm lint
-      - name: Knip
-        run: pnpm knip
-      - run: pnpm test --coverage --watch=false
-      - run: pnpm build
-      - uses: sonarsource/sonarqube-scan-action@v8
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          node-version: '22'
+          pnpm-version: '10'
+          test-command: pnpm test --coverage --watch=false
+          react-doctor-command: pnpm react-doctor
+          sonar-token: ${{ secrets.SONAR_TOKEN }}
