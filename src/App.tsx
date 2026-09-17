@@ -6,6 +6,13 @@ import { loadQueries, loadQueryBody, type Query } from "./api";
 // donc a rejouer un build (`VITE_SPARQL_ENDPOINT=... pnpm build`), la ou
 // l'ancien public/configuration.json etait lu au demarrage de l'application.
 
+// Espace de nommage des URI Insee. C'est un identifiant RDF, pas une adresse
+// que l'application contacte : le `http://` fait partie de l'URI publiée par
+// l'Insee et ne peut pas être réécrit en `https://` sans cesser de désigner la
+// même ressource. Aucune requête n'est émise vers cette valeur — les liens qui
+// la portent sont justement réécrits ci-dessous vers l'endpoint configuré.
+const INSEE_IRI_NAMESPACE = "http://id.insee.fr/";
+
 interface EditorProps {
     endpoint: string;
     queries: Query[];
@@ -79,7 +86,7 @@ function Editor({ endpoint, queries, prefix }: EditorProps) {
             if (
                 endpoint !== import.meta.env.VITE_INSEE_SPARQL_ENDPOINT &&
                 target instanceof HTMLAnchorElement &&
-                target.href.indexOf("http://id.insee.fr/") === 0 &&
+                target.href.indexOf(INSEE_IRI_NAMESPACE) === 0 &&
                 target.href.indexOf(prefix) !== 0
             ) {
                 target.href = prefix + encodeURIComponent(`<${target.href}>`);
