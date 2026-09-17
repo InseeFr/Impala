@@ -11,7 +11,10 @@ import { loadQueries, loadQueryBody, type Query } from "./api";
 // l'Insee et ne peut pas être réécrit en `https://` sans cesser de désigner la
 // même ressource. Aucune requête n'est émise vers cette valeur — les liens qui
 // la portent sont justement réécrits ci-dessous vers l'endpoint configuré.
-const INSEE_IRI_NAMESPACE = "http://id.insee.fr/";
+// La règle typescript:S5332 (« clear-text protocols ») est neutralisée sur la
+// ligne ci-dessous : faux positif assumé, le schéma fait partie de l'identifiant
+// publié et aucune communication n'a lieu vers cette valeur.
+const INSEE_IRI_NAMESPACE = "http://id.insee.fr/"; // NOSONAR
 
 interface EditorProps {
     endpoint: string;
