@@ -29,6 +29,29 @@ const editorIn = (container: HTMLElement): HTMLElement => {
     return editor;
 };
 
+const inseeLink = "http://id.insee.fr/geo/region/11";
+
+// Pose un lien id.insee.fr dans l'éditeur monté puis le clique. jsdom suivrait
+// réellement la navigation : elle est neutralisée le temps du clic, pour
+// n'observer que la réécriture faite par l'application.
+const clickInseeLink = async (container: HTMLElement): Promise<HTMLAnchorElement> => {
+    await waitFor(() => expect(container.querySelector("#editor")).not.toBeNull());
+
+    const link = document.createElement("a");
+    link.href = inseeLink;
+    editorIn(container).appendChild(link);
+
+    const preventNavigation = (event: Event) => event.preventDefault();
+    document.addEventListener("click", preventNavigation, true);
+    try {
+        fireEvent.click(link);
+    } finally {
+        document.removeEventListener("click", preventNavigation, true);
+    }
+
+    return link;
+};
+
 let setQuery: Mock<SetQuery>;
 let yasguiConfig: YasguiConfig | undefined;
 
@@ -113,43 +136,19 @@ test("rewrites id.insee.fr links to the DESCRIBE prefix when a custom endpoint i
     vi.stubEnv("VITE_SPARQL_PREFIX", "https://example.org/sparql?query=DESCRIBE");
     const { container } = render(<App />);
 
-    await waitFor(() => expect(container.querySelector("#editor")).not.toBeNull());
-    const link = document.createElement("a");
-    link.href = "http://id.insee.fr/geo/region/11";
-    editorIn(container).appendChild(link);
-
-    const preventNavigation = (event: Event) => event.preventDefault();
-    document.addEventListener("click", preventNavigation, true);
-    try {
-        fireEvent.click(link);
-    } finally {
-        document.removeEventListener("click", preventNavigation, true);
-    }
+    const link = await clickInseeLink(container);
 
     expect(link.href).toBe(
-        `https://example.org/sparql?query=DESCRIBE${encodeURIComponent(
-            "<http://id.insee.fr/geo/region/11>"
-        )}`
+        `https://example.org/sparql?query=DESCRIBE${encodeURIComponent(`<${inseeLink}>`)}`
     );
 });
 
 test("keeps id.insee.fr links untouched on the default endpoint", async () => {
     const { container } = render(<App />);
 
-    await waitFor(() => expect(container.querySelector("#editor")).not.toBeNull());
-    const link = document.createElement("a");
-    link.href = "http://id.insee.fr/geo/region/11";
-    editorIn(container).appendChild(link);
+    const link = await clickInseeLink(container);
 
-    const preventNavigation = (event: Event) => event.preventDefault();
-    document.addEventListener("click", preventNavigation, true);
-    try {
-        fireEvent.click(link);
-    } finally {
-        document.removeEventListener("click", preventNavigation, true);
-    }
-
-    expect(link.href).toBe("http://id.insee.fr/geo/region/11");
+    expect(link.href).toBe(inseeLink);
 });
 
 test("moves the queries block when Yasgui renders the editor later", async () => {
