@@ -19,18 +19,18 @@ interface EditorProps {
     prefix: string;
 }
 
-function Editor({ endpoint, queries, prefix }: EditorProps) {
+function Editor({ endpoint, queries, prefix }: Readonly<EditorProps>) {
     const yasguiRef = useRef<Yasgui | null>(null);
     const queriesRef = useRef<HTMLDivElement>(null);
     const editorRef = useRef<HTMLDivElement>(null);
 
     useLayoutEffect(() => {
         const editor = editorRef.current;
-        if (!editor || editor.getAttribute("data-yasgui") === "true") {
+        if (!editor || editor.dataset.yasgui === "true") {
             return;
         }
         localStorage.removeItem("yagui__config");
-        editor.setAttribute("data-yasgui", "true");
+        editor.dataset.yasgui = "true";
         yasguiRef.current = new Yasgui(editor, {
             requestConfig: {
                 endpoint
@@ -86,8 +86,8 @@ function Editor({ endpoint, queries, prefix }: EditorProps) {
             if (
                 endpoint !== import.meta.env.VITE_INSEE_SPARQL_ENDPOINT &&
                 target instanceof HTMLAnchorElement &&
-                target.href.indexOf(INSEE_IRI_NAMESPACE) === 0 &&
-                target.href.indexOf(prefix) !== 0
+                target.href.startsWith(INSEE_IRI_NAMESPACE) &&
+                !target.href.startsWith(prefix)
             ) {
                 target.href = prefix + encodeURIComponent(`<${target.href}>`);
             }
