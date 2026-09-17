@@ -152,6 +152,44 @@ test("keeps id.insee.fr links untouched on the default endpoint", async () => {
     expect(link.href).toBe("http://id.insee.fr/geo/region/11");
 });
 
+test("moves the queries block when Yasgui renders the editor later", async () => {
+    // Filet décrit dans App.tsx : si une version de Yasgui construisait `.yasqe`
+    // après le montage, l'observateur doit encore y déplacer le bloc.
+    vi.stubGlobal(
+        "Yasgui",
+        class {
+            getTab = () => ({ setQuery });
+
+            constructor(element: HTMLElement) {
+                setTimeout(() => {
+                    const yasqe = document.createElement("div");
+                    yasqe.classList.add("yasqe");
+                    element.appendChild(yasqe);
+                }, 0);
+            }
+        }
+    );
+
+    const { container } = render(<App />);
+
+    await waitFor(() => {
+        expect(container.querySelector("#editor .yasqe > .queries-block")).not.toBeNull();
+    });
+});
+
+test("keeps the app usable when a query body cannot be loaded", async () => {
+    vi.stubGlobal("fetch", (url: string) => Promise.resolve(fetchResponse(url, !url.endsWith(".txt"))));
+    // `using` n'est pas activé par le parseur SWC de ce projet
+    // (jsc.parser.explicitResourceManagement), d'où la restauration explicite.
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    render(<App />);
+    fireEvent.click(await screen.findByRole("button", { name: "Liste des concepts" }));
+
+    await waitFor(() => expect(errorSpy).toHaveBeenCalled());
+    expect(setQuery).not.toHaveBeenCalled();
+});
+
 test("ignores manifest entries whose path is not a query file", async () => {
     const hostile: Query[] = [
         { label: "Absolue", path: "https://example.com/steal" },
