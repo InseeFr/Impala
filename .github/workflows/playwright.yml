@@ -4,6 +4,11 @@ on:
         branches: [main]
     pull_request:
         branches: [main]
+
+# Lecture seule pour les deux jobs : ils clonent, installent et testent.
+permissions:
+    contents: read
+
 jobs:
     test:
         name: UI tests
@@ -12,9 +17,6 @@ jobs:
         steps:
             - uses: actions/checkout@v7
             - uses: InseeFr/rmes-githubactions-commons/.github/actions/playwright@main
-              with:
-                  node-version: '22'
-                  pnpm-version: '10'
 
     rewrite-rules:
         name: Rewrite rules
@@ -22,14 +24,9 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v4
-            - name: Install pnpm
-              uses: pnpm/action-setup@v4
-              with:
-                version: 10
-            - uses: actions/setup-node@v4
-              with:
-                  node-version: 22
-                  cache: 'pnpm'
+            # Node et pnpm viennent du commons, comme pour les autres jobs : ce
+            # depot n'epingle aucune version lui-meme.
+            - uses: InseeFr/rmes-githubactions-commons/.github/actions/setup-front@main
             - name: Install dependencies
               run: pnpm install
             # Aucun navigateur n'est necessaire : la suite n'utilise que le client HTTP

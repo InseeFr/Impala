@@ -1,17 +1,19 @@
 ### BUILD STEP ###
 
-FROM node:latest AS builder
+FROM node:24.21.0 AS builder
 
 WORKDIR /impala
 
 COPY ./ ./
 
-# pnpm est epingle sur une majeure : sans cela le build d'image suit la derniere
-# version publiee et peut casser sans qu'aucun fichier du depot n'ait bouge.
-# pnpm 11 verifie l'integralite du lockfile contre les politiques de
-# pnpm-workspace.yaml, ce que pnpm 10 ne fait pas.
-RUN npm i -g npm pnpm@11
-RUN pnpm install --config.dangerouslyAllowAllBuilds=true && pnpm build
+# pnpm aligne sur la version de la CI, declaree dans l'action setup-front du
+# commons : sans epinglage, le build d'image suivrait la derniere version
+# publiee et pourrait casser sans qu'aucun fichier du depot n'ait bouge.
+# `--frozen-lockfile` : l'image resout exactement ce que la CI a valide, ou elle
+# echoue — plutot que de deriver en silence.
+RUN npm i -g pnpm@12 \
+    && pnpm install --frozen-lockfile --config.dangerouslyAllowAllBuilds=true \
+    && pnpm build
 
 ### EXECUTION STEP ###
 
