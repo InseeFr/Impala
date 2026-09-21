@@ -36,6 +36,7 @@
         "start": "pnpm pre-script vite",
         "build": "pnpm pre-script pnpm build-react && pnpm copy-static && pnpm create-zip",
         "test": "vitest test",
+    "test:coverage": "vitest run --coverage",
         "test:docker": "playwright test --config=playwright.docker.config.ts",
         "create-zip": "node create-zip.ts",
         "lint": "oxlint src/",

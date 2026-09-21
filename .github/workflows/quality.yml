@@ -22,6 +22,10 @@ jobs:
   test-build:
     name: Test & build
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Le controle du titre de PR, dans l'action `quality`, lit la pull request.
+      pull-requests: read
     steps:
       - uses: actions/checkout@v7
       # Titre de PR, install, lint, typecheck, knip, tests, build, puis React
@@ -29,8 +33,5 @@ jobs:
       # "warning" via doctor.config.json) et le scan Sonar.
       - uses: InseeFr/rmes-githubactions-commons/.github/actions/quality-front@main
         with:
-          node-version: '22'
-          pnpm-version: '10'
-          test-command: pnpm test --coverage --watch=false
           react-doctor-command: pnpm react-doctor
           sonar-token: ${{ secrets.SONAR_TOKEN }}

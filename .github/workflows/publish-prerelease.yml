@@ -1,0 +1,50 @@
+name: Publish prerelease image
+
+# Publie sur ghcr.io l'image d'une prerelease, une fois l'application verifiee.
+# La construction elle-meme vit dans InseeFr/rmes-githubactions-commons,
+# partagee avec les autres projets RMeS.
+
+on:
+    release:
+        types: [prereleased]
+
+jobs:
+    build:
+        name: Build & check the application
+        runs-on: ubuntu-latest
+        # La porte qualite ne fait que lire le depot : l'image est publiee par
+        # le job suivant, qui porte les droits necessaires.
+        permissions:
+            contents: read
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  ref: ${{ github.event.release.tag_name }}
+
+            # Les memes verifications que sur une PR : install, lint, typecheck,
+            # knip, jscpd, tests et build. Ni Sonar ni React Doctor ici, une
+            # porte de publication verifie mais ne scanne pas.
+            - uses: InseeFr/rmes-githubactions-commons/.github/actions/quality-front@main
+
+            # Garde-fou propre a Impala : verifie sur l'image elle-meme que les
+            # regles de reecriture de nginx se comportent comme attendu. Les
+            # dependances sont deja installees par l'action ci-dessus.
+            - name: Test rewrite rules against the Docker image
+              run: pnpm test:docker
+
+    docker:
+        name: Docker Build and Push
+        runs-on: ubuntu-latest
+        needs: build
+        permissions:
+            contents: read
+            # ghcr.io est authentifie avec le token du job lui-meme.
+            packages: write
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  ref: ${{ github.event.release.tag_name }}
+            - uses: InseeFr/rmes-githubactions-commons/.github/actions/docker-publish@main
+              with:
+                  image: inseefr/impala
+                  registry: ghcr.io

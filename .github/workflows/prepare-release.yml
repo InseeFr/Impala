@@ -1,0 +1,59 @@
+name: Prepare release
+
+# Incremente la version, commit, tague et cree la release GitHub — en un clic
+# depuis l'onglet Actions. La branche se choisit dans "Run workflow" :
+#   - prerelease : une branche de release, jamais main
+#   - release    : main
+#
+# La logique vit dans InseeFr/rmes-githubactions-commons, partagee avec les
+# autres projets RMeS. Ne reste ici que ce qui est propre au depot : le
+# formulaire, le checkout, les permissions et le token.
+#
+# Le tag est pose SUR le commit de bump. C'est ce qui garantit que l'image
+# construite ensuite par publish-prerelease.yml / publish-release.yml porte la bonne
+# version : VITE_VERSION est lu dans package.json pendant `pnpm build`, qui
+# tourne dans le Dockerfile, sur l'arbre du tag.
+
+on:
+    workflow_dispatch:
+        inputs:
+            kind:
+                description: "What to publish"
+                type: choice
+                options:
+                    - prerelease
+                    - release
+                default: prerelease
+            version:
+                description: "Explicit version. Empty = next rc (prerelease), or -rc suffix dropped (release)"
+                required: false
+            dry_run:
+                description: "Compute the version and stop there, pushing nothing"
+                type: boolean
+                default: false
+
+# Une action ne peut pas en declarer : deux runs qui incrementent la meme
+# branche ne doivent pas se chevaucher, ni etre annules une fois le push fait.
+concurrency:
+    group: prepare-release-${{ github.repository }}-${{ github.ref }}
+    cancel-in-progress: false
+
+jobs:
+    release:
+        name: ${{ inputs.kind }} from ${{ github.ref_name }}
+        runs-on: ubuntu-latest
+        permissions:
+            # Le commit de bump et son tag sont pousses avec le token du job.
+            contents: write
+        steps:
+            - uses: actions/checkout@v4
+            # Une action composite ne recoit aucun secret d'elle-meme. Sans ce
+            # PAT la release serait creee avec GITHUB_TOKEN, et GitHub refuserait
+            # alors de demarrer publish-prerelease.yml / publish-release.yml sur
+            # l'evenement release.
+            - uses: InseeFr/rmes-githubactions-commons/.github/actions/prepare-release@main
+              with:
+                  kind: ${{ inputs.kind }}
+                  version: ${{ inputs.version }}
+                  dry_run: ${{ inputs.dry_run }}
+                  release-token: ${{ secrets.RELEASE_TOKEN }}
