@@ -34,4 +34,8 @@ jobs:
       - uses: InseeFr/rmes-githubactions-commons/.github/actions/quality-front@main
         with:
           react-doctor-command: pnpm react-doctor
+          # Analyse statique du Dockerfile (seuil `warning`, exceptions dans
+          # .hadolint.yaml) : l'etape vit dans le commons, elle remplace le
+          # workflow hadolint.yml que ce depot portait.
+          hadolint-dockerfile: Dockerfile
           sonar-token: ${{ secrets.SONAR_TOKEN }}
