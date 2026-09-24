@@ -1,0 +1,54 @@
+name: Publish release image
+
+# Publie sur Docker Hub l'image de la release finale, une fois l'application
+# verifiee. La construction elle-meme vit dans
+# InseeFr/rmes-githubactions-commons, partagee avec les autres projets RMeS.
+#
+# L'image porte le tag de la release, comme celle de la prerelease : c'est
+# l'action commune qui le calcule, et qui refuse un tag qui ne serait pas un
+# x.y.z pour une release finale.
+
+on:
+    release:
+        types: [released]
+
+jobs:
+    build:
+        name: Test & Build the application
+        runs-on: ubuntu-latest
+        # La porte qualite ne fait que lire le depot : l'image est publiee par
+        # le job suivant, qui porte les droits necessaires.
+        permissions:
+            contents: read
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  ref: ${{ github.event.release.tag_name }}
+
+            # Les memes verifications que sur une PR : install, lint, typecheck,
+            # knip, jscpd, tests et build. Ni Sonar ni React Doctor ici, une
+            # porte de publication verifie mais ne scanne pas.
+            - uses: InseeFr/rmes-githubactions-commons/.github/actions/quality-front@main
+
+            # Garde-fou propre a Impala : verifie sur l'image elle-meme que les
+            # regles de reecriture de nginx se comportent comme attendu. Les
+            # dependances sont deja installees par l'action ci-dessus.
+            - name: Test rewrite rules against the Docker image
+              run: pnpm test:docker
+
+    docker:
+        name: Docker Build and Push
+        runs-on: ubuntu-latest
+        needs: build
+        permissions:
+            contents: read
+        steps:
+            # Sur un evenement release, la ref extraite est deja celle du tag.
+            - uses: actions/checkout@v4
+            # Une action composite ne recoit aucun secret d'elle-meme : les
+            # identifiants Docker Hub lui sont passes explicitement.
+            - uses: InseeFr/rmes-githubactions-commons/.github/actions/docker-publish@main
+              with:
+                  image: inseefr/impala
+                  dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
+                  dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}

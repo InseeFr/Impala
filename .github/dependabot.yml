@@ -1,0 +1,21 @@
+version: 2
+
+# Limite a l'ecosysteme `github-actions` : les dependances npm sont deja suivies
+# par les mises a jour de securite GitHub, et ouvrir ici l'ecosysteme npm
+# noierait les PR du depot. Pour l'elargir, ajouter une entree
+# `package-ecosystem: "npm"` avec le groupement qui convient.
+#
+# Dependabot met a jour aussi bien un tag (`@v4`) qu'un SHA epingle, en
+# reecrivant dans ce dernier cas le commentaire de version qui l'accompagne.
+# C'est ce qui rend l'epinglage par SHA tenable dans la duree.
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      # Un seul lot : ces mises a jour se relisent ensemble, et une PR par action
+      # pour un bump de patch n'apporte rien.
+      actions:
+        patterns:
+          - "*"
