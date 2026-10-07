@@ -1,0 +1,41 @@
+name: Quality
+
+# Verifie le front sur chaque PR et publie le rapport Sonar. Les verifications
+# elles-memes, React Doctor et scan Sonar compris, vivent dans
+# InseeFr/rmes-githubactions-commons, partagees avec les autres fronts RMeS ;
+# seul le token reste ici, un secret ne traversant pas une action composite.
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
+  schedule:
+    # Tous les lundis à 12h UTC
+    - cron: '0 12 * * 1'
+concurrency:
+  group: '${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}'
+  cancel-in-progress: true
+jobs:
+  test-build:
+    name: Test & build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Le controle du titre de PR, dans l'action `quality`, lit la pull request.
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v7
+      # Titre de PR, install, lint, typecheck, knip, tests, build, puis React
+      # Doctor (diagnostics React + audit Socket.dev, bloquant des le niveau
+      # "warning" via doctor.config.json) et le scan Sonar.
+      - uses: InseeFr/rmes-githubactions-commons/.github/actions/quality-front@main
+        with:
+          react-doctor-command: pnpm react-doctor
+          # Analyse statique du Dockerfile (seuil `warning`, exceptions dans
+          # .hadolint.yaml) : l'etape vit dans le commons, elle remplace le
+          # workflow hadolint.yml que ce depot portait.
+          hadolint-dockerfile: Dockerfile
+          sonar-token: ${{ secrets.SONAR_TOKEN }}

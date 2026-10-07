@@ -1,0 +1,122 @@
+# Configuration nginx d'Impala : le routage complet (proxy SPARQL, dereferencement,
+# en-tetes) tient dans ce seul fichier, qui remplace l'ancien couple httpd.conf/.htaccess.
+#
+# Il est installe dans /etc/nginx/templates : l'entrypoint de l'image nginx y
+# substitue les variables d'environnement (${RDF4J_API_URI}) avant de demarrer le
+# serveur, puis depose le resultat dans /etc/nginx/conf.d/default.conf. On est donc
+# en contexte http : les `map` ci-dessous y sont autorises.
+#
+# Les numeros de regles reprennent ceux de l'ancien .htaccess pour faciliter la
+# relecture ; les tests tests/docker/rewrite-rules.spec.ts en verifient le contrat.
+
+# Regle 1 : variables d'environnement.
+# RDF4J_API_URI est substitue au demarrage du conteneur ; IMPALA_URI n'a pas besoin
+# de variable dediee (c'est http://$http_host, cf. regle 9). METADATA_API_URI n'est
+# plus utilise : la regle 8 qui s'en servait etait deja desactivee sous Apache.
+
+# Requete emise par un navigateur ?
+map $http_accept $accepts_html {
+    default 0;
+    "~*text/html" 1;
+}
+
+# La query string porte-t-elle une requete SPARQL ?
+map $args $has_sparql_query {
+    default 0;
+    "~(^|&)query=" 1;
+}
+
+# Regles 5 et 7 : GET programmatique avec ?query=..., ou POST hors navigateur.
+map "$accepts_html:$request_method:$has_sparql_query" $sparql_to_backend {
+    default 0;
+    "0:GET:1" 1;
+    "0:POST:0" 1;
+    "0:POST:1" 1;
+}
+
+# Regle 8 : acces a une ressource hors navigateur.
+map "$accepts_html:$request_method" $dereference_as_data {
+    default 0;
+    "0:GET" 1;
+}
+
+# Regle 8bis : id.insee.fr dans un navigateur.
+map $host $is_id_insee {
+    default 0;
+    "~^id\.insee\.fr$" 1;
+}
+
+server {
+    listen 8080;
+    server_name _;
+
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # Regle 11 : ne pas exposer la version du serveur dans l'en-tete Server
+    server_tokens off;
+
+    # Regle 10 : autoriser l'utilisation de l'API par toutes les origines
+    add_header Access-Control-Allow-Origin "*" always;
+
+    # Aucun fichier cache (.htaccess et consorts) n'est servi
+    location ~ /\. {
+        deny all;
+    }
+
+    # Regle 2 : la racine sert la page d'accueil, sans redirection
+    location = / {
+        try_files /index.html =404;
+    }
+
+    # Regle 3 : les ressources statiques sont servies telles quelles
+    location ~* \.(html|zip|txt|json|map|png|css|ico|rdf|htm|ttl|jpg)$ {
+        try_files $uri =404;
+    }
+
+    # Regles 5, 6 et 7 : /sparql est soit proxifie vers l'endpoint, soit le formulaire
+    location = /sparql {
+        if ($sparql_to_backend) {
+            rewrite ^ /__sparql-proxy last;
+        }
+
+        # Regle 6 : depuis un navigateur, on sert le formulaire Impala
+        try_files /sparql/index.html =404;
+    }
+
+    # Regle 6 : le formulaire Impala et ses assets (JS, CSS, polices...)
+    location ^~ /sparql/ {
+        try_files $uri $uri/ =404;
+    }
+
+    # Regles 5 et 7 : proxy vers l'endpoint SPARQL, methode et query string conservees.
+    # Location interne : on y arrive uniquement par la reecriture ci-dessus.
+    location = /__sparql-proxy {
+        internal;
+
+        proxy_pass ${RDF4J_API_URI};
+        proxy_ssl_server_name on;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location / {
+        # Regle 8 : acces hors navigateur => dereferencement sur rdf.insee.fr
+        if ($dereference_as_data) {
+            return 303 "https://rdf.insee.fr/sparql?query=describe<http://id.insee.fr$uri>";
+        }
+
+        # Regle 8bis : id.insee.fr dans un navigateur
+        if ($is_id_insee) {
+            return 303 "https://rdf.insee.fr/sparql?query=DESCRIBE<http://id.insee.fr$uri>";
+        }
+
+        # Regle 9 : navigateur => retour vers le formulaire Impala, DESCRIBE pre-rempli
+        if ($accepts_html) {
+            return 302 "/sparql?query=DESCRIBE%20%3Chttp://$http_host$request_uri%3E";
+        }
+
+        try_files $uri $uri/ =404;
+    }
+}

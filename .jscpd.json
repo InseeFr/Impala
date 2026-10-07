@@ -1,0 +1,6 @@
+{
+    "gitignore": true,
+    "ignore": ["pages/**", "public/**", "pnpm-lock.yaml", ".vitest/**", ".husky/_/**"],
+    "reporters": ["console"],
+    "absolute": false
+}

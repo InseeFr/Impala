@@ -1,2 +1,6 @@
 gitleaks git --pre-commit --redact --staged --verbose
 pnpm exec knip --no-config-hints
+# Scan limite aux fichiers indexes, sans appel reseau (--no-supply-chain) :
+# le controle complet de la chaine d'approvisionnement est fait en CI.
+# Sort en 0 si rien n'est indexe.
+pnpm run react-doctor:staged

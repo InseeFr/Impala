@@ -1,0 +1,28 @@
+# Configuration hadolint, partagee par la CI (l'etape hadolint de l'action
+# `quality` de InseeFr/rmes-githubactions-commons, activee dans quality.yml) et
+# les executions locales : `hadolint Dockerfile`.
+#
+# Les exceptions vivent ici, versionnees et justifiees, plutot que dispersees en
+# `# hadolint ignore=` dans le Dockerfile ou neutralisees par un
+# `continue-on-error` dans le workflow.
+
+# Dette mesuree le 2026-09-18, apres epinglage de l'image de base : nulle a ce
+# niveau (un seul constat restant, un `info`, faux positif).
+# A garder en phase avec `hadolint-failure-threshold` du commons (`warning` par
+# defaut) : l'action passe son propre drapeau, elle ne lit pas celui-ci.
+failure-threshold: warning
+
+# Rien n'est ignore aujourd'hui. Pour ouvrir une exception, decommenter la cle
+# `ignored:` ci-dessous — elle attend une liste, un `ignored:` vide ferait
+# echouer la lecture de cette configuration. Chaque entree porte sa
+# justification ecrite, et une echeance si c'est une dette temporaire :
+#
+# ignored:
+#   - DL3008  # paquets apt non epingles : a traiter avec la refonte de l'image
+#
+# Au passage a `warning`, DL3007 (`FROM node:latest`, Dockerfile:3) remontera :
+# le traiter en epinglant l'image de base plutot que de l'ajouter ici.
+
+trustedRegistries:
+  - docker.io
+  - ghcr.io

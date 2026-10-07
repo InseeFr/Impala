@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 import { ZipArchive } from "archiver";
-import { createWriteStream } from "fs";
-import { resolve } from "path";
+import { createWriteStream } from "node:fs";
+import { resolve } from "node:path";
 
 const output = createWriteStream(resolve("build", "build.zip"));
 const archive = new ZipArchive({
@@ -13,7 +13,7 @@ output.on("close", () => {
     console.log(`Created build.zip (${archive.pointer()} bytes)`);
 });
 
-archive.on("error", err => {
+archive.on("error", (err: Error) => {
     throw err;
 });
 
