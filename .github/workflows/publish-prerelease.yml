@@ -17,7 +17,7 @@ jobs:
         permissions:
             contents: read
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v7
               with:
                   ref: ${{ github.event.release.tag_name }}
 
@@ -41,7 +41,7 @@ jobs:
             # ghcr.io est authentifie avec le token du job lui-meme.
             packages: write
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v7
               with:
                   ref: ${{ github.event.release.tag_name }}
             - uses: InseeFr/rmes-githubactions-commons/.github/actions/docker-publish@main
