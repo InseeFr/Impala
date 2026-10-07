@@ -21,7 +21,7 @@ jobs:
         permissions:
             contents: read
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v7
               with:
                   ref: ${{ github.event.release.tag_name }}
 
@@ -44,7 +44,7 @@ jobs:
             contents: read
         steps:
             # Sur un evenement release, la ref extraite est deja celle du tag.
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v7
             # Une action composite ne recoit aucun secret d'elle-meme : les
             # identifiants Docker Hub lui sont passes explicitement.
             - uses: InseeFr/rmes-githubactions-commons/.github/actions/docker-publish@main
