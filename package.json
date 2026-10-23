@@ -1,7 +1,7 @@
 {
     "name": "impala",
     "type": "module",
-    "version": "2.0.0",
+    "version": "2.0.1-rc0",
     "dependencies": {
         "react": "^19.3.1",
         "react-dom": "^19.3.1"
