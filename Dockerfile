@@ -1,6 +1,6 @@
 ### BUILD STEP ###
 
-FROM node:24.21.0 AS builder
+FROM node:26.12.1 AS builder
 
 WORKDIR /impala
 
