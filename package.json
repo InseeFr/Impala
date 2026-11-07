@@ -23,6 +23,7 @@
         "knip": "^6.41.0",
         "ncp": "^2.0.0",
         "oxlint": "^1.88.0",
+        "oxlint-tsgolint": "^7.0.2005",
         "prettier": "^3.9.10",
         "react-doctor": "^0.9.18",
         "typescript": "^7.0.2",
