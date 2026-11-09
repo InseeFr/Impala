@@ -42,7 +42,7 @@ export async function loadQueries(): Promise<Query[]> {
     const response = await fetchOk(QUERIES_MANIFEST);
     const entries: unknown = await response.json();
     if (!Array.isArray(entries)) {
-        throw new Error(`${QUERIES_MANIFEST}: tableau attendu`);
+        throw new TypeError(`${QUERIES_MANIFEST}: tableau attendu`);
     }
     return entries.filter(isQuery).flatMap(entry => {
         const path = QUERY_PATH.exec(entry.path)?.[0];
