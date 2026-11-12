@@ -10,7 +10,7 @@ const queries: Query[] = [
 
 // La réponse renvoyée par les stubs de `fetch` : seule la portion de l'API
 // Response consommée par src/api.ts est simulée.
-const fetchResponse = (url: string, ok = true, payload: Query[] = queries) => ({
+const fetchResponse = (url: string, ok = true, payload: unknown = queries) => ({
     ok,
     status: ok ? 200 : 404,
     statusText: ok ? "OK" : "Not Found",
@@ -31,6 +31,8 @@ const editorIn = (container: HTMLElement): HTMLElement => {
 
 const inseeLink = "http://id.insee.fr/geo/region/11";
 
+const preventNavigation = (event: Event) => event.preventDefault();
+
 // Pose un lien id.insee.fr dans l'éditeur monté puis le clique. jsdom suivrait
 // réellement la navigation : elle est neutralisée le temps du clic, pour
 // n'observer que la réécriture faite par l'application.
@@ -41,7 +43,6 @@ const clickInseeLink = async (container: HTMLElement): Promise<HTMLAnchorElement
     link.href = inseeLink;
     editorIn(container).appendChild(link);
 
-    const preventNavigation = (event: Event) => event.preventDefault();
     document.addEventListener("click", preventNavigation, true);
     try {
         fireEvent.click(link);
@@ -128,7 +129,7 @@ test("reads the endpoint from the build-time environment instead of a fetched fi
     render(<App />);
 
     await waitFor(() => expect(fetchSpy).toHaveBeenCalled());
-    expect(fetchSpy.mock.calls.some(([url]) => String(url).includes("configuration.json"))).toBe(false);
+    expect(fetchSpy.mock.calls.some(([url]) => url.includes("configuration.json"))).toBe(false);
 });
 
 test("rewrites id.insee.fr links to the DESCRIBE prefix when a custom endpoint is configured", async () => {
@@ -205,6 +206,22 @@ test("ignores manifest entries whose path is not a query file", async () => {
     for (const label of ["Absolue", "Traversée", "Protocole"]) {
         expect(screen.queryByRole("button", { name: label })).toBeNull();
     }
+});
+
+test("ignores malformed manifest entries but keeps the valid ones", async () => {
+    const malformed = [
+        null,
+        { label: 42, path: "/queries/nombre.txt" },
+        { label: "Sans chemin" },
+        ...queries
+    ];
+    vi.stubGlobal("fetch", (url: string) => Promise.resolve(fetchResponse(url, true, malformed)));
+
+    render(<App />);
+
+    expect(await screen.findByRole("button", { name: "Liste des concepts" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Sans chemin" })).toBeNull();
+    expect(screen.getAllByRole("button")).toHaveLength(queries.length);
 });
 
 test("ignores the body of an HTTP error response for the query list", async () => {

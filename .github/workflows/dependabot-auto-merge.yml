@@ -1,0 +1,32 @@
+name: Dependabot auto-merge
+
+# Active l'auto-merge sur toutes les PR Dependabot, quel que soit le type de
+# montee (patch, mineure, majeure). La fusion n'a lieu qu'une fois les checks
+# requis par la protection de `main` au vert : c'est GitHub qui attend.
+#
+# Prerequis cote depot (Settings) :
+#   - General > "Allow auto-merge" active ;
+#   - protection de `main` avec les checks requis (Test & build, UI tests,
+#     Rewrite rules). Sans check requis, l'auto-merge fusionne immediatement.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    name: Enable auto-merge
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.user.login == 'dependabot[bot]' && github.repository == 'InseeFR/Impala'
+    steps:
+      # Toutes les mises a jour, majeures comprises : la CI est le seul
+      # garde-fou. Une majeure qui casse le build reste ouverte, a traiter.
+      - name: Enable auto-merge
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

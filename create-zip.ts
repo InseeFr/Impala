@@ -19,4 +19,4 @@ archive.on("error", (err: Error) => {
 
 archive.pipe(output);
 archive.glob("**/*", { cwd: "build", ignore: ["build.zip"] });
-archive.finalize();
+await archive.finalize();

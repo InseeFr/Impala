@@ -1,21 +1,73 @@
 version: 2
 
-# Limite a l'ecosysteme `github-actions` : les dependances npm sont deja suivies
-# par les mises a jour de securite GitHub, et ouvrir ici l'ecosysteme npm
-# noierait les PR du depot. Pour l'elargir, ajouter une entree
-# `package-ecosystem: "npm"` avec le groupement qui convient.
+# Les mises a jour sont regroupees pour limiter le nombre de PR : une PR par
+# ecosysteme et par nature de dependance, les majeures a part pour qu'une
+# majeure qui casse la CI ne bloque pas les autres montees. Toutes les PR sont
+# fusionnees automatiquement une fois la CI verte (dependabot-auto-merge.yml).
+#
+# cooldown : aligne sur `minimumReleaseAge` (7 jours) de pnpm-workspace.yaml.
+# Sans lui, Dependabot proposerait des versions que `pnpm install` refuse.
+#
+# commit-message : la CI controle que le titre de PR suit les conventional
+# commits ; le prefixe donne des titres du type `build(deps): bump ...`.
 #
 # Dependabot met a jour aussi bien un tag (`@v4`) qu'un SHA epingle, en
 # reecrivant dans ce dernier cas le commentaire de version qui l'accompagne.
-# C'est ce qui rend l'epinglage par SHA tenable dans la duree.
 updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "build"
+      prefix-development: "build"
+      include: "scope"
+    groups:
+      production:
+        dependency-type: "production"
+        update-types:
+          - "minor"
+          - "patch"
+      development:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+      major:
+        update-types:
+          - "major"
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "monday"
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: "ci"
+      include: "scope"
     groups:
-      # Un seul lot : ces mises a jour se relisent ensemble, et une PR par action
-      # pour un bump de patch n'apporte rien.
+      # Un seul lot : une PR par action pour un bump de patch n'apporte rien.
       actions:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: "build"
+      include: "scope"
+    groups:
+      docker:
         patterns:
           - "*"

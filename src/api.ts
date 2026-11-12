@@ -27,10 +27,24 @@ async function fetchOk(path: string): Promise<Response> {
     return response;
 }
 
+function isQuery(entry: unknown): entry is Query {
+    return (
+        typeof entry === "object" &&
+        entry !== null &&
+        "label" in entry &&
+        typeof entry.label === "string" &&
+        "path" in entry &&
+        typeof entry.path === "string"
+    );
+}
+
 export async function loadQueries(): Promise<Query[]> {
     const response = await fetchOk(QUERIES_MANIFEST);
-    const entries = (await response.json()) as Query[];
-    return entries.flatMap(entry => {
+    const entries: unknown = await response.json();
+    if (!Array.isArray(entries)) {
+        throw new TypeError(`${QUERIES_MANIFEST}: tableau attendu`);
+    }
+    return entries.filter(isQuery).flatMap(entry => {
         const path = QUERY_PATH.exec(entry.path)?.[0];
         return path ? [{ label: entry.label, path }] : [];
     });
