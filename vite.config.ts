@@ -1,4 +1,5 @@
 import react from "@vitejs/plugin-react-swc";
+import { viteEnvs } from "vite-envs";
 import { configDefaults, defineConfig } from "vitest/config";
 import { readdirSync, readFileSync } from "node:fs";
 import { basename, resolve } from "node:path";
@@ -15,7 +16,24 @@ const allowedTxtFiles = new Set(
 // https://vitejs.dev/config/
 export default defineConfig({
     base: "/",
-    plugins: [react()],
+    plugins: [
+        react(),
+        // Les VITE_* declarees dans .env restent surchargeables au demarrage du
+        // conteneur : le build produit vite-envs.sh, lance par l'ENTRYPOINT du
+        // Dockerfile, qui reecrit index.html avec les valeurs de l'environnement.
+        viteEnvs({
+            declarationFile: ".env",
+            computedEnv: () => {
+                const packageJson = JSON.parse(
+                    readFileSync(resolve(import.meta.dirname, "package.json"), "utf-8")
+                );
+                return {
+                    VITE_NAME: packageJson.name,
+                    VITE_VERSION: packageJson.version
+                };
+            }
+        })
+    ],
     test: {
         environment: "jsdom",
         dangerouslyIgnoreUnhandledErrors: true,

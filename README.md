@@ -31,7 +31,8 @@ pnpm lint:fix
 ### Configuration
 
 The SPARQL endpoint used by the editor and the `DESCRIBE` prefix applied to
-`id.insee.fr` links are read from Vite environment variables at build time:
+`id.insee.fr` links are read from Vite environment variables, managed by
+[vite-envs](https://github.com/garronej/vite-envs):
 
 | Variable                     | Declared in `.env`                           |
 | ---------------------------- | -------------------------------------------- |
@@ -43,11 +44,9 @@ The SPARQL endpoint used by the editor and the `DESCRIBE` prefix applied to
 links are rewritten to a `DESCRIBE` query only when `VITE_SPARQL_ENDPOINT`
 points somewhere else. Leave it alone.
 
-Override the others in a `.env.local` file or on the command line, then rebuild:
-
-```shell
-VITE_SPARQL_ENDPOINT=http://example.org/sparql pnpm build
-```
+In development, override the others in a `.env.local` file. In the Docker
+image, they are read when the container starts (see [Docker](#docker)): no
+rebuild is needed.
 
 ### Testing
 
@@ -83,4 +82,12 @@ rebuilding the image:
 
 ```shell
 docker run -p 8080:8080 -e RDF4J_API_URI=https://api-rmes-cache.insee.fr/sparql inseefr/impala
+```
+
+The `VITE_*` variables of the editor are injected the same way: at startup,
+`vite-envs.sh` rewrites `sparql/index.html` with the values found in the
+container environment, falling back to `.env` for the missing ones.
+
+```shell
+docker run -p 8080:8080 -e VITE_SPARQL_ENDPOINT=https://example.org/sparql inseefr/impala
 ```

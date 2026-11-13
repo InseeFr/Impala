@@ -40,3 +40,10 @@ COPY --from=builder --chown=$NGINX_USER:$NGINX_GROUP /impala/build/ /usr/share/n
 USER $NGINX_USER_ID
 
 EXPOSE 8080
+
+# vite-envs.sh (genere au build) reecrit sparql/index.html avec les VITE_* de
+# l'environnement du conteneur, puis l'entrypoint d'origine de l'image prend la
+# main : il substitue ${RDF4J_API_URI} dans le template nginx avant de lancer
+# nginx. `exec` garde nginx en PID 1 pour qu'il recoive le SIGTERM de `docker stop`.
+RUN chmod 755 /usr/share/nginx/html/sparql/vite-envs.sh
+ENTRYPOINT ["sh", "-c", "/usr/share/nginx/html/sparql/vite-envs.sh && exec /docker-entrypoint.sh nginx -g 'daemon off;'"]

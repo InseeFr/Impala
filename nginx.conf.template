@@ -84,6 +84,11 @@ server {
         try_files /sparql/index.html =404;
     }
 
+    # Script de configuration vite-envs, execute au demarrage : jamais servi
+    location = /sparql/vite-envs.sh {
+        deny all;
+    }
+
     # Regle 6 : le formulaire Impala et ses assets (JS, CSS, polices...)
     location ^~ /sparql/ {
         try_files $uri $uri/ =404;
