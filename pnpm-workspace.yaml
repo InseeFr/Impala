@@ -17,9 +17,7 @@ trustPolicyExclude:
 
 # Scripts d'installation autorisés. Depuis pnpm 11, une dépendance qui porte un
 # script de build non listé ici fait échouer `pnpm install` en CI
-# (ERR_PNPM_IGNORED_BUILDS). Les deux récupèrent leur binaire natif :
-#   @swc/core : compilateur de @vitejs/plugin-react-swc
+# (ERR_PNPM_IGNORED_BUILDS). Il récupère son binaire natif :
 #   esbuild   : bundler de vite
 allowBuilds:
-  "@swc/core": true
   esbuild: true

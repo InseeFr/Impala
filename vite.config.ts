@@ -1,4 +1,5 @@
-import react from "@vitejs/plugin-react-swc";
+import babel from "@rolldown/plugin-babel";
+import react, { reactCompilerPreset } from "@vitejs/plugin-react";
 import { viteEnvs } from "vite-envs";
 import { configDefaults, defineConfig } from "vitest/config";
 import { readdirSync, readFileSync } from "node:fs";
@@ -18,6 +19,8 @@ export default defineConfig({
     base: "/",
     plugins: [
         react(),
+        // React Compiler : memoisation automatique des composants et hooks.
+        babel({ presets: [reactCompilerPreset()] }),
         // Les VITE_* declarees dans .env restent surchargeables au demarrage du
         // conteneur : le build produit vite-envs.sh, lance par l'ENTRYPOINT du
         // Dockerfile, qui reecrit index.html avec les valeurs de l'environnement.
