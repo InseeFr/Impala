@@ -142,9 +142,25 @@ test.describe("Configuration du serveur", () => {
         expect(await response.text()).not.toContain("proxy_pass");
     });
 
+    test("le script vite-envs n'est jamais servi", async ({ request }) => {
+        const response = await request.get("/sparql/vite-envs.sh", { ...noRedirect });
+
+        expect(response.status()).toBe(403);
+    });
+
     test("les fichiers caches ne sont jamais servis", async ({ request }) => {
         const response = await request.get("/.htaccess", { ...noRedirect });
 
         expect(response.status()).toBe(403);
+    });
+});
+
+test.describe("Configuration du front au demarrage du conteneur", () => {
+    test("VITE_SPARQL_ENDPOINT du conteneur est injecte dans le formulaire", async ({ request }) => {
+        const response = await request.get("/sparql/", { headers: html, ...noRedirect });
+
+        // vite-envs.sh encode la valeur brute suivie du saut de ligne de `printenv`.
+        const encoded = Buffer.from("https://endpoint-runtime.example/sparql\n").toString("base64");
+        expect(await response.text()).toContain(`"VITE_SPARQL_ENDPOINT":\`${encoded}\``);
     });
 });

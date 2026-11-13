@@ -15,6 +15,8 @@ services:
             dockerfile: Dockerfile
         environment:
             RDF4J_API_URI: http://sparql-mock:8081/sparql
+            # Configuration du front injectee au demarrage par vite-envs
+            VITE_SPARQL_ENDPOINT: https://endpoint-runtime.example/sparql
         ports:
             - "8080:8080"
         depends_on:

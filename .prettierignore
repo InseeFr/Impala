@@ -1,0 +1,2 @@
+# Regenere par le plugin vite-envs a chaque lancement de Vite
+src/vite-env.d.ts

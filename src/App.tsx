@@ -1,10 +1,9 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { loadQueries, loadQueryBody, type Query } from "./api";
 
-// Toute la configuration vit dans .env : Vite remplace `import.meta.env.VITE_*`
-// par sa valeur litterale a la construction du bundle. La surcharger revient
-// donc a rejouer un build (`VITE_SPARQL_ENDPOINT=... pnpm build`), la ou
-// l'ancien public/configuration.json etait lu au demarrage de l'application.
+// Toute la configuration est declaree dans .env et lue via `import.meta.env.VITE_*`.
+// vite-envs la rend surchargeable au demarrage du conteneur, sans rebuild :
+// vite-envs.sh reecrit index.html avec les valeurs de l'environnement.
 
 // Espace de nommage des URI Insee. C'est un identifiant RDF, pas une adresse
 // que l'application contacte : le `http://` fait partie de l'URI publiée par
