@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, expect, test, vi, type Mock } from "vitest";
 import App from "./App";
 import type { Query } from "./api";
@@ -17,6 +17,10 @@ const fetchResponse = (url: string, ok = true, payload: unknown = queries) => ({
     json: () => Promise.resolve(payload),
     text: () => Promise.resolve(`# ${url}`)
 });
+
+// La liste des requêtes est lue via `use` sous une Suspense : React ne
+// reprend le rendu suspendu que dans un `act` attendu.
+const renderApp = () => act(() => render(<App />));
 
 type SetQuery = (query: string) => void;
 type FetchStub = (url: string) => Promise<ReturnType<typeof fetchResponse>>;
@@ -84,12 +88,12 @@ afterEach(() => {
     vi.restoreAllMocks();
 });
 
-test("renders the App component", () => {
-    render(<App />);
+test("renders the App component", async () => {
+    await renderApp();
 });
 
 test("moves the queries block inside the YASQE editor", async () => {
-    const { container } = render(<App />);
+    const { container } = await renderApp();
 
     await waitFor(() => {
         expect(container.querySelector("#editor .yasqe > .queries-block")).not.toBeNull();
@@ -97,7 +101,7 @@ test("moves the queries block inside the YASQE editor", async () => {
 });
 
 test("renders one button per configured query", async () => {
-    render(<App />);
+    await renderApp();
 
     for (const query of queries) {
         expect(await screen.findByRole("button", { name: query.label })).toBeTruthy();
@@ -105,7 +109,7 @@ test("renders one button per configured query", async () => {
 });
 
 test("loads the query body into the current tab when a query button is clicked", async () => {
-    render(<App />);
+    await renderApp();
 
     fireEvent.click(await screen.findByRole("button", { name: "Liste des concepts" }));
 
@@ -115,7 +119,7 @@ test("loads the query body into the current tab when a query button is clicked",
 });
 
 test("configures Yasgui with the endpoint declared in .env", async () => {
-    render(<App />);
+    await renderApp();
 
     await waitFor(() => expect(yasguiConfig).toBeDefined());
     expect(yasguiConfig?.requestConfig?.endpoint).toBe("https://rdf.insee.fr/sparql");
@@ -126,7 +130,7 @@ test("reads the endpoint from the build-time environment instead of a fetched fi
     const fetchSpy = vi.fn<FetchStub>(url => Promise.resolve(fetchResponse(url)));
     vi.stubGlobal("fetch", fetchSpy);
 
-    render(<App />);
+    await renderApp();
 
     await waitFor(() => expect(fetchSpy).toHaveBeenCalled());
     expect(fetchSpy.mock.calls.some(([url]) => url.includes("configuration.json"))).toBe(false);
@@ -135,7 +139,7 @@ test("reads the endpoint from the build-time environment instead of a fetched fi
 test("rewrites id.insee.fr links to the DESCRIBE prefix when a custom endpoint is configured", async () => {
     vi.stubEnv("VITE_SPARQL_ENDPOINT", "http://example.org/sparql");
     vi.stubEnv("VITE_SPARQL_PREFIX", "https://example.org/sparql?query=DESCRIBE");
-    const { container } = render(<App />);
+    const { container } = await renderApp();
 
     const link = await clickInseeLink(container);
 
@@ -145,7 +149,7 @@ test("rewrites id.insee.fr links to the DESCRIBE prefix when a custom endpoint i
 });
 
 test("keeps id.insee.fr links untouched on the default endpoint", async () => {
-    const { container } = render(<App />);
+    const { container } = await renderApp();
 
     const link = await clickInseeLink(container);
 
@@ -170,7 +174,7 @@ test("moves the queries block when Yasgui renders the editor later", async () =>
         }
     );
 
-    const { container } = render(<App />);
+    const { container } = await renderApp();
 
     await waitFor(() => {
         expect(container.querySelector("#editor .yasqe > .queries-block")).not.toBeNull();
@@ -183,7 +187,7 @@ test("keeps the app usable when a query body cannot be loaded", async () => {
     // (jsc.parser.explicitResourceManagement), d'où la restauration explicite.
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    render(<App />);
+    await renderApp();
     fireEvent.click(await screen.findByRole("button", { name: "Liste des concepts" }));
 
     await waitFor(() => expect(errorSpy).toHaveBeenCalled());
@@ -200,7 +204,7 @@ test("ignores manifest entries whose path is not a query file", async () => {
     const fetchSpy = vi.fn<FetchStub>(url => Promise.resolve(fetchResponse(url, true, hostile)));
     vi.stubGlobal("fetch", fetchSpy);
 
-    render(<App />);
+    await renderApp();
 
     expect(await screen.findByRole("button", { name: "Liste des concepts" })).toBeTruthy();
     for (const label of ["Absolue", "Traversée", "Protocole"]) {
@@ -217,7 +221,7 @@ test("ignores malformed manifest entries but keeps the valid ones", async () => 
     ];
     vi.stubGlobal("fetch", (url: string) => Promise.resolve(fetchResponse(url, true, malformed)));
 
-    render(<App />);
+    await renderApp();
 
     expect(await screen.findByRole("button", { name: "Liste des concepts" })).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Sans chemin" })).toBeNull();
@@ -236,7 +240,7 @@ test("ignores the body of an HTTP error response for the query list", async () =
     // (jsc.parser.explicitResourceManagement), d'où la restauration explicite.
     vi.spyOn(console, "error").mockImplementation(() => {});
 
-    const { container } = render(<App />);
+    const { container } = await renderApp();
 
     await waitFor(() => expect(container.querySelector("#editor")).not.toBeNull());
     expect(screen.queryByRole("button")).toBeNull();

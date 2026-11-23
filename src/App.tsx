@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Suspense, use, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { loadQueries, loadQueryBody, type Query } from "./api";
 
 // Toute la configuration est declaree dans .env et lue via `import.meta.env.VITE_*`.
@@ -17,8 +17,24 @@ const INSEE_IRI_NAMESPACE = "http://id.insee.fr/"; // NOSONAR
 
 interface EditorProps {
     endpoint: string;
-    queries: Query[];
+    queries: Promise<Query[]>;
     prefix: string;
+}
+
+interface QueryButtonsProps {
+    queries: Promise<Query[]>;
+    onSelect: (query: Query) => void;
+}
+
+// Lit la liste des requêtes au rendu : tant que la promesse est en attente,
+// la Suspense englobante n'affiche rien, sans retarder le montage de Yasgui.
+function QueryButtons({ queries, onSelect }: Readonly<QueryButtonsProps>) {
+    return use(queries).map(query => (
+        <button type="button" key={query.path} onClick={() => onSelect(query)}>
+            {" "}
+            {query.label}{" "}
+        </button>
+    ));
 }
 
 function Editor({ endpoint, queries, prefix }: Readonly<EditorProps>) {
@@ -112,12 +128,9 @@ function Editor({ endpoint, queries, prefix }: Readonly<EditorProps>) {
     return (
         <>
             <div className="queries-block" ref={queriesRef}>
-                {queries.map(query => (
-                    <button type="button" key={query.path} onClick={() => click(query)}>
-                        {" "}
-                        {query.label}{" "}
-                    </button>
-                ))}
+                <Suspense fallback={null}>
+                    <QueryButtons queries={queries} onSelect={click} />
+                </Suspense>
             </div>
             <div id="editor" ref={editorRef}></div>
         </>
@@ -125,20 +138,17 @@ function Editor({ endpoint, queries, prefix }: Readonly<EditorProps>) {
 }
 
 function App() {
-    const [queries, setQueries] = useState<Query[]>([]);
+    // La promesse est créée une seule fois (initialiseur de useState) : `use`
+    // exige une promesse stable d'un rendu à l'autre. Un échec se replie sur
+    // une liste vide, l'éditeur restant utilisable sans requêtes d'exemple.
+    const [queries] = useState(() =>
+        loadQueries().catch((error: unknown) => {
+            console.error("Impossible de charger la liste des requêtes", error);
+            return [];
+        })
+    );
     const endpoint = import.meta.env.VITE_SPARQL_ENDPOINT;
     const prefix = import.meta.env.VITE_SPARQL_PREFIX;
-
-    useEffect(() => {
-        loadQueries()
-            .then(body => {
-                setQueries(body);
-            })
-            .catch((error: unknown) => {
-                console.error("Impossible de charger la liste des requêtes", error);
-                setQueries([]);
-            });
-    }, []);
 
     const footer = `${import.meta.env.VITE_NAME?.toUpperCase()} : v${import.meta.env.VITE_VERSION}`;
 
