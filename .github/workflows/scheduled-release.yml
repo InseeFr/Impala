@@ -1,0 +1,84 @@
+name: Scheduled release
+
+# Publie chaque jour une release finale depuis main, si et seulement si des
+# commits ont ete pousses depuis le dernier tag de release (x.y.z). Sinon le run
+# s'arrete sans rien pousser.
+#
+# Meme action que prepare-release.yml (kind: release), mais avec une version
+# explicite : sans elle l'action ne fait que retirer le suffixe -rc, et refuse
+# une version deja egale a celle de package.json. La version est donc :
+#   - celle de package.json (suffixe -rc retire) si elle n'est pas encore taguee,
+#     ce qui respecte un bump mineur/majeur fait a la main ;
+#   - sinon, son patch incremente.
+
+on:
+    schedule:
+        # Tous les jours a 04:00 UTC. Un schedule ne tourne que sur la branche
+        # par defaut, donc sur main.
+        - cron: "0 4 * * *"
+    workflow_dispatch:
+
+# Meme groupe que prepare-release.yml : une release planifiee et une release
+# manuelle sur main ne doivent pas se chevaucher.
+concurrency:
+    group: prepare-release-${{ github.repository }}-${{ github.ref }}
+    cancel-in-progress: false
+
+jobs:
+    release:
+        name: Daily release from ${{ github.ref_name }}
+        runs-on: ubuntu-latest
+        if: ${{ github.ref_name == 'main' }}
+        permissions:
+            contents: write
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  # Historique et tags complets pour situer le dernier tag.
+                  fetch-depth: 0
+                  fetch-tags: true
+
+            - name: Look for commits since the last release tag
+              id: changes
+              shell: bash
+              run: |
+                  set -euo pipefail
+                  last_tag="$(git describe --tags --abbrev=0 --match '[0-9]*.[0-9]*.[0-9]*' --exclude '*-*' 2>/dev/null || true)"
+                  if [ -z "$last_tag" ]; then
+                      echo "::error::no x.y.z tag reachable from $GITHUB_SHA"
+                      exit 1
+                  fi
+                  count="$(git rev-list --count "$last_tag..HEAD")"
+                  echo "$count commit(s) since $last_tag"
+                  echo "count=$count" >> "$GITHUB_OUTPUT"
+                  if [ "$count" -eq 0 ]; then
+                      echo "Nothing new since \`$last_tag\`: no release." >> "$GITHUB_STEP_SUMMARY"
+                  fi
+
+            - name: Compute the version to release
+              id: version
+              if: ${{ steps.changes.outputs.count != '0' }}
+              shell: bash
+              run: |
+                  set -euo pipefail
+                  current="$(jq -r .version package.json)"
+                  base="${current%-rc*}"
+                  if [[ ! "$base" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+                      echo "::error::package.json version '$current' is not x.y.z[-rcN]"
+                      exit 1
+                  fi
+                  if git rev-parse -q --verify "refs/tags/$base" >/dev/null; then
+                      next="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.$(( BASH_REMATCH[3] + 1 ))"
+                  else
+                      next="$base"
+                  fi
+                  echo "next=$next" >> "$GITHUB_OUTPUT"
+
+            # Le PAT est requis pour que la release declenche publish-release.yml
+            # (voir prepare-release.yml).
+            - uses: InseeFr/rmes-githubactions-commons/.github/actions/prepare-release@main
+              if: ${{ steps.changes.outputs.count != '0' }}
+              with:
+                  kind: release
+                  version: ${{ steps.version.outputs.next }}
+                  release-token: ${{ secrets.RELEASE_TOKEN }}
