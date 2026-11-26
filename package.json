@@ -16,13 +16,13 @@
         "@types/react": "^19.3.0",
         "@types/react-dom": "^19.3.0",
         "@vitejs/plugin-react": "^6.3.0",
-        "@vitest/coverage-v8": "^5.1.0",
+        "@vitest/coverage-v8": "^5.1.1",
         "archiver": "^8.0.0",
         "babel-plugin-react-compiler": "^1.0.0",
         "husky": "^9.1.7",
         "jscpd": "^5.4.3",
         "jsdom": "^31.0.1",
-        "knip": "^6.45.1",
+        "knip": "^6.46.1",
         "ncp": "^2.0.0",
         "oxlint": "^1.94.0",
         "oxlint-tsgolint": "^7.0.2007",
@@ -31,7 +31,7 @@
         "typescript": "^7.0.2",
         "vite": "^8.3.8",
         "vite-envs": "^4.7.2",
-        "vitest": "^5.1.0"
+        "vitest": "^5.1.1"
     },
     "scripts": {
         "copy-static": "ncp pages build && ncp temp_dist build/sparql",
