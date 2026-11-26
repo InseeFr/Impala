@@ -60,10 +60,7 @@ updates:
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "monday"
-    cooldown:
-      default-days: 7
+      interval: "daily"
     commit-message:
       prefix: "build"
       include: "scope"
