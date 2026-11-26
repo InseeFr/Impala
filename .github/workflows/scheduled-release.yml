@@ -82,4 +82,4 @@ jobs:
               with:
                   kind: release
                   version: ${{ steps.version.outputs.next }}
-                  release-token: ${{ secrets.RELEASE_TOKEN }}
+                  release-token: ${{ secrets.GITHUB_TOKEN }}
