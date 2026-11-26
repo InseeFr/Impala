@@ -15,7 +15,7 @@ on:
     schedule:
         # Tous les jours a 09:00 UTC. Un schedule ne tourne que sur la branche
         # par defaut, donc sur main.
-        - cron: "0 9 * * *"
+        - cron: "0 10 * * *"
     workflow_dispatch:
 
 # Meme groupe que prepare-release.yml : une release planifiee et une release
