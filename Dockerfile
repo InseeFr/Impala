@@ -17,7 +17,7 @@ RUN npm i -g pnpm@12 \
 
 ### EXECUTION STEP ###
 
-FROM nginx/nginx-unprivileged:1.30.0-alpine
+FROM nginx/nginx-unprivileged:1.31.9-alpine
 
 # SPARQL endpoint, overridable at runtime (docker run -e RDF4J_API_URI=...)
 # Endpoint SPARQL, surchargeable au demarrage du conteneur
