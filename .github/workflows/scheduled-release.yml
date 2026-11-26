@@ -31,6 +31,7 @@ jobs:
         if: ${{ github.ref_name == 'main' }}
         permissions:
             contents: write
+            packages: write
         steps:
             - uses: actions/checkout@v4
               with:
