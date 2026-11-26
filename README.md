@@ -91,3 +91,4 @@ container environment, falling back to `.env` for the missing ones.
 ```shell
 docker run -p 8080:8080 -e VITE_SPARQL_ENDPOINT=https://example.org/sparql inseefr/impala
 ```
+
