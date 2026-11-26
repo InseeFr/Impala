@@ -11,6 +11,11 @@ name: Publish release image
 on:
     release:
         types: [released]
+    workflow_call:
+        inputs:
+            tag:
+                type: string
+                required: true
 
 jobs:
     build:
@@ -23,7 +28,7 @@ jobs:
         steps:
             - uses: actions/checkout@v4
               with:
-                  ref: ${{ github.event.release.tag_name }}
+                  ref: ${{ inputs.tag || github.event.release.tag_name }}
 
             # Les memes verifications que sur une PR : install, lint, typecheck,
             # knip, jscpd, tests et build. Ni Sonar ni React Doctor ici, une
@@ -45,10 +50,13 @@ jobs:
         steps:
             # Sur un evenement release, la ref extraite est deja celle du tag.
             - uses: actions/checkout@v4
+              with:
+                  ref: ${{ inputs.tag || github.event.release.tag_name }}
             # Une action composite ne recoit aucun secret d'elle-meme : les
             # identifiants Docker Hub lui sont passes explicitement.
             - uses: InseeFr/rmes-githubactions-commons/.github/actions/docker-publish@main
               with:
                   image: inseefr/impala
+                  tag: ${{ inputs.tag }}
                   dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
                   dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}

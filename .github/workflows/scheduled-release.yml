@@ -32,6 +32,8 @@ jobs:
         permissions:
             contents: write
             packages: write
+        outputs:
+            version: ${{ steps.prepare.outputs.version }}
         steps:
             - uses: actions/checkout@v4
               with:
@@ -78,8 +80,17 @@ jobs:
             # Le PAT est requis pour que la release declenche publish-release.yml
             # (voir prepare-release.yml).
             - uses: InseeFr/rmes-githubactions-commons/.github/actions/prepare-release@main
+              id: prepare
               if: ${{ steps.changes.outputs.count != '0' }}
               with:
                   kind: release
                   version: ${{ steps.version.outputs.next }}
                   release-token: ${{ secrets.GITHUB_TOKEN }}
+
+    publish:
+        needs: release
+        if: ${{ needs.release.outputs.version != '' }}
+        uses: ./.github/workflows/publish-release.yml
+        with:
+            tag: ${{ needs.release.outputs.version }}
+        secrets: inherit
